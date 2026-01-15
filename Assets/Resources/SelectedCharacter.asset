@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ba664a5c6c3cf4ebaf9566bc75416b, type: 3}
   m_Name: SelectedCharacter
   m_EditorClassIdentifier: 
+  defaultCharacterPrefab: {fileID: 2307271194614268369, guid: 156dbc3b28ad2a04688113985759f0c7, type: 3}
   characterPrefab: {fileID: 0}
   uiIcon: {fileID: 0}
   bioIcon: {fileID: 0}

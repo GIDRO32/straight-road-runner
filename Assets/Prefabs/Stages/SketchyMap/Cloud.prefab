@@ -733,7 +733,7 @@ BoxCollider2D:
   m_GameObject: {fileID: 4803196070363959240}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 4bd3ebc8fd5424c4a9e166948207fd9d, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1015,7 +1015,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_Sprite: {fileID: 21300000, guid: aceb1d9d55129d948894a791bba829ca, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1023,7 +1023,7 @@ SpriteRenderer:
   m_Size: {x: 6, y: 1.74}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!61 &4918202201363013678
@@ -1089,7 +1089,7 @@ PlatformEffector2D:
   m_SurfaceArc: 90
   m_UseSideFriction: 0
   m_UseSideBounce: 0
-  m_SideArc: 1
+  m_SideArc: 0
 --- !u!50 &319069041295765568
 Rigidbody2D:
   serializedVersion: 4
@@ -1106,7 +1106,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 6200000, guid: 4bd3ebc8fd5424c4a9e166948207fd9d, type: 2}
+  m_Material: {fileID: 6200000, guid: 8149ac8fb18662b4c9a2069e3cb83dc9, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1143,6 +1143,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sign: {fileID: 4667504208647223258}
   wall: {fileID: 4803196070363959240}
+  normalSprite: {fileID: 21300000, guid: aceb1d9d55129d948894a791bba829ca, type: 3}
+  fragileSprite: {fileID: 21300000, guid: eb51b421b6c7d3148917b49e559e786e, type: 3}
+  fragileTime: 1
+  timerUI: {fileID: 3688306802885448773, guid: 29aedb43cbeda284bb6badc9fbf706cc, type: 3}
 --- !u!1 &6853389786066764554
 GameObject:
   m_ObjectHideFlags: 0

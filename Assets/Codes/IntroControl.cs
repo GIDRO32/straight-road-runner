@@ -108,29 +108,36 @@ public class IntroControl : MonoBehaviour
 
     void SpawnPlayerAndStartGame()
     {
-        if (selectedCharacterData == null || selectedCharacterData.characterPrefab == null)
+        // Use the new method that has fallback
+        GameObject prefabToSpawn = selectedCharacterData.GetCharacterPrefab();
+
+        if (prefabToSpawn == null)
         {
-            Debug.LogError("No character selected!");
+            Debug.LogError("No character available to spawn!");
             return;
         }
 
         GameObject playerObj = Instantiate(
-            selectedCharacterData.characterPrefab,
+            prefabToSpawn,
             portal.transform.position,
             Quaternion.identity
         );
         player = playerObj.transform;
 
-        // === NEW: Assign Icon & Stamina UI ===
+        // Rest of the code stays the same...
         PlayerData pd = playerObj.GetComponent<PlayerData>();
         if (pd != null)
         {
-            // Find UI elements in scene (tag them!)
             Image iconImg = GameObject.FindWithTag("StaminaIcon")?.GetComponent<Image>();
             Slider staminaBar = GameObject.FindWithTag("StaminaSlider")?.GetComponent<Slider>();
 
-            if (iconImg != null && selectedCharacterData.uiIcon != null)
-                iconImg.sprite = selectedCharacterData.uiIcon;
+            // Use icon from PlayerData if selectedCharacterData doesn't have one
+            Sprite iconToUse = selectedCharacterData.uiIcon != null
+                ? selectedCharacterData.uiIcon
+                : pd.uiIcon;
+
+            if (iconImg != null && iconToUse != null)
+                iconImg.sprite = iconToUse;
 
             if (staminaBar != null)
             {
@@ -138,14 +145,17 @@ public class IntroControl : MonoBehaviour
                 staminaBar.value = pd.currentStamina;
             }
 
-            // Optional: store refs in PlayerData for future use
             pd.staminaIconImage = iconImg;
             pd.staminaSlider = staminaBar;
         }
 
+        if (GameOverManager.Instance != null)
+        {
+            GameOverManager.Instance.RegisterPlayer(player);
+        }
+
         portal.SetActive(false);
         StartCoroutine(SmoothCameraToPlayer());
-
         FindObjectOfType<StageControl>().NotifyPlayerSpawned();
     }
     // === NEW PUBLIC METHOD (call from IntroControl) ===
@@ -153,9 +163,9 @@ public class IntroControl : MonoBehaviour
     {
         Vector3 targetPos = new Vector3(mainCam.transform.position.x, 0f, mainCam.transform.position.z);
 
-            mainCam.transform.position = Vector3.Lerp(mainCam.transform.position, targetPos, Time.unscaledDeltaTime * cameraMoveSpeed);
-            yield return null;
-        
+        mainCam.transform.position = Vector3.Lerp(mainCam.transform.position, targetPos, Time.unscaledDeltaTime * cameraMoveSpeed);
+        yield return null;
+
 
         // Switch to follow player
         CameraFollow camFollow = mainCam.GetComponent<CameraFollow>();

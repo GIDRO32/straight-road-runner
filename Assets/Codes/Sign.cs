@@ -1,6 +1,7 @@
 // Sign.cs - NEW SCRIPT (attach to Sign prefab)
 
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Collider2D))]
 public class Sign : MonoBehaviour
@@ -33,10 +34,19 @@ public class Sign : MonoBehaviour
         playerData = col.transform.GetComponentInParent<PlayerData>();
         if (playerData != null)
         {
-            playerData.currentStamina = Mathf.Min(playerData.maxStamina, 
+            // Check if stamina was already full before adding
+            bool wasFullStamina = playerData.currentStamina >= playerData.maxStamina;
+
+            playerData.currentStamina = Mathf.Min(playerData.maxStamina,
                 playerData.currentStamina + staminaGain);
             playerData.UpdateStaminaUI();
-            Debug.Log("Stamina increased by " + staminaGain);
+
+            // Award score only if stamina was already full
+            if (wasFullStamina && ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.AddSignHitScore();
+                Debug.Log("Sign hit with full stamina - Score awarded!");
+            }
         }
 
         // Start spinning

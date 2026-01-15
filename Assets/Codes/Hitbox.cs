@@ -7,10 +7,6 @@ public class Hitbox : MonoBehaviour
         // Check if the collided object has the "Wall" or "Enemy" tag
         if (collision.CompareTag("Wall") || collision.CompareTag("Enemy"))
         {
-            // Destroy the collided object
-            // Destroy(collision.gameObject);
-
-            // Optional: Debug log for feedback
             Debug.Log($"{collision.tag} destroyed by hitbox!");
         }
     }

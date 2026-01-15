@@ -33,7 +33,11 @@ public class MenuControl : MonoBehaviour
     {
         if (characters.Length == 0) return;
 
-        // Initialize first character
+        // Load saved selection or default to first character
+        int savedIndex = PlayerPrefs.GetInt("SelectedCharacterIndex", 0);
+        savedIndex = Mathf.Clamp(savedIndex, 0, characters.Length - 1);
+
+        currentSelectedIndex = savedIndex;
         UpdateCharacterDisplay(currentSelectedIndex);
         SetupSelectionButtons();
     }
@@ -66,13 +70,17 @@ public class MenuControl : MonoBehaviour
         currentSelectedIndex = index;
         UpdateCharacterDisplay(index);
 
-        // Save selection to ScriptableObject
+        // Save selection
         CharacterData data = characters[index];
         selectedCharacterData.characterPrefab = data.prefab;
         selectedCharacterData.uiIcon = data.uiIcon;
         selectedCharacterData.bioIcon = data.bioIcon;
         selectedCharacterData.menuDisplayArt = data.menuDisplayArt;
         selectedCharacterData.characterName = data.characterName;
+
+        // Persist selection
+        PlayerPrefs.SetInt("SelectedCharacterIndex", index);
+        PlayerPrefs.Save();
 
         Debug.Log($"Saved selection: {data.characterName}");
     }

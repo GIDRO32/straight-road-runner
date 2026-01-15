@@ -14,10 +14,10 @@ GameObject:
   - component: {fileID: 8531179461313493192}
   - component: {fileID: 5996882380709207644}
   - component: {fileID: 5618420411596367447}
-  - component: {fileID: 6522573058607659729}
   - component: {fileID: 845319179908399534}
   - component: {fileID: 5090585043299947751}
-  m_Layer: 0
+  - component: {fileID: 6504841572830803607}
+  m_Layer: 7
   m_Name: PlaceHolderMan
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_Sprite: {fileID: 21300000, guid: 8824581bf2671b049b5a01096d4a371d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ec7bfda8aedd1014c98ec60adae760e1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -175,7 +175,7 @@ Animator:
   m_GameObject: {fileID: 2307271194614268369}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 62f48ea9de55d0c48aab3e78310192ea, type: 2}
+  m_Controller: {fileID: 9100000, guid: 024a3200938f383499e945142e5cdc22, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -221,28 +221,6 @@ CapsuleCollider2D:
   m_Offset: {x: -0.2, y: -2.25}
   m_Size: {x: 2.6, y: 0.4}
   m_Direction: 1
---- !u!114 &6522573058607659729
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2307271194614268369}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d710f18a92bc7645af486d5255647ed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  runSpeed: 5
-  rb: {fileID: 8531179461313493192}
-  capsule: {fileID: 5618420411596367447}
-  animator: {fileID: 5996882380709207644}
-  superRunTrail: {fileID: 845319179908399534}
-  punchHitbox: {fileID: 4365744818029660601}
-  punchSpeedReduction: 4
-  uppercutHitbox: {fileID: 7145057228538030839}
-  uppercutSpeedReduction: 2
-  playerCollider: {fileID: 3020813449370345412}
 --- !u!96 &845319179908399534
 TrailRenderer:
   serializedVersion: 3
@@ -373,6 +351,28 @@ MonoBehaviour:
   uiIcon: {fileID: 21300000, guid: 3271d4e5c7c7ff04ca77d669281f98c9, type: 3}
   staminaIconImage: {fileID: 0}
   staminaSlider: {fileID: 0}
+--- !u!114 &6504841572830803607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2307271194614268369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d710f18a92bc7645af486d5255647ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  runSpeed: 5
+  rb: {fileID: 8531179461313493192}
+  capsule: {fileID: 5618420411596367447}
+  animator: {fileID: 5996882380709207644}
+  superRunTrail: {fileID: 845319179908399534}
+  playerCollider: {fileID: 3020813449370345412}
+  punchHitbox: {fileID: 4365744818029660601}
+  punchSpeedReduction: 2
+  uppercutHitbox: {fileID: 7145057228538030839}
+  uppercutSpeedReduction: 2
 --- !u!1 &4365744818029660601
 GameObject:
   m_ObjectHideFlags: 0
@@ -385,7 +385,7 @@ GameObject:
   - component: {fileID: 274601284363985256}
   - component: {fileID: 5395391142894288039}
   - component: {fileID: 8003773959587600489}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PunchL
   m_TagString: Hits
   m_Icon: {fileID: 0}
@@ -528,7 +528,7 @@ GameObject:
   - component: {fileID: 7476438348123157517}
   - component: {fileID: 4007045862730128223}
   - component: {fileID: 3763211299364379499}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Uppercut
   m_TagString: Hits
   m_Icon: {fileID: 0}
@@ -544,8 +544,8 @@ Transform:
   m_GameObject: {fileID: 7145057228538030839}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.5, z: 0}
-  m_LocalScale: {x: 2.5, y: 1, z: 1}
+  m_LocalPosition: {x: -0.4, y: 2.5, z: 0}
+  m_LocalScale: {x: 3.25, y: 1.0288, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8464587708937590215}
