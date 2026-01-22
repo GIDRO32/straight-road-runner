@@ -25,6 +25,10 @@ public class Platform : MonoBehaviour
     private float fragileTimer = 0f;
     private SpriteRenderer spriteRenderer;
     private GameObject timerInstance;
+    [Header("Particle Effects")]
+    public ParticleSystem normalLandingParticles;
+    public ParticleSystem fragileLandingParticles;
+    public ParticleSystem fragileBreak;
 
     void Start()
     {
@@ -77,47 +81,49 @@ public class Platform : MonoBehaviour
             }
         }
     }
+    public void OnPlayerLanded(Vector3 landPosition)
+    {
+        ParticleSystem particlesToPlay = isFragile ? fragileLandingParticles : normalLandingParticles;
+
+        if (particlesToPlay != null)
+        {
+            // Position particles at landing point
+            particlesToPlay.transform.position = new Vector3(
+                landPosition.x,
+                transform.position.y + GetComponent<Collider2D>().bounds.extents.y,
+                landPosition.z
+            );
+            particlesToPlay.Play();
+        }
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Player") && isFragile)
         {
             playerOnPlatform = true;
-            ShowTimer();
+
+            // ✅ Optional: Play different particle when stepping on fragile platform
+            if (fragileLandingParticles != null && !fragileLandingParticles.isPlaying)
+            {
+                fragileLandingParticles.Play();
+            }
         }
     }
-
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Player") && isFragile)
         {
             playerOnPlatform = false;
             fragileTimer = 0f;
-            HideTimer();
         }
     }
 
-    private void ShowTimer()
-    {
-        if (timerUI != null && timerInstance == null)
-        {
-            timerInstance = Instantiate(timerUI, transform.position + Vector3.up * 1f, Quaternion.identity, transform);
-        }
-    }
-
-    private void HideTimer()
-    {
-        if (timerInstance != null)
-        {
-            Destroy(timerInstance);
-            timerInstance = null;
-        }
-    }
 
     private void BreakPlatform()
     {
         Debug.Log("Platform broke!");
 
-        // Optional: spawn break particles/effects here
+        fragileBreak.Play();
 
         Destroy(gameObject);
     }

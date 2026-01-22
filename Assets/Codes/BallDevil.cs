@@ -4,13 +4,13 @@ public class BallDevil : MonoBehaviour
 {
     [Header("References")]
     public Transform player;
-    
+
     [Header("Seek Settings")]
     public float accelX = 5f;
     public float accelY = 3f;
     public float maxSpeedX = 10f;
     public float maxSpeedY = 5f;
-    
+
     [Header("Dash Settings")]
     public float dashInterval = 3f;
     public float dashSpeed = 20f;
@@ -24,13 +24,14 @@ public class BallDevil : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private bool isDamaged = false;
     private bool isDashing = false; // ← NEW: Track dash state
+    public SoundEffects soundEffects;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
-        
+
         // Find player if not assigned
         if (player == null)
         {
@@ -51,7 +52,7 @@ public class BallDevil : MonoBehaviour
         if (isDashing)
         {
             dashDurationTimer -= Time.fixedDeltaTime;
-            
+
             if (dashDurationTimer <= 0f)
             {
                 // Dash finished
@@ -115,15 +116,15 @@ public class BallDevil : MonoBehaviour
 
         // Calculate dash direction
         Vector2 dir = (player.position - transform.position).normalized;
-        
+
         // Apply dash velocity
         rb.velocity = dir * dashSpeed;
-        
+
         // Set dash state
         isDashing = true;
         dashDurationTimer = dashDuration;
         animator.SetBool("IsDashing", true);
-        
+
         Debug.Log("BallDevil dashing!");
     }
 
@@ -132,8 +133,10 @@ public class BallDevil : MonoBehaviour
         if (!isDamaged && collision.CompareTag("Hits"))
         {
             isDamaged = true;
-            animator.SetBool("IsDamaged", true);
-            
+
+            // Play hit sound
+            soundEffects?.PlayDevilHit();
+
             // Apply knockback force
             float punchForce = 5f;
             Vector2 force = new Vector2(
@@ -141,14 +144,13 @@ public class BallDevil : MonoBehaviour
                 Random.Range(0f, punchForce * 1.5f)
             );
             rb.AddForce(force, ForceMode2D.Impulse);
-            
-            // Award score for killing enemy
+
+            // Award score
             if (ScoreManager.Instance != null)
             {
                 ScoreManager.Instance.AddEnemyKillScore();
             }
-            
-            // Start fade coroutine
+
             StartCoroutine(FadeAndDestroy());
         }
     }

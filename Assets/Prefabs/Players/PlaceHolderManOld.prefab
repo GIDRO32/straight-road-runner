@@ -14,9 +14,9 @@ GameObject:
   - component: {fileID: 8531179461313493192}
   - component: {fileID: 5996882380709207644}
   - component: {fileID: 5618420411596367447}
+  - component: {fileID: 5090585043299947751}
   - component: {fileID: 6522573058607659729}
   - component: {fileID: 845319179908399534}
-  - component: {fileID: 5090585043299947751}
   m_Layer: 0
   m_Name: PlaceHolderManOld
   m_TagString: Player
@@ -221,6 +221,23 @@ CapsuleCollider2D:
   m_Offset: {x: -0.2, y: -2.25}
   m_Size: {x: 2.6, y: 0.4}
   m_Direction: 1
+--- !u!114 &5090585043299947751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2307271194614268369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64d1f408485df054ba98246dd48e0d84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxStamina: 100
+  currentStamina: 0
+  uiIcon: {fileID: 21300000, guid: 3271d4e5c7c7ff04ca77d669281f98c9, type: 3}
+  staminaIconImage: {fileID: 0}
+  staminaSlider: {fileID: 0}
 --- !u!114 &6522573058607659729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -243,6 +260,8 @@ MonoBehaviour:
   punchSpeedReduction: 3
   uppercutHitbox: {fileID: 7145057228538030839}
   uppercutSpeedReduction: 2
+  enableSpeedLimiter: 1
+  soundEffects: {fileID: 0}
 --- !u!96 &845319179908399534
 TrailRenderer:
   serializedVersion: 3
@@ -356,23 +375,6 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 0
---- !u!114 &5090585043299947751
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2307271194614268369}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64d1f408485df054ba98246dd48e0d84, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxStamina: 100
-  currentStamina: 0
-  uiIcon: {fileID: 21300000, guid: 3271d4e5c7c7ff04ca77d669281f98c9, type: 3}
-  staminaIconImage: {fileID: 0}
-  staminaSlider: {fileID: 0}
 --- !u!1 &4365744818029660601
 GameObject:
   m_ObjectHideFlags: 0

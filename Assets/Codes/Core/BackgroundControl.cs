@@ -277,7 +277,7 @@ public class BackgroundControl : MonoBehaviour
         sr.sprite = data.sprite;
         
         // Set sorting order based on layer
-        sr.sortingOrder = data.layer == DecorLayer.Back ? -1 : 4;
+        sr.sortingOrder = data.layer == DecorLayer.Back ? 1 : 10;
 
         // Flip sprite if needed
         if (data.flipSprite)

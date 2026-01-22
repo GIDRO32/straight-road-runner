@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1267309650565547325}
   m_Layer: 0
   m_Name: BallDevilNew
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -76,7 +76,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 4
   m_Sprite: {fileID: 21300000, guid: 30238abca2737234e98be5af56f9c8b5, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -124,8 +124,8 @@ CircleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 8
+  m_LayerOverridePriority: 1
   m_ForceSendLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -141,7 +141,7 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.3, y: -0.56}
+  m_Offset: {x: -0.03, y: -0.29}
   serializedVersion: 2
   m_Radius: 3.3
 --- !u!50 &6602863021926109574
@@ -191,3 +191,4 @@ MonoBehaviour:
   dashInterval: 3
   dashSpeed: 20
   dashDuration: 0.5
+  soundEffects: {fileID: 11400000, guid: a4bf2759dce847a4dae21b3be4a56786, type: 2}

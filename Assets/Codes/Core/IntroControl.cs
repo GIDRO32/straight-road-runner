@@ -25,6 +25,8 @@ public class IntroControl : MonoBehaviour
     private CanvasGroup portalCG;
     private bool countdownStarted = false;
     public SelectedCharacterSO selectedCharacterData;
+    public DifficultyManager difficultyManager;
+    public ParticleSystem portalParticles;
 
     void Start()
     {
@@ -48,7 +50,7 @@ public class IntroControl : MonoBehaviour
 
     IEnumerator IntroSequence()
     {
-        // 1. Stage name letter by letter (unscaled time)
+        // 1. Stage name letter by letter
         stageNameText.text = "";
         foreach (char c in stageName)
         {
@@ -72,7 +74,8 @@ public class IntroControl : MonoBehaviour
 
         // 4. Portal fade in
         portal.SetActive(true);
-        t = 0;
+
+               t = 0;
         while (t < portalFadeInTime)
         {
             t += Time.unscaledDeltaTime;
@@ -95,7 +98,7 @@ public class IntroControl : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                timer = 0f; // Force end
+                timer = 0f;
             }
             yield return null;
         }
@@ -106,59 +109,38 @@ public class IntroControl : MonoBehaviour
 
     // IntroControl.cs - ONLY CHANGED PART (SpawnPlayerAndStartGame)
 
-    void SpawnPlayerAndStartGame()
+void SpawnPlayerAndStartGame()
+{
+    portalParticles.Play();
+    GameObject prefabToSpawn = selectedCharacterData.GetCharacterPrefab();
+    difficultyManager.isDifficultyProgressing = true;
+    
+    if (prefabToSpawn == null)
     {
-        // Use the new method that has fallback
-        GameObject prefabToSpawn = selectedCharacterData.GetCharacterPrefab();
-
-        if (prefabToSpawn == null)
-        {
-            Debug.LogError("No character available to spawn!");
-            return;
-        }
-
-        GameObject playerObj = Instantiate(
-            prefabToSpawn,
-            portal.transform.position,
-            Quaternion.identity
-        );
-        player = playerObj.transform;
-
-        // Rest of the code stays the same...
-        PlayerData pd = playerObj.GetComponent<PlayerData>();
-        if (pd != null)
-        {
-            Image iconImg = GameObject.FindWithTag("StaminaIcon")?.GetComponent<Image>();
-            Slider staminaBar = GameObject.FindWithTag("StaminaSlider")?.GetComponent<Slider>();
-
-            // Use icon from PlayerData if selectedCharacterData doesn't have one
-            Sprite iconToUse = selectedCharacterData.uiIcon != null
-                ? selectedCharacterData.uiIcon
-                : pd.uiIcon;
-
-            if (iconImg != null && iconToUse != null)
-                iconImg.sprite = iconToUse;
-
-            if (staminaBar != null)
-            {
-                staminaBar.maxValue = pd.maxStamina;
-                staminaBar.value = pd.currentStamina;
-            }
-
-            pd.staminaIconImage = iconImg;
-            pd.staminaSlider = staminaBar;
-        }
-
-        if (GameOverManager.Instance != null)
-        {
-            GameOverManager.Instance.RegisterPlayer(player);
-        }
-
-        portal.SetActive(false);
-        StartCoroutine(SmoothCameraToPlayer());
-        FindObjectOfType<StageControl>().NotifyPlayerSpawned();
+        Debug.LogError("No character available to spawn!");
+        return;
     }
-    // === NEW PUBLIC METHOD (call from IntroControl) ===
+
+    GameObject playerObj = Instantiate(
+        prefabToSpawn,
+        portal.transform.position,
+        Quaternion.identity
+    );
+    player = playerObj.transform;
+
+    // ... rest of player setup code ...
+
+    if (GameOverManager.Instance != null)
+    {
+        GameOverManager.Instance.RegisterPlayer(player);
+    }
+
+    portal.SetActive(false);
+
+    StartCoroutine(SmoothCameraToPlayer());
+    FindObjectOfType<StageControl>().NotifyPlayerSpawned();
+}
+
     IEnumerator SmoothCameraToPlayer()
     {
         Vector3 targetPos = new Vector3(mainCam.transform.position.x, 0f, mainCam.transform.position.z);

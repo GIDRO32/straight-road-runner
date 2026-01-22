@@ -52,6 +52,8 @@ public class DifficultyManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
+        isDifficultyProgressing = false;
     }
 
     void Update()

@@ -12,6 +12,8 @@ public class WallShatter : MonoBehaviour
     public float destroyDelay = 3f;       // Auto-destroy shards after
 
     private bool isShattered = false;
+    [Header("Sound Effects")]
+    public SoundEffects soundEffects;
 
     private void Awake()
     {
@@ -41,6 +43,9 @@ public class WallShatter : MonoBehaviour
     {
         isShattered = true;
 
+        // Play wall break sound
+        soundEffects?.PlayWallBreak();
+
         // Disable wall collider
         GetComponent<Collider2D>().enabled = false;
 
@@ -48,27 +53,23 @@ public class WallShatter : MonoBehaviour
         foreach (GameObject shard in shards)
         {
             shard.SetActive(true);
-            shard.transform.SetParent(null);  // Detach from wall
+            shard.transform.SetParent(null);
 
-            // Add Rigidbody2D + random force
             Rigidbody2D rb = shard.GetComponent<Rigidbody2D>();
             if (rb == null) rb = shard.AddComponent<Rigidbody2D>();
 
             rb.bodyType = RigidbodyType2D.Dynamic;
             rb.gravityScale = 1f;
 
-            // Random explosion force
             Vector2 force = new Vector2(
                 Random.Range(-shardForce, shardForce),
                 Random.Range(0f, shardForce * 1.5f)
             );
             rb.AddForce(force, ForceMode2D.Impulse);
 
-            // Auto-destroy
             StartCoroutine(DestroyShard(shard));
         }
 
-        // Optional: hide main wall sprite
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null) sr.enabled = false;
     }

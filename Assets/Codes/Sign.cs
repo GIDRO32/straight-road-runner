@@ -14,6 +14,8 @@ public class Sign : MonoBehaviour
     private SpriteRenderer sr;
     private PlayerData playerData;
     private bool isHit = false;
+    [Header("Sound Effects")]
+    public SoundEffects soundEffects;
 
     void Start()
     {
@@ -30,18 +32,19 @@ public class Sign : MonoBehaviour
     {
         if (isHit || !col.CompareTag("Hits")) return;
 
+        // Play metal hit sound
+        soundEffects?.PlayMetalHit();
+
         // Find player and add stamina
         playerData = col.transform.GetComponentInParent<PlayerData>();
         if (playerData != null)
         {
-            // Check if stamina was already full before adding
             bool wasFullStamina = playerData.currentStamina >= playerData.maxStamina;
 
             playerData.currentStamina = Mathf.Min(playerData.maxStamina,
                 playerData.currentStamina + staminaGain);
             playerData.UpdateStaminaUI();
 
-            // Award score only if stamina was already full
             if (wasFullStamina && ScoreManager.Instance != null)
             {
                 ScoreManager.Instance.AddSignHitScore();
@@ -49,7 +52,6 @@ public class Sign : MonoBehaviour
             }
         }
 
-        // Start spinning
         isHit = true;
         StartCoroutine(SpinAndDestroy());
     }

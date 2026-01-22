@@ -7,20 +7,27 @@ public class Movement : MonoBehaviour
     public float runSpeed = 7f;
     float jumpHeight = 10f;
     float superRunSpeed = 15f;
-    
+
     [Header("Components")]
     public Rigidbody2D rb;
     public Collider2D capsule;
     public Animator animator;
-    public TrailRenderer superRunTrail;
     public BoxCollider2D playerCollider;
-    
+    // ✅ Updated SuperRun structure
+    public GameObject superRunObject; // Parent empty object
+    public TrailRenderer superRunTrail;
+    public ParticleSystem superRunParticles;
+
+    [Header("Particle Effects")]
+    public ParticleSystem landingParticles;
+    public ParticleSystem punchParticles;
+
     [Header("Combat")]
     public GameObject punchHitbox;
     public float punchSpeedReduction = 4f;
     public GameObject uppercutHitbox;
     public float uppercutSpeedReduction = 2f;
-    
+
     // State variables
     private bool isFacingRight = false;
     private bool isOnGround = false;
@@ -33,14 +40,14 @@ public class Movement : MonoBehaviour
     private bool canSuperJump = false;
     private bool isChargingSuperJump = false;
     private bool isStunned = false;
-    
+
     // Platform tracking - NEW APPROACH
     private Rigidbody2D currentPlatformRb;
     private Vector2 platformVelocity;
-    
+
     // Timers
     private float duckTime = 0f;
-    private float superJumpChargeTime = 1f;
+    private float superJumpChargeTime = 0.66f;
     private float superJumpHeight = 15f;
     private float stunTime = 2f;
     private float dashTime = 0.2f;
@@ -48,28 +55,48 @@ public class Movement : MonoBehaviour
     private float lastDashTime = -1f;
     private float lastInputTime = 0f;
     private float dashSpeedMultiplier = 2f;
-    
+    [Header("Speed Limiter")]
+    public bool enableSpeedLimiter = true;
+    private float baseRunSpeed; // Store original run speed
+
     private KeyCode lastKey;
     private PlayerData playerData;
     private Vector2 defaultColliderSize;
     private Vector2 defaultColliderOffset;
-    
+    [Header("Sound Effects")]
+    public SoundEffects soundEffects;
+
+    private bool punchHitSomething = false;
+    private bool uppercutHitSomething = false;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        superRunTrail = GetComponent<TrailRenderer>();
-        superRunTrail.enabled = true;
+
+        // ✅ Auto-find if not assigned
+        if (superRunObject == null)
+            superRunObject = transform.Find("SuperRun")?.gameObject;
+
+        if (superRunTrail == null && superRunObject != null)
+            superRunTrail = superRunObject.GetComponentInChildren<TrailRenderer>();
+
+        if (superRunParticles == null && superRunObject != null)
+            superRunParticles = superRunObject.GetComponentInChildren<ParticleSystem>();
+
+        if (superRunTrail != null) superRunTrail.enabled = true;
+        if (superRunParticles != null) superRunParticles.Stop(); // Start stopped
+
         punchHitbox.SetActive(false);
         uppercutHitbox.SetActive(false);
         defaultColliderSize = playerCollider.size;
         defaultColliderOffset = playerCollider.offset;
-        
+
+        baseRunSpeed = runSpeed;
+
         playerData = GetComponent<PlayerData>();
         if (playerData != null)
             playerData.UpdateStaminaUI();
     }
-    
     void Update()
     {
         if (isStunned) return;
@@ -88,6 +115,9 @@ public class Movement : MonoBehaviour
             duckTime += Time.deltaTime;
             if (duckTime >= superJumpChargeTime && !isChargingSuperJump)
             {
+                soundEffects?.PlaySuperJumpCharge();
+                punchParticles.transform.position = new Vector3(transform.position.x, transform.position.y, 0);
+                punchParticles.Play();
                 isChargingSuperJump = true;
                 canSuperJump = true;
                 animator.SetBool("CanSuperJump", true);
@@ -99,6 +129,7 @@ public class Movement : MonoBehaviour
         {
             playerData.currentStamina = Mathf.Max(0, playerData.currentStamina - 30f);
             playerData.UpdateStaminaUI();
+            soundEffects?.PlaySuperJump();
             PerformSuperJump();
         }
 
@@ -117,9 +148,21 @@ public class Movement : MonoBehaviour
         FlipSprite(horizontalInput);
 
         // SuperRun logic
+        // SuperRun logic
         isSuperRunning = Input.GetKey(KeyCode.LeftShift) && isOnGround;
         animator.SetBool("IsSuperRunning", isSuperRunning);
-        superRunTrail.emitting = isSuperRunning;
+
+        // ✅ Control both trail and particles
+        if (superRunTrail != null)
+            superRunTrail.emitting = isSuperRunning;
+
+        if (superRunParticles != null)
+        {
+            if (isSuperRunning && !superRunParticles.isPlaying)
+                superRunParticles.Play();
+            else if (!isSuperRunning && superRunParticles.isPlaying)
+                superRunParticles.Stop();
+        }
 
         // Jumping
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) && isOnGround)
@@ -131,20 +174,28 @@ public class Movement : MonoBehaviour
             animator.SetBool("IsJumping", true);
         }
 
-        // Punching
+        // Modify StartPunch
         if (Input.GetKeyDown(KeyCode.Z) && !isPunching && !isUppercutting)
         {
             isPunching = true;
+            punchHitSomething = false; // Reset hit flag
             animator.SetTrigger("TriggerPunch");
             runSpeed -= punchSpeedReduction;
+
+            // Play whoosh sound immediately
+            soundEffects?.PlayWhoosh();
         }
 
-        // Uppercut
+        // Modify StartUppercut
         if (Input.GetKeyDown(KeyCode.X) && !isUppercutting && !isPunching)
         {
             isUppercutting = true;
+            uppercutHitSomething = false; // Reset hit flag
             animator.SetTrigger("TriggerUppercut");
             runSpeed -= uppercutSpeedReduction;
+
+            // Play whoosh sound immediately
+            soundEffects?.PlayWhoosh();
         }
 
         // Air dash detection
@@ -166,7 +217,7 @@ public class Movement : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+void FixedUpdate()
     {
         if (isStunned) return;
 
@@ -204,7 +255,14 @@ public class Movement : MonoBehaviour
         else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
             horizontalInput = 1f;
 
-        if (horizontalInput != 0)
+        if (horizontalInput < 0)
+        {
+            // Player's desired velocity + platform velocity
+            float desiredVelocityX = horizontalInput * currentRunSpeed;
+            rb.velocity = new Vector2(desiredVelocityX, rb.velocity.y);
+            animator.SetFloat("XSpeed", Mathf.Abs(horizontalInput * currentRunSpeed));
+        }
+        else if (horizontalInput > 0)
         {
             // Player's desired velocity + platform velocity
             float desiredVelocityX = horizontalInput * currentRunSpeed + platformVelocity.x;
@@ -221,7 +279,6 @@ public class Movement : MonoBehaviour
         animator.SetFloat("YHeight", rb.velocity.y);
     }
 
-    // ✅ NEW METHOD: Update platform velocity
     private void UpdatePlatformVelocity()
     {
         if (currentPlatformRb != null)
@@ -270,7 +327,7 @@ public class Movement : MonoBehaviour
     private void PerformSuperJump()
     {
         rb.velocity = new Vector2(rb.velocity.x, superJumpHeight);
-        animator.SetTrigger("IsSuperJumping");
+        animator.SetBool("IsSuperJumping", true);
         superJumping = true;
         canSuperJump = false;
         isChargingSuperJump = false;
@@ -302,10 +359,26 @@ public class Movement : MonoBehaviour
 
     private IEnumerator StunPlayer(float duration)
     {
-        playerData.currentStamina = Mathf.Max(0, playerData.currentStamina - 10f);
         isStunned = true;
         animator.SetBool("IsStunned", true);
+
+        // ✅ Force reset all combat states
+        if (isPunching)
+        {
+            isPunching = false;
+            punchHitbox.SetActive(false);
+        }
+        if (isUppercutting)
+        {
+            isUppercutting = false;
+            uppercutHitbox.SetActive(false);
+        }
+
+        // ✅ Reset speed to base
+        runSpeed = baseRunSpeed;
+
         yield return new WaitForSeconds(duration);
+
         isStunned = false;
         animator.SetBool("IsStunned", false);
     }
@@ -313,8 +386,17 @@ public class Movement : MonoBehaviour
     public void EndPunch()
     {
         isPunching = false;
-        runSpeed += punchSpeedReduction;
+
+        // ✅ Safety: Only add back if we actually subtracted
+        if (runSpeed < baseRunSpeed)
+        {
+            runSpeed += punchSpeedReduction;
+            // Clamp to base speed
+            runSpeed = Mathf.Min(runSpeed, baseRunSpeed);
+        }
+
         punchHitbox.SetActive(false);
+        punchHitSomething = false;
     }
 
     public void ActivateHitbox()
@@ -330,10 +412,35 @@ public class Movement : MonoBehaviour
     public void EndUppercut()
     {
         isUppercutting = false;
-        runSpeed += uppercutSpeedReduction;
+
+        // ✅ Safety: Only add back if we actually subtracted
+        if (runSpeed < baseRunSpeed)
+        {
+            runSpeed += uppercutSpeedReduction;
+            // Clamp to base speed
+            runSpeed = Mathf.Min(runSpeed, baseRunSpeed);
+        }
+
         uppercutHitbox.SetActive(false);
+        uppercutHitSomething = false;
+    }
+    public void OnPunchHit()
+    {
+        if (!punchHitSomething)
+        {
+            punchHitSomething = true;
+            soundEffects?.PlayPunch();
+        }
     }
 
+    public void OnUppercutHit()
+    {
+        if (!uppercutHitSomething)
+        {
+            uppercutHitSomething = true;
+            soundEffects?.PlayPunch();
+        }
+    }
     public void ActivateUppercutHitbox()
     {
         uppercutHitbox.SetActive(true);
@@ -356,7 +463,16 @@ public class Movement : MonoBehaviour
         if (col.gameObject.CompareTag("Enemy") && !isStunned && isOnGround && !isDashing)
         {
             superJumping = false;
+            soundEffects?.PlayDamageTaken();
             StartCoroutine(StunPlayer(1f));
+            if (isPunching)
+            {
+                EndPunch();
+            }
+            if (isUppercutting)
+            {
+                EndUppercut();
+            }
         }
     }
 
@@ -374,17 +490,45 @@ public class Movement : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Platform") && rb.velocity.y <= 0)
+        if (collision.CompareTag("Platform"))
         {
+            bool wasInAir = !isOnGround; // Check if we were airborne
+
             isOnGround = true;
             superJumping = false;
             animator.SetBool("IsJumping", false);
+
+            // ✅ Play landing particles
+            if (wasInAir && landingParticles != null)
+            {
+                landingParticles.transform.position = new Vector3(
+                    transform.position.x,
+                    collision.bounds.max.y, // Top of platform
+                    transform.position.z
+                );
+                landingParticles.Play();
+            }
+
+            Platform platform = collision.GetComponent<Platform>();
+            if (platform != null && wasInAir)
+            {
+                platform.OnPlayerLanded(transform.position);
+            }
         }
 
         if (collision.CompareTag("Ground"))
         {
+            soundEffects?.PlayGroundHit();
             rb.velocity = new Vector2(rb.velocity.x, superJumpHeight * 1.5f);
             StartCoroutine(StunPlayer(stunTime));
+            if (isPunching)
+            {
+                EndPunch();
+            }
+            if (isUppercutting)
+            {
+                EndUppercut();
+            }
         }
 
         isOnGround = true;
