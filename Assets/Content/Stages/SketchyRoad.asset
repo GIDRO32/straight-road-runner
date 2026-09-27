@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6b400c43308436aab62a3989ee49e9d, type: 3}
+  m_Name: SketchyRoad
+  m_EditorClassIdentifier: 
+  id: sketchy_road
+  displayName: Sketchy Road
+  icon: {fileID: 0}
+  sortOrder: 0
+  includeInDemo: 1
+  sceneName: SketchyRoad
+  artwork: {fileID: 0}
+  description: A road drawn in a sketchbook.
+  introTitle: Le Kin Penn's Sketchbook
+  musicFolder: 
+  enemies:
+  - {fileID: 11400000, guid: a0771887c64e4684a30b2ca9461e985f, type: 2}
+  obstacles: []
+  bossesEnabled: 1
+  leaderboardId: 

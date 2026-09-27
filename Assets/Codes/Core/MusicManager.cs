@@ -11,6 +11,9 @@ public class MusicManager : MonoBehaviour
     [Tooltip("Folder path relative to StreamingAssets (e.g., 'Music/Menu' or 'Music/Regular')")]
     public string musicFolder = "Music/Menu";
 
+    [Tooltip("In stage scenes: use the current stage's music folder (StageDefinition.musicFolder) if it has one")]
+    public bool useStageMusicFolder = false;
+
     [Header("Audio Source")]
     public AudioSource musicSource;
 
@@ -56,6 +59,14 @@ public class MusicManager : MonoBehaviour
     {
         PlayerPrefs.GetFloat("MusicVolume", musicSource.volume);
         volumeAdjustSlider.value = musicSource.volume;
+
+        if (useStageMusicFolder)
+        {
+            StageDefinition stage = GameSession.CurrentStage;
+            if (stage != null && !string.IsNullOrEmpty(stage.musicFolder))
+                musicFolder = stage.musicFolder;
+        }
+
         if (playOnStart)
         {
             StartCoroutine(LoadAndPlayMusic());
@@ -205,6 +216,17 @@ public class MusicManager : MonoBehaviour
         firstTrackPlaying = false;
 
         StartCoroutine(LoadAndPlayMusic());
+    }
+
+    /// <summary>
+    /// Switch to another StreamingAssets folder (e.g. boss music) and start playing it
+    /// </summary>
+    public void PlayFolder(string folder)
+    {
+        if (string.IsNullOrEmpty(folder) || folder == musicFolder) return;
+
+        musicFolder = folder;
+        ReloadMusic();
     }
 
     /// <summary>

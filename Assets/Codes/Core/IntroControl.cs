@@ -12,6 +12,7 @@ public class IntroControl : MonoBehaviour
     public Slider portalTimerSlider;
 
     [Header("Settings")]
+    [Tooltip("Fallback only: the title normally comes from the current StageDefinition")]
     public string stageName = "CITY RUINS";
     public float letterRevealDelay = 0.08f;
     public float blackFadeOutTime = 1.2f;
@@ -26,7 +27,6 @@ public class IntroControl : MonoBehaviour
     public Text insctructionsText;
     private float portalAlpha = 0f;
     private bool countdownStarted = false;
-    public SelectedCharacterSO selectedCharacterData;
     public DifficultyManager difficultyManager;
     public ParticleSystem portalParticles;
 
@@ -34,6 +34,10 @@ public class IntroControl : MonoBehaviour
     {
         insctructionsText.gameObject.SetActive(false);
         mainCam = Camera.main;
+
+        StageDefinition stage = GameSession.CurrentStage;
+        if (stage != null)
+            stageName = stage.IntroTitle;
         blackScreen = introScreen.GetComponent<CanvasGroup>();
         if (blackScreen == null) blackScreen = introScreen.AddComponent<CanvasGroup>();
 
@@ -117,12 +121,13 @@ public class IntroControl : MonoBehaviour
 void SpawnPlayerAndStartGame()
 {
     portalParticles.Play();
-    GameObject prefabToSpawn = selectedCharacterData.GetCharacterPrefab();
+    CharacterDefinition character = GameSession.SelectedCharacter;
+    GameObject prefabToSpawn = character != null ? character.prefab : null;
     difficultyManager.isDifficultyProgressing = true;
     
     if (prefabToSpawn == null)
     {
-        Debug.LogError("No character available to spawn!");
+        Debug.LogError("No character available to spawn! Check ContentDatabase has a character with a prefab.");
         return;
     }
 
@@ -133,7 +138,16 @@ void SpawnPlayerAndStartGame()
     );
     player = playerObj.transform;
 
-    // ... rest of player setup code ...
+    // Apply the character's stats from its CharacterDefinition
+    Movement movement = playerObj.GetComponent<Movement>();
+    if (movement != null)
+        movement.ApplyStats(character.stats);
+
+    PlayerData playerData = playerObj.GetComponent<PlayerData>();
+    if (playerData != null)
+        playerData.ApplyDefinition(character);
+
+    GameSession.BeginRun();
 
     if (GameOverManager.Instance != null)
     {
@@ -145,7 +159,15 @@ void SpawnPlayerAndStartGame()
     portalTimerSlider.gameObject.SetActive(false);
 
     StartCoroutine(SmoothCameraToPlayer());
-    FindObjectOfType<StageControl>().NotifyPlayerSpawned();
+
+    StageControl stageControl = FindObjectOfType<StageControl>();
+    stageControl.NotifyPlayerSpawned();
+
+    // Bosses: added automatically so stage scenes don't need extra setup
+    BossDirector bossDirector = FindObjectOfType<BossDirector>();
+    if (bossDirector == null)
+        bossDirector = stageControl.gameObject.AddComponent<BossDirector>();
+    bossDirector.Begin();
 }
 
     IEnumerator SmoothCameraToPlayer()
