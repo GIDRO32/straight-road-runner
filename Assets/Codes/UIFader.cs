@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections; // Required for using Coroutines
-using UnityEngine.UI; // Required for Image, Text components (if you don't use CanvasGroup)
 using UnityEngine.SceneManagement;
 
 public class UIFader : MonoBehaviour
@@ -46,6 +45,22 @@ public class UIFader : MonoBehaviour
         canvasGroup.blocksRaycasts = true;
     }
 
+
+    /// <summary>
+    /// Fades in, then loads the stage chosen in Stage Select (GameSession.SelectedStage).
+    /// </summary>
+    public void FadeInToSelectedStage()
+    {
+        StageDefinition stage = GameSession.SelectedStage;
+        if (stage != null && !string.IsNullOrEmpty(stage.sceneName))
+            sceneToLoad = stage.sceneName;
+
+        GameSession.EndRun();
+
+        // The fader can be inactive in the scene; coroutines need it active
+        gameObject.SetActive(true);
+        FadeIn();
+    }
 
     /// <summary>
     /// Fades the UI element out (makes it invisible).

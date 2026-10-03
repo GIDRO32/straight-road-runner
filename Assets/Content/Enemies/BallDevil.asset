@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07ed386375434ff0bb32687e4cc1a278, type: 3}
+  m_Name: BallDevil
+  m_EditorClassIdentifier: 
+  id: ball_devil
+  displayName: Ball Devil
+  icon: {fileID: 0}
+  sortOrder: 0
+  includeInDemo: 1
+  prefab: {fileID: 3718737648337538362, guid: 0497a228dcf55a7418981a55aa5f7d55, type: 3}
+  description: Chases you through the air and dashes at you every few seconds.
+  stats:
+    health: 1
+    contactStaminaDamage: 10
+    contactStunDuration: 1
+    scoreValue: 100
+  sounds:
+    spawn: []
+    hit:
+    - {fileID: 8300000, guid: 0654c5f6442b911489ba4f878791f6bf, type: 3}
+    - {fileID: 8300000, guid: 6cd70d1740f497b4e8886ddcd2fec3de, type: 3}
+    - {fileID: 8300000, guid: a653374c9cbf6d341a96ea4cb73ded53, type: 3}
+    - {fileID: 8300000, guid: 13ce46bbfad8c3342823570db79eb985, type: 3}
+    defeat: []
+    attack: []
+  spawnWeight: 1
+  spawnYRange: {x: -2, y: 2}

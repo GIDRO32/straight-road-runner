@@ -11,7 +11,7 @@ public class ScoreManager : MonoBehaviour
     public int signHitScore = 50;
     
     [Header("UI References")]
-    public Text scoreText;              // For legacy Text
+    public TMP_Text scoreText;
     
     private int currentScore = 0;
     

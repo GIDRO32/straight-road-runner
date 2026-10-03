@@ -31,6 +31,7 @@ public class StageControl : MonoBehaviour
     private readonly List<GameObject> activeBackgrounds = new();
     // === NEW VARIABLES (add to top of class) ===
     [Header("Enemy Spawning")]
+    [Tooltip("Fallback only: used when the current stage has no enemies in its StageDefinition")]
     public GameObject enemyPrefab;
     public float enemyStartX = 25f;
     private float enemyTimer = 0f;
@@ -49,11 +50,29 @@ public class StageControl : MonoBehaviour
     public float currentPlatformSpawnChance = 0.8f;
     public float platformSpawnInterval = 0.7f;
 
+    // Stage content (from StageDefinition)
+    private StageDefinition stage;
+    private IReadOnlyList<EnemyDefinition> enemyPool = new List<EnemyDefinition>();
+    private IReadOnlyList<ObstacleDefinition> obstaclePool = new List<ObstacleDefinition>();
+    private bool enemySpawningPaused = false;
+
+    public StageDefinition Stage => stage;
 
     void Start()
     {
         nextBackgroundX = backgroundSpawnX;
         Time.timeScale = 10f;
+
+        stage = GameSession.CurrentStage;
+        if (stage != null)
+        {
+            enemyPool = stage.GetEnemyPool();
+            obstaclePool = stage.GetObstaclePool();
+        }
+        else
+        {
+            Debug.LogWarning("StageControl: No StageDefinition found for this scene, using fallback enemyPrefab.");
+        }
     }
 
     void Update()
@@ -67,6 +86,8 @@ public class StageControl : MonoBehaviour
     }
     void HandleEnemySpawning()
     {
+        if (enemySpawningPaused) return;
+
         enemyTimer += Time.deltaTime;
 
         if (enemyTimer >= enemySpawnInterval && activeEnemies.Count < maxEnemies)
@@ -95,7 +116,7 @@ public class StageControl : MonoBehaviour
 
         for (int i = 0; i < attempts; i++)
         {
-            if (activeEnemies.Count >= maxEnemies)
+            if (activeEnemies.Count >= maxEnemies || enemySpawningPaused)
                 break;
 
             if (Random.value <= enemySpawnChance)
@@ -112,12 +133,36 @@ public class StageControl : MonoBehaviour
     // Helper: spawn single enemy
     private void SpawnOneEnemy()
     {
-        float y = Random.Range(minY, maxY);
+        EnemyDefinition def = PickEnemy();
+        GameObject prefab = def != null ? def.prefab : enemyPrefab;
+        if (prefab == null) return;
+
+        float y = def != null
+            ? Random.Range(def.spawnYRange.x, def.spawnYRange.y)
+            : Random.Range(minY, maxY);
         Vector3 pos = new Vector3(enemyStartX, y, 0f);
 
-        GameObject enemy = Instantiate(enemyPrefab, pos, Quaternion.identity);
+        GameObject enemy = Instantiate(prefab, pos, Quaternion.identity);
+
+        EnemyBase enemyBase = enemy.GetComponent<EnemyBase>();
+        if (enemyBase != null && def != null)
+            enemyBase.Init(def);
+
         activeEnemies.Add(enemy);
         StartCoroutine(CleanupEnemy(enemy));
+    }
+
+    // Weighted pick from the stage's enemy pool
+    private EnemyDefinition PickEnemy()
+    {
+        return WeightedRandom.Pick(enemyPool, e => e.prefab != null ? e.spawnWeight : 0f);
+    }
+
+    // Used by BossDirector during boss fights
+    public void SetEnemySpawningPaused(bool paused)
+    {
+        enemySpawningPaused = paused;
+        if (paused) enemyTimer = 0f;
     }
 
     // Auto-remove from list when destroyed
@@ -153,6 +198,11 @@ public class StageControl : MonoBehaviour
 
                     var so = platform.GetComponent<ScrollingObject>();
                     so.Init(platformScrollSpeed, platformDestroyX);
+
+                    // Platform picks its obstacle from the stage pool in Start()
+                    var platformScript = platform.GetComponent<Platform>();
+                    if (platformScript != null)
+                        platformScript.obstaclePool = obstaclePool;
 
                     activePlatforms.Add(platform);
                 }

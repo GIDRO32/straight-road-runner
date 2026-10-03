@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a5aa9b78f3c48e882945762992745a1, type: 3}
+  m_Name: PlaceHolderMan
+  m_EditorClassIdentifier: 
+  id: placeholder_man
+  displayName: PlaceholderMan
+  icon: {fileID: 21300000, guid: 3271d4e5c7c7ff04ca77d669281f98c9, type: 3}
+  sortOrder: 0
+  includeInDemo: 1
+  prefab: {fileID: 2307271194614268369, guid: 156dbc3b28ad2a04688113985759f0c7, type: 3}
+  portrait: {fileID: 21300000, guid: 9998d6cfb7975b04888cf2a17b9bd5ff, type: 3}
+  menuArt: {fileID: 7016671460718563191, guid: 835a99f23d889af498e6200773260c2b, type: 3}
+  bio: Placeholder bio. Write PlaceholderMan's story here.
+  stats:
+    runSpeed: 4
+    superRunSpeed: 15
+    jumpHeight: 10
+    superJumpHeight: 15
+    dashSpeedMultiplier: 2
+    punchSpeedReduction: 1
+    uppercutSpeedReduction: 1
+    maxStamina: 100
+  moveset:
+  - moveName: Run
+    input: A / D or Left / Right
+    description: Run along the road.
+    icon: {fileID: 0}
+  - moveName: Jump
+    input: Space, W or Up
+    description: Jump. Keeps Super Run speed when jumping while super running.
+    icon: {fileID: 0}
+  - moveName: Super Run
+    input: Hold Left Shift
+    description: Run much faster on the ground. Drains stamina.
+    icon: {fileID: 0}
+  - moveName: Punch
+    input: Z
+    description: Punch enemies, walls and signs in front of you.
+    icon: {fileID: 0}
+  - moveName: Uppercut
+    input: X
+    description: Upward strike.
+    icon: {fileID: 0}
+  - moveName: Super Jump
+    input: Hold S / Down to charge, then C
+    description: Charge while ducking, then launch high into the air. Costs 30 stamina.
+    icon: {fileID: 0}
+  - moveName: Air Dash
+    input: Double-tap A / D in the air
+    description: Quick dash in the air. Costs 5 stamina.
+    icon: {fileID: 0}
