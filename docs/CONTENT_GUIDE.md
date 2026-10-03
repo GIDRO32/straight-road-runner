@@ -59,3 +59,12 @@ It uses the `SketchyRoad` scene; point it at any stage scene.
   Players sign in anonymously; scores earned offline are queued and uploaded later.
 - To read boards for UI: `LeaderboardManager.Instance.GetStageTopAsync(stage)` / `GetGlobalTopAsync()` return
   `LeaderboardRecord`s with `rank`, `playerName`, `score`, `CharacterName`, `CharacterIcon` and `StageName`.
+
+## Stage Select panel
+Open `MainMenu` and run **Tools ▸ Straight Road Runner ▸ Build Stage Select Panel**, then save the scene.
+It creates `PanelCollection/StageSelect` plus the **Select Stage** button (bottom right, above the version text),
+styled with the existing menu sprites and font. Run it again to rebuild (it replaces the old one; Ctrl+Z undoes it).
+- Left: a grid of stages from the ContentDatabase (Chaos Mode last), scrollable once there are many.
+- Right: **Artwork** shows `artwork` + name; **Info** is a scrollable list with the stage `description`, its enemies and its obstacles (icon, name, description).
+- The panel's **Play** button, and optionally the main menu Play button, load the selected stage. The choice is remembered.
+Tweak sizes, colors and fonts freely after building; the `StageSelectPanel` component only needs its references.

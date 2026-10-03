@@ -48,6 +48,22 @@ public class UIFader : MonoBehaviour
 
 
     /// <summary>
+    /// Fades in, then loads the stage chosen in Stage Select (GameSession.SelectedStage).
+    /// </summary>
+    public void FadeInToSelectedStage()
+    {
+        StageDefinition stage = GameSession.SelectedStage;
+        if (stage != null && !string.IsNullOrEmpty(stage.sceneName))
+            sceneToLoad = stage.sceneName;
+
+        GameSession.EndRun();
+
+        // The fader can be inactive in the scene; coroutines need it active
+        gameObject.SetActive(true);
+        FadeIn();
+    }
+
+    /// <summary>
     /// Fades the UI element out (makes it invisible).
     /// </summary>
     public void FadeOut()
