@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -8,7 +9,7 @@ public class GameOverManager : MonoBehaviour
 
     [Header("Game Over UI")]
     public GameObject gameOverPanel;
-    public Text finalScoreText;
+    public TMP_Text finalScoreText;
     
     [Header("Camera Bounds")]
     public Camera mainCamera;

@@ -7,7 +7,7 @@ public class IntroControl : MonoBehaviour
 {
     [Header("Intro Objects")]
     public GameObject introScreen;
-    public Text stageNameText;
+    public TMP_Text stageNameText;
     public GameObject portal;
     public Slider portalTimerSlider;
 
@@ -24,7 +24,7 @@ public class IntroControl : MonoBehaviour
     private Transform player;
     private CanvasGroup blackScreen;
     private SpriteRenderer portalCG;
-    public Text insctructionsText;
+    public TMP_Text insctructionsText;
     private float portalAlpha = 0f;
     private bool countdownStarted = false;
     public DifficultyManager difficultyManager;

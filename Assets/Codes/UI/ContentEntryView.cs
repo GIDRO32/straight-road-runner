@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 /// <summary>
@@ -8,8 +9,8 @@ using UnityEngine.UI;
 public class ContentEntryView : MonoBehaviour
 {
     public Image icon;
-    public Text nameText;
-    public Text descriptionText;
+    public TMP_Text nameText;
+    public TMP_Text descriptionText;
     [Tooltip("Optional: Button on this entry (grid tiles)")]
     public Button button;
     [Tooltip("Optional: Graphic tinted when the entry is selected")]

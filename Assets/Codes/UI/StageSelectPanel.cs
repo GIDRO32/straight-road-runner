@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 /// <summary>
@@ -27,19 +28,19 @@ public class StageSelectPanel : MonoBehaviour
     [Header("Artwork View")]
     public GameObject artworkView;
     public Image artworkImage;
-    public Text stageNameText;
-    public Text stageDescriptionText;
+    public TMP_Text stageNameText;
+    public TMP_Text stageDescriptionText;
 
     [Header("Info View (scrollable)")]
     public GameObject infoView;
     public ScrollRect infoScroll;
     public Transform infoContent;
     [Tooltip("Inactive section title cloned for \"Enemies\" / \"Obstacles\"")]
-    public Text sectionHeaderTemplate;
+    public TMP_Text sectionHeaderTemplate;
     [Tooltip("Inactive row cloned for every enemy / obstacle")]
     public ContentEntryView infoEntryTemplate;
     [Tooltip("Inactive text cloned when a section is empty")]
-    public Text emptyTextTemplate;
+    public TMP_Text emptyTextTemplate;
 
     [Header("Texts")]
     public string enemiesTitle = "Enemies";
@@ -204,7 +205,7 @@ public class StageSelectPanel : MonoBehaviour
     {
         if (sectionHeaderTemplate != null)
         {
-            Text header = Instantiate(sectionHeaderTemplate, infoContent);
+            TMP_Text header = Instantiate(sectionHeaderTemplate, infoContent);
             header.gameObject.SetActive(true);
             header.text = title;
             infoRows.Add(header.gameObject);
@@ -224,7 +225,7 @@ public class StageSelectPanel : MonoBehaviour
 
         if (!any && emptyTextTemplate != null)
         {
-            Text empty = Instantiate(emptyTextTemplate, infoContent);
+            TMP_Text empty = Instantiate(emptyTextTemplate, infoContent);
             empty.gameObject.SetActive(true);
             empty.text = emptyText;
             infoRows.Add(empty.gameObject);

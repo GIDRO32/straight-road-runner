@@ -1,4 +1,5 @@
 using System.Linq;
+using TMPro;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
@@ -26,7 +27,8 @@ public static class StageSelectPanelBuilder
     private static readonly Color Invisible = new Color(1f, 1f, 1f, 0.001f); // Catches scroll drags
 
     // Style taken from the scene
-    private static Font font;
+    private static TMP_FontAsset fontAsset;
+    private static Material outlineMaterial;
     private static Sprite buttonSprite;
     private static Sprite frameSprite;
     private static Sprite tileSprite;
@@ -35,6 +37,14 @@ public static class StageSelectPanelBuilder
     [MenuItem("Tools/Straight Road Runner/Build Stage Select Panel")]
     private static void Build()
     {
+        if (!TmpFontUtility.EssentialsImported)
+        {
+            EditorUtility.DisplayDialog("Build Stage Select Panel",
+                "Import TextMeshPro Essential Resources first (the importer opens now), then run this again.", "OK");
+            TmpFontUtility.OpenEssentialsImporter();
+            return;
+        }
+
         var scene = EditorSceneManager.GetActiveScene();
         GameObject canvasGo = scene.GetRootGameObjects().FirstOrDefault(g => g.name == "Canvas");
         Transform canvas = canvasGo != null ? canvasGo.transform : null;
@@ -91,12 +101,29 @@ public static class StageSelectPanelBuilder
     private static void ReadStyle(Transform canvas)
     {
         Transform play = canvas.Find("MainMenu/MenuButtons/Play");
-        Text playText = play != null ? play.GetComponentInChildren<Text>(true) : null;
-        Outline playOutline = playText != null ? playText.GetComponent<Outline>() : null;
-
-        font = playText != null ? playText.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         buttonSprite = play != null ? play.GetComponent<Image>().sprite : null;
-        if (playOutline != null) outlineColor = playOutline.effectColor;
+
+        // Font + outline: from the Play button's text, whether it's TextMeshPro already or still legacy
+        TMP_Text playTmp = play != null ? play.GetComponentInChildren<TMP_Text>(true) : null;
+        Text playText = play != null ? play.GetComponentInChildren<Text>(true) : null;
+
+        if (playTmp != null)
+        {
+            fontAsset = playTmp.font;
+            outlineMaterial = playTmp.fontSharedMaterial;
+        }
+        else
+        {
+            Outline playOutline = playText != null ? playText.GetComponent<Outline>() : null;
+            if (playOutline != null) outlineColor = playOutline.effectColor;
+
+            fontAsset = TmpFontUtility.GetFontAsset(playText != null ? playText.font : null);
+            outlineMaterial = TmpFontUtility.GetOutlineMaterial(fontAsset, outlineColor,
+                playOutline != null ? playOutline.effectDistance.x : 3f);
+        }
+
+        if (fontAsset == null) fontAsset = TMP_Settings.defaultFontAsset;
+        if (outlineMaterial == null) outlineMaterial = TmpFontUtility.GetOutlineMaterial(fontAsset, outlineColor, 3f);
 
         Image frame = FindImage(canvas, "PanelCollection/CharacterSelectionScreen/Frame")
                       ?? FindImage(canvas, "PanelCollection/Settings/MainFrame");
@@ -169,7 +196,7 @@ public static class StageSelectPanelBuilder
 
         GameObject title = NewUI("Title", frame.transform);
         SetRect(title, Center, Center, new Vector2(0, 375), new Vector2(800, 100));
-        AddText(title, "Select Stage", 70, TextAnchor.MiddleCenter, Color.white, true);
+        AddText(title, "Select Stage", 70, TextAlignmentOptions.Center, Color.white, true);
 
         Button close = BuildCloseButton(frame.transform, settingsPanel, panelManager);
         close.name = "Close";
@@ -247,10 +274,10 @@ public static class StageSelectPanelBuilder
 
         GameObject name = NewUI("Name", tile.transform);
         SetRect(name, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 25), new Vector2(-16, 46));
-        Text nameText = AddText(name, "Stage", 28, TextAnchor.MiddleCenter, Color.white, true);
-        nameText.resizeTextForBestFit = true;
-        nameText.resizeTextMinSize = 14;
-        nameText.resizeTextMaxSize = 28;
+        TextMeshProUGUI nameText = AddText(name, "Stage", 28, TextAlignmentOptions.Center, Color.white, true);
+        nameText.enableAutoSizing = true;
+        nameText.fontSizeMin = 14;
+        nameText.fontSizeMax = 28;
 
         ContentEntryView view = tile.AddComponent<ContentEntryView>();
         view.icon = iconImage;
@@ -287,7 +314,7 @@ public static class StageSelectPanelBuilder
 
         GameObject stageName = NewUI("StageName", artworkView.transform);
         SetRect(stageName, Center, Center, new Vector2(0, -195), new Vector2(800, 90));
-        Text stageNameText = AddText(stageName, "Stage Name", 60, TextAnchor.MiddleCenter, Color.white, true);
+        TextMeshProUGUI stageNameText = AddText(stageName, "Stage Name", 60, TextAlignmentOptions.Center, Color.white, true);
 
         // --- Info view: scrollable description, enemies and obstacles
         GameObject infoView = NewUI("InfoView", area.transform);
@@ -323,16 +350,16 @@ public static class StageSelectPanelBuilder
 
         // Stage description (stays at the top, filled per stage)
         GameObject description = NewUI("Description", content.transform);
-        Text descriptionText = AddText(description, "Description", 34, TextAnchor.UpperLeft, Color.white, false);
+        TextMeshProUGUI descriptionText = AddText(description, "Description", 34, TextAlignmentOptions.TopLeft, Color.white, false);
 
         // Templates
         GameObject header = NewUI("SectionHeaderTemplate", content.transform);
-        Text headerText = AddText(header, "Enemies", 48, TextAnchor.MiddleLeft, Gold, true);
+        TextMeshProUGUI headerText = AddText(header, "Enemies", 48, TextAlignmentOptions.Left, Gold, true);
         header.SetActive(false);
 
         GameObject empty = NewUI("EmptyTextTemplate", content.transform);
-        Text emptyText = AddText(empty, "Nothing here.", 32, TextAnchor.UpperLeft, new Color(1, 1, 1, 0.7f), false);
-        emptyText.fontStyle = FontStyle.Italic;
+        TextMeshProUGUI emptyText = AddText(empty, "Nothing here.", 32, TextAlignmentOptions.TopLeft, new Color(1, 1, 1, 0.7f), false);
+        emptyText.fontStyle = FontStyles.Italic;
         empty.SetActive(false);
 
         ContentEntryView entry = BuildInfoEntry(content.transform);
@@ -382,10 +409,10 @@ public static class StageSelectPanelBuilder
         column.AddComponent<LayoutElement>().flexibleWidth = 1;
 
         GameObject name = NewUI("Name", column.transform);
-        Text nameText = AddText(name, "Name", 40, TextAnchor.UpperLeft, Color.white, true);
+        TextMeshProUGUI nameText = AddText(name, "Name", 40, TextAlignmentOptions.TopLeft, Color.white, true);
 
         GameObject description = NewUI("Description", column.transform);
-        Text descriptionText = AddText(description, "Description", 30, TextAnchor.UpperLeft, new Color(1, 1, 1, 0.85f), false);
+        TextMeshProUGUI descriptionText = AddText(description, "Description", 30, TextAlignmentOptions.TopLeft, new Color(1, 1, 1, 0.85f), false);
 
         ContentEntryView view = row.AddComponent<ContentEntryView>();
         view.icon = iconImage;
@@ -508,24 +535,19 @@ public static class StageSelectPanelBuilder
         return image;
     }
 
-    private static Text AddText(GameObject go, string text, int size, TextAnchor alignment, Color color, bool outline)
+    private static TextMeshProUGUI AddText(GameObject go, string text, int size, TextAlignmentOptions alignment, Color color, bool outline)
     {
-        Text t = go.AddComponent<Text>();
-        t.font = font;
+        TextMeshProUGUI t = go.AddComponent<TextMeshProUGUI>();
+        t.font = fontAsset;
+        if (outline && outlineMaterial != null)
+            t.fontSharedMaterial = outlineMaterial;
         t.text = text;
         t.fontSize = size;
         t.alignment = alignment;
         t.color = color;
-        t.horizontalOverflow = HorizontalWrapMode.Wrap;
-        t.verticalOverflow = VerticalWrapMode.Overflow;
+        t.enableWordWrapping = true;
+        t.overflowMode = TextOverflowModes.Overflow;
         t.raycastTarget = false;
-
-        if (outline)
-        {
-            Outline o = go.AddComponent<Outline>();
-            o.effectColor = outlineColor;
-            o.effectDistance = new Vector2(3, 3);
-        }
         return t;
     }
 
@@ -539,7 +561,7 @@ public static class StageSelectPanelBuilder
 
         GameObject text = NewUI("Text", go.transform);
         Stretch(text);
-        AddText(text, label, fontSize, TextAnchor.MiddleCenter, Color.white, true);
+        AddText(text, label, fontSize, TextAlignmentOptions.Center, Color.white, true);
         return button;
     }
 }

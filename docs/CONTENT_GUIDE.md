@@ -68,3 +68,9 @@ styled with the existing menu sprites and font. Run it again to rebuild (it repl
 - Right: **Artwork** shows `artwork` + name; **Info** is a scrollable list with the stage `description`, its enemies and its obstacles (icon, name, description).
 - The panel's **Play** button, and optionally the main menu Play button, load the selected stage. The choice is remembered.
 Tweak sizes, colors and fonts freely after building; the `StageSelectPanel` component only needs its references.
+
+## TextMeshPro
+All UI text uses TextMeshPro (`TMP_Text` fields in code). To convert legacy `Text` in scenes/prefabs, run
+**Tools ▸ Straight Road Runner ▸ Convert Legacy Text to TextMeshPro** (it asks you to import TMP Essential Resources first if needed).
+It creates a TMP font asset next to each legacy font (`<Font> SDF.asset`), turns `Outline` effects into outline material presets,
+and re-links every script field and button that pointed at the old Text. Use those font assets/materials for new text.

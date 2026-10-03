@@ -14,7 +14,7 @@ public class MenuControl : MonoBehaviour
     [Header("UI References")]
     public Transform selectedCharacterDisplay;   // CHANGED: Main menu big art (parent transform for prefab)
     public Image bioIconImage;                  // Info panel icon
-    public Text characterNameText;              // Character name in info
+    public TMP_Text characterNameText;              // Character name in info
     public Button[] characterSelectButtons;     // Buttons in selection menu
     private GameObject currentDisplayInstance;  // NEW: Track spawned display art
 

@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections; // Required for using Coroutines
-using UnityEngine.UI; // Required for Image, Text components (if you don't use CanvasGroup)
 using UnityEngine.SceneManagement;
 
 public class UIFader : MonoBehaviour
