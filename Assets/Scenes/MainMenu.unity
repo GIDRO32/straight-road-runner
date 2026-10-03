@@ -3298,18 +3298,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb49f68565f3216498d1d9ba23fa3d73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characters:
-  - characterName: PlaceholderMan
-    prefab: {fileID: 2307271194614268369, guid: 156dbc3b28ad2a04688113985759f0c7, type: 3}
-    uiIcon: {fileID: 21300000, guid: 3271d4e5c7c7ff04ca77d669281f98c9, type: 3}
-    bioIcon: {fileID: 21300000, guid: 9998d6cfb7975b04888cf2a17b9bd5ff, type: 3}
-    menuDisplayArt: {fileID: 7016671460718563191, guid: 835a99f23d889af498e6200773260c2b, type: 3}
   selectedCharacterDisplay: {fileID: 178704351}
   bioIconImage: {fileID: 1729143419}
   characterNameText: {fileID: 27037886}
   characterSelectButtons:
   - {fileID: 1144548750}
-  selectedCharacterData: {fileID: 11400000, guid: fe5299ffcac32154fa24684c94e688ac, type: 2}
 --- !u!4 &635436092
 Transform:
   m_ObjectHideFlags: 0
@@ -3363,7 +3356,7 @@ MonoBehaviour:
   spawnParent: {fileID: 599240013}
   spawnX: -20
   destroyX: 20
-  selectedStageName: 
+  selectedStageName: SketchyRoad
 --- !u!1 &635505082
 GameObject:
   m_ObjectHideFlags: 0
@@ -4058,6 +4051,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   musicFolder: Music/Menu
+  useStageMusicFolder: 0
   musicSource: {fileID: 820416738}
   musicVolume: 0.7
   crossfade: 1
@@ -4958,7 +4952,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &948114903
 RectTransform:
   m_ObjectHideFlags: 0
