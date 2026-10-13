@@ -370,7 +370,6 @@ public static class StageSelectPanelBuilder
 
         stageSelect.artworkView = artworkView;
         stageSelect.artworkImage = artworkImage;
-        stageSelect.stageNameText = stageNameText;
         stageSelect.stageDescriptionText = descriptionText;
         stageSelect.infoView = infoView;
         stageSelect.infoScroll = scroll;

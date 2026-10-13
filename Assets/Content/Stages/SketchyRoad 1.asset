@@ -10,16 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6b400c43308436aab62a3989ee49e9d, type: 3}
-  m_Name: SketchyRoad
+  m_Name: SketchyRoad 1
   m_EditorClassIdentifier: 
   id: sketchy_road
-  displayName: Sketchy Road
-  icon: {fileID: 0}
+  displayName: Le Kin Penn's Sketchbook
+  icon: {fileID: 21300000, guid: 0611cf0febd462b478ac824137dd5a68, type: 3}
   sortOrder: 0
   includeInDemo: 1
   sceneName: SketchyRoad
-  artwork: {fileID: 0}
-  description: A road drawn in a sketchbook.
+  artwork: {fileID: 21300000, guid: 7614009d6b08a4449a28069fd3b7b6e3, type: 3}
+  description: In this sketchbook, you won't find a single minimalistic object or
+    entity. If you ever see something that looks simple or low-effort, prepare to
+    witness something uncanny if you take a closer look.
   introTitle: Le Kin Penn's Sketchbook
   musicFolder: 
   enemies:
