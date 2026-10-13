@@ -18,9 +18,14 @@ MonoBehaviour:
   sortOrder: 0
   includeInDemo: 1
   prefab: {fileID: 2307271194614268369, guid: 156dbc3b28ad2a04688113985759f0c7, type: 3}
-  portrait: {fileID: 21300000, guid: 9998d6cfb7975b04888cf2a17b9bd5ff, type: 3}
+  selectArtwork: {fileID: 21300000, guid: 9998d6cfb7975b04888cf2a17b9bd5ff, type: 3}
   menuArt: {fileID: 7016671460718563191, guid: 835a99f23d889af498e6200773260c2b, type: 3}
   bio: Placeholder bio. Write PlaceholderMan's story here.
+  profile:
+    speed: 3
+    jump: 3
+    size: 2
+    weight: 1
   stats:
     runSpeed: 4
     superRunSpeed: 15

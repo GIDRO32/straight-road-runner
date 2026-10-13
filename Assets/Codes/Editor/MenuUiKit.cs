@@ -266,8 +266,8 @@ public static class MenuUiKit
         content.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
     }
 
-    /// <summary>Inactive grid tile (button with icon + name) used as a template.</summary>
-    public static ContentEntryView BuildTileTemplate(Transform parent, string name, float iconSize)
+    /// <summary>Inactive grid tile (button with icon, optionally a name below it) used as a template.</summary>
+    public static ContentEntryView BuildTileTemplate(Transform parent, string name, float iconSize, bool withName = true)
     {
         GameObject tile = NewUI(name, parent);
         Image tileImage = AddImage(tile, TileSprite, Color.white);
@@ -275,16 +275,20 @@ public static class MenuUiKit
         tileButton.targetGraphic = tileImage;
 
         GameObject icon = NewUI("Icon", tile.transform);
-        SetRect(icon, Center, Center, new Vector2(0, 15), new Vector2(iconSize, iconSize));
+        SetRect(icon, Center, Center, new Vector2(0, withName ? 15 : 0), new Vector2(iconSize, iconSize));
         Image iconImage = AddImage(icon, null, Color.white, raycast: false);
         iconImage.preserveAspect = true;
 
-        GameObject nameGo = NewUI("Name", tile.transform);
-        SetRect(nameGo, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 25), new Vector2(-16, 46));
-        TextMeshProUGUI nameText = AddText(nameGo, "Name", 28, TextAlignmentOptions.Center, Color.white, true);
-        nameText.enableAutoSizing = true;
-        nameText.fontSizeMin = 14;
-        nameText.fontSizeMax = 28;
+        TextMeshProUGUI nameText = null;
+        if (withName)
+        {
+            GameObject nameGo = NewUI("Name", tile.transform);
+            SetRect(nameGo, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 25), new Vector2(-16, 46));
+            nameText = AddText(nameGo, "Name", 28, TextAlignmentOptions.Center, Color.white, true);
+            nameText.enableAutoSizing = true;
+            nameText.fontSizeMin = 14;
+            nameText.fontSizeMax = 28;
+        }
 
         ContentEntryView view = tile.AddComponent<ContentEntryView>();
         view.icon = iconImage;

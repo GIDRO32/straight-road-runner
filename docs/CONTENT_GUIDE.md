@@ -10,7 +10,8 @@ Untick `includeInDemo` to hide something without deleting it.
 ## Character
 1. Make the gameplay prefab (tag `Player`, with `Movement` + `PlayerData`), e.g. in `Assets/Prefabs/Players`.
    For a unique moveset, subclass `Movement` (e.g. `NinjaMovement : Movement`), override `Update`, `PerformSuperJump`, `OnPunchHit`, … and use it on the prefab instead.
-2. Create ▸ SRR ▸ Character. Set prefab, icon (selection button + HUD), portrait, menu art, bio, stats and moveset.
+2. Create ▸ SRR ▸ Character. Set prefab, icon (selection tile + HUD), select artwork (Character Select), menu art (animated, title screen only),
+   bio, profile (Speed/Jump grade F–S, Size XS–XL, Weight), gameplay stats and moveset.
    The stats are applied to the prefab when it spawns.
 
 ## Enemy
@@ -72,10 +73,11 @@ Tweak sizes, colors and fonts freely after building; the `StageSelectPanel` comp
 ## Character Select panel
 Open `MainMenu` and run **Tools ▸ Straight Road Runner ▸ Build Character Select Panel**, then save the scene.
 It creates `PanelCollection/CharacterSelect` plus the **Character** button left of the Stage button, and can delete the old `CharacterSelectionScreen`.
-- Left: grid of characters (`icon` + `displayName`).
-- Middle: the character's animated **Menu Art** (falls back to `portrait`) and name.
-- Right: info wall with **Bio** (`portrait` + `bio`), **Stats** (bars from `stats`) and **Moveset** (`moveset`: name, input, description, icon).
-- Which stats are shown and what fills a bar is set in the `Stats Shown` list on the `CharacterSelectPanel` component.
+- Left: grid of character `icon`s (no text).
+- Middle: the character's `selectArtwork` and name. (The animated `menuArt` is only used on the title screen.)
+- Right: info wall with **Bio** (`bio` text), **Stats** and **Moveset** (`moveset`: name, input, description, icon).
+- Stats list: Speed (F–S), Jump (F–S), Size (XS–XL), Weight (Light/Medium/Heavy) from `profile`, and Stamina from `stats.maxStamina`.
+  Labels can be renamed on the `CharacterSelectPanel` component.
 - Picking a character saves it immediately and updates the main menu art; **Select** just closes the panel.
 
 ## TextMeshPro

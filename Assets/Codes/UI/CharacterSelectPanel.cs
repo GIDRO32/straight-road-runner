@@ -6,23 +6,13 @@ using UnityEngine.UI;
 /// <summary>
 /// Character selection: character grid on the left, artwork + name in the middle,
 /// and an info wall on the right switching between Bio, Stats and Moveset.
+/// The animated Menu Art is only for the title screen (MenuControl); this panel shows selectArtwork.
 /// Characters come from ContentDatabase, so new CharacterDefinitions show up automatically.
 /// Build the UI with Tools > Straight Road Runner > Build Character Select Panel.
 /// </summary>
 public class CharacterSelectPanel : MonoBehaviour
 {
     public enum InfoTab { Bio, Stats, Moveset }
-
-    [System.Serializable]
-    public class StatDisplay
-    {
-        public string label;
-        public CharacterStatType stat;
-        [Tooltip("Value that fills the bar completely")]
-        public float maxValue = 10f;
-        [Tooltip("For stats where lower is better (e.g. speed lost while punching)")]
-        public bool lowerIsBetter;
-    }
 
     [Header("Grid")]
     public Transform gridContent;
@@ -34,8 +24,6 @@ public class CharacterSelectPanel : MonoBehaviour
     [Header("Middle: Artwork + Name")]
     public Image artworkImage;
     public TMP_Text characterNameText;
-    [Tooltip("Show the animated Menu Art prefab (copied frame by frame into the UI). Falls back to the portrait.")]
-    public bool useAnimatedMenuArt = true;
 
     [Header("Right: Info Wall")]
     public Button bioTabButton;
@@ -47,22 +35,17 @@ public class CharacterSelectPanel : MonoBehaviour
     public Transform infoContent;
 
     [Header("Info Templates (inactive)")]
-    public Image portraitTemplate;
     public TMP_Text paragraphTemplate;
     public StatRowView statRowTemplate;
     public ContentEntryView moveEntryTemplate;
     public TMP_Text emptyTextTemplate;
 
-    [Header("Stats shown")]
-    public List<StatDisplay> stats = new List<StatDisplay>
-    {
-        new StatDisplay { label = "Speed", stat = CharacterStatType.RunSpeed, maxValue = 10f },
-        new StatDisplay { label = "Super Run", stat = CharacterStatType.SuperRunSpeed, maxValue = 25f },
-        new StatDisplay { label = "Jump", stat = CharacterStatType.JumpHeight, maxValue = 15f },
-        new StatDisplay { label = "Super Jump", stat = CharacterStatType.SuperJumpHeight, maxValue = 25f },
-        new StatDisplay { label = "Dash", stat = CharacterStatType.DashSpeedMultiplier, maxValue = 3f },
-        new StatDisplay { label = "Stamina", stat = CharacterStatType.MaxStamina, maxValue = 200f },
-    };
+    [Header("Stat Labels")]
+    public string speedLabel = "Speed";
+    public string jumpLabel = "Jump";
+    public string sizeLabel = "Size";
+    public string weightLabel = "Weight";
+    public string staminaLabel = "Stamina";
 
     [Header("Texts")]
     public string noBioText = "No bio yet.";
@@ -82,10 +65,6 @@ public class CharacterSelectPanel : MonoBehaviour
     private InfoTab currentTab = InfoTab.Bio;
     private bool initialized = false;
 
-    // Animated art: the Menu Art prefab runs hidden, its current sprite is copied into artworkImage
-    private GameObject artInstance;
-    private SpriteRenderer artRenderer;
-
     public CharacterDefinition Selected => selected;
 
     // PanelManager deactivates the panel in Awake, so set up on first open instead
@@ -95,20 +74,6 @@ public class CharacterSelectPanel : MonoBehaviour
             Initialize();
 
         Select(GameSession.SelectedCharacter);
-    }
-
-    void OnDisable()
-    {
-        ClearArtInstance();
-    }
-
-    void LateUpdate()
-    {
-        if (artRenderer != null && artworkImage != null && artworkImage.sprite != artRenderer.sprite)
-        {
-            artworkImage.sprite = artRenderer.sprite;
-            artworkImage.enabled = artRenderer.sprite != null;
-        }
     }
 
     private void Initialize()
@@ -129,7 +94,6 @@ public class CharacterSelectPanel : MonoBehaviour
     private void HideTemplates()
     {
         if (characterTileTemplate != null) characterTileTemplate.gameObject.SetActive(false);
-        if (portraitTemplate != null) portraitTemplate.gameObject.SetActive(false);
         if (paragraphTemplate != null) paragraphTemplate.gameObject.SetActive(false);
         if (statRowTemplate != null) statRowTemplate.gameObject.SetActive(false);
         if (moveEntryTemplate != null) moveEntryTemplate.gameObject.SetActive(false);
@@ -150,7 +114,7 @@ public class CharacterSelectPanel : MonoBehaviour
             ContentEntryView tile = Instantiate(characterTileTemplate, gridContent);
             tile.gameObject.SetActive(true);
             tile.name = character.id;
-            tile.Set(character.DisplayName, character.icon != null ? character.icon : character.portrait);
+            tile.Set(character.DisplayName, character.icon != null ? character.icon : character.selectArtwork);
 
             CharacterDefinition captured = character;
             Button button = tile.button != null ? tile.button : tile.GetComponent<Button>();
@@ -168,7 +132,6 @@ public class CharacterSelectPanel : MonoBehaviour
         if (characters.Count == 0) return;
         if (character == null || !characters.Contains(character)) character = characters[0];
 
-        bool changed = character != selected;
         selected = character;
         GameSession.SelectedCharacter = character;
 
@@ -176,7 +139,7 @@ public class CharacterSelectPanel : MonoBehaviour
             tiles[i].SetHighlighted(characters[i] == character, tileNormalColor, tileSelectedColor);
 
         if (characterNameText != null) characterNameText.text = character.DisplayName;
-        if (changed || artInstance == null) ShowArtwork(character);
+        ShowArtwork(character);
 
         ShowTab(currentTab);
     }
@@ -196,39 +159,11 @@ public class CharacterSelectPanel : MonoBehaviour
 
     private void ShowArtwork(CharacterDefinition character)
     {
-        ClearArtInstance();
         if (artworkImage == null) return;
 
-        if (useAnimatedMenuArt && character.menuArt != null)
-        {
-            // Run the menu art prefab hidden; LateUpdate copies its animated sprite into the UI
-            artInstance = Instantiate(character.menuArt);
-            artInstance.name = $"{character.id} (Character Select art)";
-            artInstance.hideFlags = HideFlags.DontSave;
-
-            foreach (var sr in artInstance.GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                if (artRenderer == null) artRenderer = sr;
-                sr.enabled = false;
-            }
-            foreach (var animator in artInstance.GetComponentsInChildren<Animator>(true))
-            {
-                animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-                animator.updateMode = AnimatorUpdateMode.UnscaledTime;
-            }
-        }
-
-        Sprite still = character.portrait != null ? character.portrait : character.icon;
-        Sprite sprite = artRenderer != null && artRenderer.sprite != null ? artRenderer.sprite : still;
-        artworkImage.sprite = sprite;
-        artworkImage.enabled = sprite != null;
-    }
-
-    private void ClearArtInstance()
-    {
-        if (artInstance != null) Destroy(artInstance);
-        artInstance = null;
-        artRenderer = null;
+        Sprite art = character.selectArtwork != null ? character.selectArtwork : character.icon;
+        artworkImage.sprite = art;
+        artworkImage.enabled = art != null;
     }
 
     // ===== RIGHT: INFO WALL =====
@@ -260,12 +195,6 @@ public class CharacterSelectPanel : MonoBehaviour
 
     private void FillBio()
     {
-        if (selected.portrait != null && portraitTemplate != null)
-        {
-            Image portrait = Add(portraitTemplate);
-            portrait.sprite = selected.portrait;
-        }
-
         AddText(paragraphTemplate, string.IsNullOrWhiteSpace(selected.bio) ? noBioText : selected.bio);
     }
 
@@ -273,15 +202,17 @@ public class CharacterSelectPanel : MonoBehaviour
     {
         if (statRowTemplate == null) return;
 
-        foreach (var display in stats)
-        {
-            float value = selected.stats.Get(display.stat);
-            float normalized = display.maxValue > 0f ? value / display.maxValue : 0f;
-            if (display.lowerIsBetter) normalized = 1f - normalized;
+        CharacterProfile profile = selected.profile ?? new CharacterProfile();
+        AddStat(speedLabel, profile.speed.ToString());
+        AddStat(jumpLabel, profile.jump.ToString());
+        AddStat(sizeLabel, profile.size.ToString());
+        AddStat(weightLabel, profile.weight.ToString());
+        AddStat(staminaLabel, Mathf.RoundToInt(selected.stats.maxStamina).ToString());
+    }
 
-            StatRowView row = Add(statRowTemplate);
-            row.Set(display.label, value.ToString("0.##"), normalized);
-        }
+    private void AddStat(string label, string value)
+    {
+        Add(statRowTemplate).Set(label, value);
     }
 
     private void FillMoveset()

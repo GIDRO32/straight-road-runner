@@ -9,7 +9,7 @@ using static MenuUiKit;
 /// <summary>
 /// Builds the Character Select panel inside the open MainMenu scene:
 /// Tools > Straight Road Runner > Build Character Select Panel.
-/// Left: character grid. Middle: artwork + name. Right: info wall with Bio / Stats / Moveset.
+/// Left: character grid (icons only). Middle: Character Select artwork + name. Right: info wall with Bio / Stats / Moveset.
 /// Also adds the "Character" button to the left of the Stage button.
 /// Safe to run again: it replaces what it created before (Ctrl+Z works too).
 /// </summary>
@@ -121,7 +121,7 @@ public static class CharacterSelectPanelBuilder
         MakeGrid(content, 170, 2);
 
         characterSelect.gridContent = content;
-        characterSelect.characterTileTemplate = BuildTileTemplate(content, "CharacterTileTemplate", 115);
+        characterSelect.characterTileTemplate = BuildTileTemplate(content, "CharacterTileTemplate", 140, withName: false);
     }
 
     // Middle: big artwork + name
@@ -165,7 +165,6 @@ public static class CharacterSelectPanelBuilder
         MakeVerticalList(content);
 
         // Templates
-        characterSelect.portraitTemplate = BuildPortraitTemplate(content);
         characterSelect.paragraphTemplate = BuildTextTemplate(content, "ParagraphTemplate", "Bio", 32, Color.white, false);
         characterSelect.statRowTemplate = BuildStatRowTemplate(content);
         characterSelect.moveEntryTemplate = BuildInfoEntry(content, "MoveEntryTemplate");
@@ -177,18 +176,7 @@ public static class CharacterSelectPanelBuilder
         characterSelect.infoContent = content;
     }
 
-    private static Image BuildPortraitTemplate(Transform parent)
-    {
-        GameObject go = NewUI("PortraitTemplate", parent);
-        Image image = AddImage(go, null, Color.white, raycast: false);
-        image.preserveAspect = true;
-        LayoutElement layout = go.AddComponent<LayoutElement>();
-        layout.minHeight = layout.preferredHeight = 240;
-        go.SetActive(false);
-        return image;
-    }
-
-    // Label | bar | value
+    // Label on the left, value on the right: "Speed .......... A"
     private static StatRowView BuildStatRowTemplate(Transform parent)
     {
         GameObject row = NewUI("StatRowTemplate", parent);
@@ -196,27 +184,18 @@ public static class CharacterSelectPanelBuilder
         layout.minHeight = layout.preferredHeight = 60;
 
         GameObject label = NewUI("Label", row.transform);
-        SetRect(label, new Vector2(0f, 0f), new Vector2(0.38f, 1f), Vector2.zero, Vector2.zero);
-        TextMeshProUGUI labelText = AddText(label, "Stat", 32, TextAlignmentOptions.Left, Color.white, true);
+        SetRect(label, new Vector2(0f, 0f), new Vector2(0.6f, 1f), Vector2.zero, Vector2.zero);
+        TextMeshProUGUI labelText = AddText(label, "Stat", 36, TextAlignmentOptions.Left, Color.white, true);
         labelText.enableWordWrapping = false;
 
-        GameObject bar = NewUI("Bar", row.transform);
-        SetRect(bar, new Vector2(0.40f, 0.3f), new Vector2(0.82f, 0.7f), Vector2.zero, Vector2.zero);
-        AddImage(bar, null, new Color(0f, 0f, 0f, 0.5f), raycast: false);
-
-        GameObject fill = NewUI("Fill", bar.transform);
-        RectTransform fillRect = SetRect(fill, Vector2.zero, new Vector2(0.5f, 1f), Vector2.zero, Vector2.zero);
-        AddImage(fill, null, Gold, raycast: false);
-
         GameObject value = NewUI("Value", row.transform);
-        SetRect(value, new Vector2(0.84f, 0f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
-        TextMeshProUGUI valueText = AddText(value, "0", 30, TextAlignmentOptions.Right, Color.white, false);
+        SetRect(value, new Vector2(0.6f, 0f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
+        TextMeshProUGUI valueText = AddText(value, "C", 40, TextAlignmentOptions.Right, Gold, true);
         valueText.enableWordWrapping = false;
 
         StatRowView view = row.AddComponent<StatRowView>();
         view.label = labelText;
         view.value = valueText;
-        view.fill = fillRect;
         row.SetActive(false);
         return view;
     }
