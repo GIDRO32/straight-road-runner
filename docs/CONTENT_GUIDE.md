@@ -69,6 +69,15 @@ styled with the existing menu sprites and font. Run it again to rebuild (it repl
 - The panel's **Play** button, and optionally the main menu Play button, load the selected stage. The choice is remembered.
 Tweak sizes, colors and fonts freely after building; the `StageSelectPanel` component only needs its references.
 
+## Character Select panel
+Open `MainMenu` and run **Tools ▸ Straight Road Runner ▸ Build Character Select Panel**, then save the scene.
+It creates `PanelCollection/CharacterSelect` plus the **Character** button left of the Stage button, and can delete the old `CharacterSelectionScreen`.
+- Left: grid of characters (`icon` + `displayName`).
+- Middle: the character's animated **Menu Art** (falls back to `portrait`) and name.
+- Right: info wall with **Bio** (`portrait` + `bio`), **Stats** (bars from `stats`) and **Moveset** (`moveset`: name, input, description, icon).
+- Which stats are shown and what fills a bar is set in the `Stats Shown` list on the `CharacterSelectPanel` component.
+- Picking a character saves it immediately and updates the main menu art; **Select** just closes the panel.
+
 ## TextMeshPro
 All UI text uses TextMeshPro (`TMP_Text` fields in code). To convert legacy `Text` in scenes/prefabs, run
 **Tools ▸ Straight Road Runner ▸ Convert Legacy Text to TextMeshPro** (it asks you to import TMP Essential Resources first if needed).

@@ -23,6 +23,10 @@ public static class GameSession
 
     public static RunInfo CurrentRun { get; private set; }
 
+    /// <summary>Fired when the player picks a different character / stage (menus listen to update their art).</summary>
+    public static event System.Action<CharacterDefinition> SelectedCharacterChanged;
+    public static event System.Action<StageDefinition> SelectedStageChanged;
+
     public static CharacterDefinition SelectedCharacter
     {
         get
@@ -34,8 +38,10 @@ public static class GameSession
         set
         {
             if (value == null) return;
+            bool changed = PlayerPrefs.GetString(CharacterKey, "") != value.id;
             PlayerPrefs.SetString(CharacterKey, value.id);
             PlayerPrefs.Save();
+            if (changed) SelectedCharacterChanged?.Invoke(value);
         }
     }
 
@@ -50,8 +56,10 @@ public static class GameSession
         set
         {
             if (value == null) return;
+            bool changed = PlayerPrefs.GetString(StageKey, "") != value.id;
             PlayerPrefs.SetString(StageKey, value.id);
             PlayerPrefs.Save();
+            if (changed) SelectedStageChanged?.Invoke(value);
         }
     }
 

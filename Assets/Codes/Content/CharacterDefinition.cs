@@ -16,6 +16,34 @@ public class CharacterStats
 
     [Header("Stamina")]
     public float maxStamina = 100f;
+
+    public float Get(CharacterStatType type)
+    {
+        switch (type)
+        {
+            case CharacterStatType.RunSpeed: return runSpeed;
+            case CharacterStatType.SuperRunSpeed: return superRunSpeed;
+            case CharacterStatType.JumpHeight: return jumpHeight;
+            case CharacterStatType.SuperJumpHeight: return superJumpHeight;
+            case CharacterStatType.DashSpeedMultiplier: return dashSpeedMultiplier;
+            case CharacterStatType.PunchSpeedReduction: return punchSpeedReduction;
+            case CharacterStatType.UppercutSpeedReduction: return uppercutSpeedReduction;
+            case CharacterStatType.MaxStamina: return maxStamina;
+            default: return 0f;
+        }
+    }
+}
+
+public enum CharacterStatType
+{
+    RunSpeed,
+    SuperRunSpeed,
+    JumpHeight,
+    SuperJumpHeight,
+    DashSpeedMultiplier,
+    PunchSpeedReduction,
+    UppercutSpeedReduction,
+    MaxStamina
 }
 
 [System.Serializable]

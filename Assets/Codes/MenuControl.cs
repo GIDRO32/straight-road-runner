@@ -1,86 +1,45 @@
 // MenuControl.cs - New Script
 
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using TMPro;
 
 public class MenuControl : MonoBehaviour
 {
-    // Characters come from ContentDatabase (Assets/Resources/ContentDatabase.asset)
-    private IReadOnlyList<CharacterDefinition> characters = new List<CharacterDefinition>();
+    // Characters come from ContentDatabase; picking one happens in CharacterSelectPanel
 
-    [Header("UI References")]
-    public Transform selectedCharacterDisplay;   // CHANGED: Main menu big art (parent transform for prefab)
-    public Image bioIconImage;                  // Info panel icon
-    public TMP_Text characterNameText;              // Character name in info
-    public Button[] characterSelectButtons;     // Buttons in selection menu
-    private GameObject currentDisplayInstance;  // NEW: Track spawned display art
+    [Header("Main Menu Art")]
+    public Transform selectedCharacterDisplay;   // Main menu big art (parent transform for the Menu Art prefab)
+    private GameObject currentDisplayInstance;
 
-    private int currentSelectedIndex = 0;
+    void OnEnable()
+    {
+        GameSession.SelectedCharacterChanged += ShowCharacter;
+    }
+
+    void OnDisable()
+    {
+        GameSession.SelectedCharacterChanged -= ShowCharacter;
+    }
 
     void Start()
     {
-        if (ContentDatabase.Instance != null)
-            characters = ContentDatabase.Instance.Characters;
-
-        if (characters.Count == 0) return;
-
-        // Load saved selection (by id) or default character
-        int savedIndex = IndexOf(GameSession.SelectedCharacter);
-        currentSelectedIndex = Mathf.Max(0, savedIndex);
-
-        UpdateCharacterDisplay(currentSelectedIndex);
-        SetupSelectionButtons();
+        ShowCharacter(GameSession.SelectedCharacter);
     }
 
-    int IndexOf(CharacterDefinition character)
-    {
-        for (int i = 0; i < characters.Count; i++)
-            if (characters[i] == character) return i;
-        return -1;
-    }
-
-    void SetupSelectionButtons()
-    {
-        for (int i = 0; i < characterSelectButtons.Length && i < characters.Count; i++)
-        {
-            int index = i;
-            Button btn = characterSelectButtons[i];
-            Image btnImage = btn.GetComponent<Image>();
-            // Button icon assignment
-            if (btnImage != null && characters[i].icon != null)
-            {
-                btnImage.sprite = characters[i].icon;
-            }
-
-            btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(() => SelectCharacter(index));
-        }
-    }
     public void LoadScene(string sceneName)
     {
         
         SceneManager.LoadScene(sceneName);
     }
-    public void SelectCharacter(int index)
-    {
-        if (index < 0 || index >= characters.Count) return;
-
-        currentSelectedIndex = index;
-        UpdateCharacterDisplay(index);
-
-        // Save selection (persisted by id)
-        CharacterDefinition data = characters[index];
-        GameSession.SelectedCharacter = data;
-
-        Debug.Log($"Saved selection: {data.DisplayName}");
-    }
-
     public void SelectCharacterById(string characterId)
     {
-        SelectCharacter(IndexOf(ContentDatabase.Instance?.GetCharacter(characterId)));
+        CharacterDefinition character = ContentDatabase.Instance != null ? ContentDatabase.Instance.GetCharacter(characterId) : null;
+        if (character == null)
+        {
+            Debug.LogWarning($"Character '{characterId}' not found in ContentDatabase!");
+            return;
+        }
+        GameSession.SelectedCharacter = character; // Fires SelectedCharacterChanged -> ShowCharacter
     }
 
     // ===== STAGES =====
@@ -149,11 +108,9 @@ public class MenuControl : MonoBehaviour
             Debug.LogError($"Failed to open browser link: {e.Message}");
         }
     }
-    // In UpdateCharacterDisplay(int index) – replace the three assignments
-    void UpdateCharacterDisplay(int index)
+    // Shows the character's Menu Art prefab on the main menu
+    void ShowCharacter(CharacterDefinition data)
     {
-        CharacterDefinition data = characters[index];
-
         // Destroy previous display art instance
         if (currentDisplayInstance != null)
         {
@@ -161,33 +118,24 @@ public class MenuControl : MonoBehaviour
             currentDisplayInstance = null;
         }
 
-        // Spawn new display art prefab
-        if (selectedCharacterDisplay != null && data.menuArt != null)
-        {
-            currentDisplayInstance = Instantiate(
-                data.menuArt,
-                selectedCharacterDisplay.position,
-                Quaternion.identity,
-                selectedCharacterDisplay
-            );
+        if (data == null || selectedCharacterDisplay == null || data.menuArt == null) return;
 
-            // Reset local position/scale if needed
-            currentDisplayInstance.transform.localPosition = Vector3.zero;
-            currentDisplayInstance.transform.localScale = Vector3.one;
-        }
+        currentDisplayInstance = Instantiate(
+            data.menuArt,
+            selectedCharacterDisplay.position,
+            Quaternion.identity,
+            selectedCharacterDisplay
+        );
 
-        // Bio icon (still a sprite)
-        if (bioIconImage != null && data.portrait != null)
-            bioIconImage.sprite = data.portrait;
-
-        // Character name
-        if (characterNameText != null)
-            characterNameText.text = data.DisplayName;
+        // Reset local position/scale if needed
+        currentDisplayInstance.transform.localPosition = Vector3.zero;
+        currentDisplayInstance.transform.localScale = Vector3.one;
     }
 
     // Call this when starting the game
     public GameObject GetSelectedCharacterPrefab()
     {
-        return characters.Count > 0 ? characters[currentSelectedIndex].prefab : null;
+        CharacterDefinition character = GameSession.SelectedCharacter;
+        return character != null ? character.prefab : null;
     }
 }
