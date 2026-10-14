@@ -28,6 +28,8 @@ public class StageSelectPanel : MonoBehaviour
     [Header("Artwork View")]
     public GameObject artworkView;
     public Image artworkImage;
+    [Tooltip("Shows the stage's Display Name")]
+    public TMP_Text stageNameText;
     public TMP_Text stageDescriptionText;
 
     [Header("Info View (scrollable)")]
@@ -173,6 +175,7 @@ public class StageSelectPanel : MonoBehaviour
     {
         if (selected == null) return;
 
+        if (stageNameText != null) stageNameText.text = selected.DisplayName;
         if (stageDescriptionText != null) stageDescriptionText.text = selected.description;
 
         if (artworkImage != null)

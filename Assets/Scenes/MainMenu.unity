@@ -10845,6 +10845,7 @@ MonoBehaviour:
   tabInactiveColor: {r: 1, g: 1, b: 1, a: 1}
   artworkView: {fileID: 1248588023}
   artworkImage: {fileID: 1501982351}
+  stageNameText: {fileID: 234764532}
   stageDescriptionText: {fileID: 1042630505}
   infoView: {fileID: 1405083294}
   infoScroll: {fileID: 1405083296}
@@ -12856,8 +12857,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   icon: {fileID: 886956322}
-  nameText: {fileID: 0}
-  descriptionText: {fileID: 0}
+  nameText: {fileID: 1828398400}
+  descriptionText: {fileID: 2013091783}
   button: {fileID: 1470850850}
   highlight: {fileID: 0}
 --- !u!224 &1355587555

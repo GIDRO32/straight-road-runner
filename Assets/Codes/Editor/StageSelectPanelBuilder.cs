@@ -118,14 +118,18 @@ public static class StageSelectPanelBuilder
         Vector2 viewPos = new Vector2(0, -55);
         Vector2 viewSize = new Vector2(840, 480);
 
-        // --- Artwork view
+        // --- Artwork view: artwork + stage name
         GameObject artworkView = NewUI("ArtworkView", area.transform);
         SetRect(artworkView, Center, Center, viewPos, viewSize);
 
         GameObject artwork = NewUI("Artwork", artworkView.transform);
-        SetRect(artwork, Center, Center, Vector2.zero, new Vector2(800, 460));
+        SetRect(artwork, Center, Center, new Vector2(0, 45), new Vector2(800, 380));
         Image artworkImage = AddImage(artwork, null, Color.white, raycast: false);
         artworkImage.preserveAspect = true;
+
+        GameObject stageName = NewUI("StageName", artworkView.transform);
+        SetRect(stageName, Center, Center, new Vector2(0, -195), new Vector2(800, 90));
+        TextMeshProUGUI stageNameText = AddText(stageName, "Stage Name", 60, TextAlignmentOptions.Center, Color.white, true);
 
         // --- Info view: scrollable description, enemies and obstacles
         GameObject infoView = NewUI("InfoView", area.transform);
@@ -150,6 +154,7 @@ public static class StageSelectPanelBuilder
 
         stageSelect.artworkView = artworkView;
         stageSelect.artworkImage = artworkImage;
+        stageSelect.stageNameText = stageNameText;
         stageSelect.stageDescriptionText = descriptionText;
         stageSelect.infoView = infoView;
         stageSelect.infoScroll = scroll;

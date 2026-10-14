@@ -18,11 +18,20 @@ public class ContentEntryView : MonoBehaviour
 
     public void Set(string displayName, Sprite sprite, string description = null)
     {
+        // Name and description come from the content asset (displayName / description fields)
+        if (nameText != null)
+            nameText.text = displayName;
 
         if (icon != null)
         {
             icon.sprite = sprite;
             icon.enabled = sprite != null;
+        }
+
+        if (descriptionText != null)
+        {
+            descriptionText.text = description ?? "";
+            descriptionText.gameObject.SetActive(!string.IsNullOrEmpty(description));
         }
     }
 
