@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4cbac7d09f546f6bb4f79ac06664806, type: 3}
+  m_Name: ChaosMode
+  m_EditorClassIdentifier: 
+  id: chaos_mode
+  displayName: Chaos Mode
+  icon: {fileID: 0}
+  sortOrder: 100
+  includeInDemo: 1
+  sceneName: SketchyRoad
+  artwork: {fileID: 0}
+  description: Enemies and obstacles from every stage spawn at random.
+  introTitle: CHAOS MODE
+  musicFolder: 
+  enemies: []
+  obstacles: []
+  bossesEnabled: 1
+  leaderboardId: 

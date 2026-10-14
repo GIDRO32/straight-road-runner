@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -8,7 +9,7 @@ public class GameOverManager : MonoBehaviour
 
     [Header("Game Over UI")]
     public GameObject gameOverPanel;
-    public Text finalScoreText;
+    public TMP_Text finalScoreText;
     
     [Header("Camera Bounds")]
     public Camera mainCamera;
@@ -86,8 +87,34 @@ public class GameOverManager : MonoBehaviour
                 finalScoreText.text = $"Final Score:\n{finalScore:N0}";
             }
         }
-        
+
+        SubmitRun();
+
         Debug.Log("Game Over!");
+    }
+
+    // Sends score + character + stage to the leaderboards
+    private void SubmitRun()
+    {
+        RunInfo run = GameSession.CurrentRun;
+        if (run == null || ScoreManager.Instance == null) return;
+
+        int finalScore = ScoreManager.Instance.GetCurrentScore();
+        GameSession.EndRun();
+
+        if (finalScore <= 0 || LeaderboardManager.Instance == null) return;
+
+        var result = new RunResult
+        {
+            score = finalScore,
+            characterId = run.character != null ? run.character.id : "",
+            stageId = run.stage != null ? run.stage.id : "",
+            stageLeaderboardId = run.stage != null ? run.stage.LeaderboardId : "",
+            durationSeconds = run.Duration,
+            bossesDefeated = run.bossesDefeated
+        };
+
+        LeaderboardManager.Instance.Submit(result);
     }
     
     public void RestartGame()
@@ -99,6 +126,7 @@ public class GameOverManager : MonoBehaviour
     public void ReturnToMenu()
     {
         Time.timeScale = 1f;
+        GameSession.EndRun();
         SceneManager.LoadScene("MainMenu"); // Change to your menu scene name
     }
 }

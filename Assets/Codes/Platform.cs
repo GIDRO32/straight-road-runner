@@ -1,5 +1,6 @@
 // Platform.cs - NEW SCRIPT (attach to Platform prefab)
 
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,6 +9,11 @@ public class Platform : MonoBehaviour
     [Header("Platform Features")]
     public GameObject sign;
     public GameObject wall;
+    [Tooltip("Where stage obstacles spawn. Falls back to the built-in wall's position.")]
+    public Transform obstacleAnchor;
+
+    // Set by StageControl right after spawning. When empty, the built-in wall child is used instead.
+    [System.NonSerialized] public IReadOnlyList<ObstacleDefinition> obstaclePool;
 
     // NEW: Static difficulty variables (shared across all platforms)
     public static float wallSpawnChance = 0.03f;
@@ -50,12 +56,31 @@ public class Platform : MonoBehaviour
         bool spawnSign = Random.value < signSpawnChance;
         bool spawnWall = Random.value < wallSpawnChance;
 
+        // Stage obstacles replace the built-in wall when the stage defines any
+        if (spawnWall && TrySpawnStageObstacle())
+            spawnWall = false;
+
         if (sign != null)
             sign.SetActive(spawnSign);
 
         if (wall != null)
             wall.SetActive(spawnWall);
     }
+    private bool TrySpawnStageObstacle()
+    {
+        if (obstaclePool == null || obstaclePool.Count == 0) return false;
+
+        ObstacleDefinition obstacle = WeightedRandom.Pick(obstaclePool, o => o.prefab != null ? o.spawnWeight : 0f);
+        if (obstacle == null) return false;
+
+        Transform anchor = obstacleAnchor != null ? obstacleAnchor : (wall != null ? wall.transform : transform);
+
+        // Parent to the platform so it scrolls with it, keeping the prefab's world scale
+        GameObject instance = Instantiate(obstacle.prefab, transform, true);
+        instance.transform.position = anchor.position;
+        return true;
+    }
+
     void Update()
     {
         if (!isFragile) return;
