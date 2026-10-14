@@ -22,10 +22,10 @@ MonoBehaviour:
   menuArt: {fileID: 7016671460718563191, guid: 835a99f23d889af498e6200773260c2b, type: 3}
   bio: Placeholder bio. Write PlaceholderMan's story here.
   profile:
-    speed: 3
-    jump: 3
+    speed: 4
+    jump: 4
     size: 2
-    weight: 1
+    weight: 0
   stats:
     runSpeed: 4
     superRunSpeed: 15
