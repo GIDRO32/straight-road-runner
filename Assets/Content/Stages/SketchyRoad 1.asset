@@ -26,6 +26,7 @@ MonoBehaviour:
   musicFolder: 
   enemies:
   - {fileID: 11400000, guid: a0771887c64e4684a30b2ca9461e985f, type: 2}
-  obstacles: []
+  obstacles:
+  - {fileID: 0}
   bossesEnabled: 1
   leaderboardId: 

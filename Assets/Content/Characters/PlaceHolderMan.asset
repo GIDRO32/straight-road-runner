@@ -18,9 +18,12 @@ MonoBehaviour:
   sortOrder: 0
   includeInDemo: 1
   prefab: {fileID: 2307271194614268369, guid: 156dbc3b28ad2a04688113985759f0c7, type: 3}
-  selectArtwork: {fileID: 21300000, guid: 9998d6cfb7975b04888cf2a17b9bd5ff, type: 3}
+  selectArtwork: {fileID: 21300000, guid: c98cf3f4a1a4fa3428364aeffbf7d86d, type: 3}
   menuArt: {fileID: 7016671460718563191, guid: 835a99f23d889af498e6200773260c2b, type: 3}
-  bio: Placeholder bio. Write PlaceholderMan's story here.
+  bio: Another confirmation that minimalism doesn't exist within the pages of Le
+    Kinn Penn's sketchbook. What looked like a simply drawn stick figure is actually
+    an extremely skinny humanoid entity. He was created at rush when the sketchbook
+    was infested by Ball Devils
   profile:
     speed: 4
     jump: 4

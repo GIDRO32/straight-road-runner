@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: ContentDatabase
   m_EditorClassIdentifier: 
   defaultCharacter: {fileID: 11400000, guid: 8f585482d8634128b869f28fd7d1ee40, type: 2}
-  defaultStage: {fileID: 11400000, guid: 5acfd36991074b64a881ecda5985bdb0, type: 2}
+  defaultStage: {fileID: 11400000, guid: ffd8cfc2971164447b03793957b55a94, type: 2}
   characters:
   - {fileID: 11400000, guid: 8f585482d8634128b869f28fd7d1ee40, type: 2}
+  - {fileID: 11400000, guid: 98e4314a6b41b9c4790c6c916176a12a, type: 2}
   stages:
   - {fileID: 11400000, guid: ffd8cfc2971164447b03793957b55a94, type: 2}
   - {fileID: 11400000, guid: 5acfd36991074b64a881ecda5985bdb0, type: 2}
