@@ -25,12 +25,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a0771887c64e4684a30b2ca9461e985f, type: 2}
   bosses: []
   obstacles:
-  - {fileID: 11400000, guid: 630126ac08974f1c8274410e97f6bb92, type: 2}
   - {fileID: 11400000, guid: 31418745ad8c470dbf64a2172761205e, type: 2}
   - {fileID: 11400000, guid: 60c6adafa6654efa893973cb5169b495, type: 2}
+  - {fileID: 11400000, guid: 630126ac08974f1c8274410e97f6bb92, type: 2}
   platforms:
-  - {fileID: 11400000, guid: e99c7787a8a343de99a63c5b59d04d31, type: 2}
-  - {fileID: 11400000, guid: 04c3853b0d134cb4bdfab4323e83854f, type: 2}
   - {fileID: 11400000, guid: 032ab7b8ed1d49a1b9f944eb2df915dd, type: 2}
-  - {fileID: 11400000, guid: 8d87ab47b4304335b85f225faf8906e7, type: 2}
   - {fileID: 11400000, guid: 32db248abcda42b19435af5371ddea48, type: 2}
+  - {fileID: 11400000, guid: 04c3853b0d134cb4bdfab4323e83854f, type: 2}
+  - {fileID: 11400000, guid: 8d87ab47b4304335b85f225faf8906e7, type: 2}
+  - {fileID: 11400000, guid: e99c7787a8a343de99a63c5b59d04d31, type: 2}

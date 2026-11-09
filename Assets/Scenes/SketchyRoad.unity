@@ -4217,32 +4217,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 496f0294ede68204ba1989c2aba7cce7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  difficultyInterval: 5
   isDifficultyProgressing: 1
   stageControl: {fileID: 1074257851}
-  platformIntervalMin: 1
-  platformIntervalMax: 5
-  platformSpawnChanceMin: 0.3
-  platformSpawnChanceMax: 0.95
-  enemySpawnIntervalMin: 3
-  enemySpawnIntervalMax: 20
-  enemySpawnChanceMin: 0.2
-  enemySpawnChanceMax: 1
-  wallSpawnChanceMin: 0.03
-  wallSpawnChanceMax: 0.9
-  signSpawnChanceMin: 0.05
-  signSpawnChanceMax: 0.7
-  fragileChanceMin: 0.01
-  fragileChanceMax: 1
-  platformIntervalStep: 0.1
-  platformSpawnChanceStep: -0.02
-  enemySpawnIntervalStep: -0.5
-  enemySpawnChanceStep: 0.05
-  wallSpawnChanceStep: 0.03
-  signSpawnChanceStep: -0.02
-  fragileChanceStep: 0.03
-  endgamePlatformSpeedIncrease: 0.2
-  endgameInterval: 5
+  logChanges: 1
 --- !u!4 &992253441
 Transform:
   m_ObjectHideFlags: 0
