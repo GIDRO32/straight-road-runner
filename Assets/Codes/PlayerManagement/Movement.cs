@@ -122,6 +122,31 @@ public class Movement : MonoBehaviour
     {
         if (isStunned) return;
 
+        HandleDuckAndSuperJump();
+
+        // Stop here if ducking - don't process other inputs
+        if (isDucking) return;
+
+        float horizontalInput = ReadHorizontalInput();
+        FlipSprite(horizontalInput);
+
+        HandleSuperRun();
+        HandleJump(horizontalInput);
+        HandleAttacks();
+        HandleAirDash(horizontalInput);
+    }
+
+    // ===== MOVES (override or skip these in a character's own Movement subclass) =====
+
+    protected float ReadHorizontalInput()
+    {
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) return -1f;
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) return 1f;
+        return 0f;
+    }
+
+    protected virtual void HandleDuckAndSuperJump()
+    {
         bool holdingDown = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
 
         // Duck & Charge SuperJump
@@ -170,20 +195,10 @@ public class Movement : MonoBehaviour
             soundEffects?.PlaySuperJump();
             PerformSuperJump();
         }
+    }
 
-        // Stop here if ducking - don't process other inputs
-        if (isDucking) return;
-
-        // Horizontal movement input (only if not ducking)
-        float horizontalInput = 0f;
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            horizontalInput = -1f;
-        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            horizontalInput = 1f;
-
-        FlipSprite(horizontalInput);
-
-        // SuperRun logic
+    protected virtual void HandleSuperRun()
+    {
         isSuperRunning = Input.GetKey(KeyCode.LeftShift) && isOnGround;
         animator.SetBool("IsSuperRunning", isSuperRunning);
 
@@ -198,8 +213,10 @@ public class Movement : MonoBehaviour
             else if (!isSuperRunning && superRunParticles.isPlaying)
                 superRunParticles.Stop();
         }
+    }
 
-        // Jumping
+    protected virtual void HandleJump(float horizontalInput)
+    {
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) && isOnGround)
         {
             float jumpSpeed = isSuperRunning ? superRunSpeed : runSpeed;
@@ -208,9 +225,14 @@ public class Movement : MonoBehaviour
             superJumping = isSuperRunning;
             animator.SetBool("IsJumping", true);
         }
+    }
 
+    protected virtual bool CanAttack => !isPunching && !isUppercutting;
+
+    protected virtual void HandleAttacks()
+    {
         // Punching
-        if (Input.GetKeyDown(KeyCode.Z) && !isPunching && !isUppercutting)
+        if (Input.GetKeyDown(KeyCode.Z) && CanAttack)
         {
             isPunching = true;
             punchHitSomething = false;
@@ -220,7 +242,7 @@ public class Movement : MonoBehaviour
         }
 
         // Uppercutting
-        if (Input.GetKeyDown(KeyCode.X) && !isUppercutting && !isPunching)
+        if (Input.GetKeyDown(KeyCode.X) && CanAttack)
         {
             isUppercutting = true;
             uppercutHitSomething = false;
@@ -228,8 +250,10 @@ public class Movement : MonoBehaviour
             runSpeed -= uppercutSpeedReduction;
             soundEffects?.PlayWhoosh();
         }
+    }
 
-        // Air dash detection
+    protected virtual void HandleAirDash(float horizontalInput)
+    {
         if (!isOnGround && (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) ||
                 Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)))
         {
@@ -405,6 +429,7 @@ public class Movement : MonoBehaviour
     {
         isStunned = true;
         animator.SetBool("IsStunned", true);
+        OnStunned();
 
         // ✅ Force reset all combat states
         if (isPunching)
@@ -468,6 +493,12 @@ public class Movement : MonoBehaviour
         uppercutHitbox.SetActive(false);
         uppercutHitSomething = false;
     }
+    /// <summary>Called when the player gets stunned or loses: subclasses stop their own moves here.</summary>
+    protected virtual void OnStunned() { }
+
+    /// <summary>A hitbox other than Punch/Uppercut hit a wall or enemy (e.g. a character's special move).</summary>
+    public virtual void OnOtherHitboxHit(Hitbox hitbox) { }
+
     public virtual void OnPunchHit()
     {
         if (!punchHitSomething)
@@ -694,6 +725,7 @@ public class Movement : MonoBehaviour
 
         // Disable controls
         isStunned = true;
+        OnStunned();
 
         // Play damage sound
         soundEffects?.PlayDamageTaken();

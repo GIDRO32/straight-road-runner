@@ -24,6 +24,8 @@ public class Hitbox : MonoBehaviour
                     playerMovement.OnPunchHit();
                 else if (gameObject.name.Contains("Uppercut"))
                     playerMovement.OnUppercutHit();
+                else
+                    playerMovement.OnOtherHitboxHit(this);
             }
 
             // ✅ Play punch particles at hit point
