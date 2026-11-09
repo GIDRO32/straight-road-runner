@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: -6135023155029368564}
   - component: {fileID: 1117547655010534803}
   m_Layer: 0
-  m_Name: StageBG1
+  m_Name: LeKinnPennBottom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

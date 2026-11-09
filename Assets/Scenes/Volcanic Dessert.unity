@@ -1437,7 +1437,6 @@ MonoBehaviour:
   musicFolder: Music/Regular
   useStageMusicFolder: 0
   musicSource: {fileID: 0}
-  musicVolume: 0.7
   crossfade: 0
   crossfadeDuration: 2
   playOnStart: 1
@@ -4548,6 +4547,8 @@ MonoBehaviour:
   enemyPrefab: {fileID: 3718737648337538362, guid: 0497a228dcf55a7418981a55aa5f7d55, type: 3}
   enemyStartX: -25
   enemySpawnInterval: 20
+  enemyWaveSpawnDelay: 0.5
+  firstEnemyDelay: 5
   Ypositions:
   - -2
   - 1
@@ -4578,11 +4579,11 @@ MonoBehaviour:
   topLayerPrefab: {fileID: 1926832892273351154, guid: 2d1d6ee7628de304e890a696ae65dbfe, type: 3}
   floorLayerPrefab: {fileID: 1548879362346977895, guid: fb883425cc0a57547bb60c9281ca1ede, type: 3}
   bottomVariants:
-  - {fileID: 21300000, guid: 9e361466ff0037945a30be0ad6fa084b, type: 3}
+  - {fileID: 21300000, guid: cffee3e40c74f3948ae8404d046075c8, type: 3}
   middleVariants:
-  - {fileID: 21300000, guid: 65eb77e02c3dd7449a73a7489622f04b, type: 3}
+  - {fileID: 21300000, guid: 23e19b1a012e6664c84cd099b464ff92, type: 3}
   topVariants:
-  - {fileID: 21300000, guid: 5a330ac2188028c4d8546d8b6fee5489, type: 3}
+  - {fileID: 21300000, guid: a4e31c68612ee3a40adf460540cac3b6, type: 3}
   floorVariants:
   - {fileID: 21300000, guid: 4aa6f2364e4f8f84394d721a4bdc1338, type: 3}
   bottomLayerY: 1.8
@@ -6179,7 +6180,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sfxSource: {fileID: 0}
-  sfxVolume: 1
   sfxVolumeSlider: {fileID: 1047100098}
 --- !u!4 &1956507303
 Transform:
@@ -6306,6 +6306,32 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1964611185}
   m_CullTransparentMesh: 1
+--- !u!114 &1968521128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1047100096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87d291f479024a16994c58dd7539462c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  channel: 1
+--- !u!114 &1981221182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826998790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87d291f479024a16994c58dd7539462c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  channel: 0
 --- !u!1 &1981568880
 GameObject:
   m_ObjectHideFlags: 0
@@ -6740,29 +6766,3 @@ SceneRoots:
   - {fileID: 1687128566}
   - {fileID: 1956507303}
   - {fileID: 533764143}
---- !u!114 &1968521128
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1047100096}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87d291f479024a16994c58dd7539462c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  channel: 1
---- !u!114 &1981221182
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1826998790}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87d291f479024a16994c58dd7539462c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  channel: 0
