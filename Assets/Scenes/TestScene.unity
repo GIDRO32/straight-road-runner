@@ -1072,10 +1072,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sign: {fileID: 0}
   wall: {fileID: 0}
+  obstacleAnchor: {fileID: 0}
   normalSprite: {fileID: 0}
   fragileSprite: {fileID: 0}
   fragileTime: 3
   timerUI: {fileID: 0}
+  normalLandingParticles: {fileID: 0}
+  fragileLandingParticles: {fileID: 0}
+  fragileBreak: {fileID: 0}
 --- !u!1001 &1703305015
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1475,6 +1479,67 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: debe3a465c5891d42bedcbedbea57d49, type: 3}
+--- !u!1001 &6704524522890350322
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5277714748452175156, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_Name
+      value: ZapauloTheCat
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.06
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.67
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977456085101282401, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7238375929365273705, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+      propertyPath: m_SortingOrder
+      value: 12
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1498,3 +1563,4 @@ SceneRoots:
   - {fileID: 4708853363749902570}
   - {fileID: 1627544176}
   - {fileID: 10171026}
+  - {fileID: 6704524522890350322}

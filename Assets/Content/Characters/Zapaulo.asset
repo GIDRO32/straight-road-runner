@@ -17,7 +17,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: fb0d8c6d05230374daba1f1e685ece33, type: 3}
   sortOrder: 1
   includeInDemo: 1
-  prefab: {fileID: 0}
+  prefab: {fileID: 5277714748452175156, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
   selectArtwork: {fileID: 21300000, guid: d3d7ef3adf3678540b3d328a29d8d98e, type: 3}
   menuArt: {fileID: 0}
   bio: Zapaulo is a femboy blue anthropomorphic cat from the White Shard of the HEX
