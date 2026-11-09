@@ -71,6 +71,12 @@ Assets in `Assets/Content/Obstacles`, prefabs in `Assets/Prefabs/Obstacles`. Cre
 (plus other stages' base platforms at `otherBasePlatformChance`), so it needs no maintenance.
 It uses the `SketchyRoad` scene; point it at any stage scene.
 
+## Enemies per stage
+List the stage's enemy types in `enemies`. After `pacing.firstEnemyDelay` the first enemy ALWAYS spawns (no chance roll).
+Then every `enemyInterval` a wave of up to `enemyWaveSize` enemies: each rolls `enemyChance`, is a random type from the list
+(weighted by the enemy asset's `spawnWeight`, all 1 = equal odds), `enemyWaveSpawnDelay` seconds apart.
+Waves stop early once `maxEnemies` are alive. Interval, wave size, chance and max enemies are difficulty ranges.
+
 ## Difficulty
 Every value that ramps up is a **range**: `start` → `limit`, moving by `step` (negative = goes down, 0 = constant).
 Every `pacing.difficultyInterval` seconds, `DifficultyManager` picks ONE random range that hasn't hit its limit and steps it.

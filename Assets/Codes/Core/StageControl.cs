@@ -38,8 +38,16 @@ public class StageControl : MonoBehaviour
     private float enemyTimer = 0f;
     private bool playerSpawned = false;
     private readonly List<GameObject> activeEnemies = new();
-    public float enemySpawnInterval = 20f; // Now public
-    private bool firstEnemyGuaranteed = true;   // ← NEW
+    [Tooltip("Seconds between enemy waves (set from the stage's pacing)")]
+    public float enemySpawnInterval = 20f;
+    [Tooltip("Max enemies per wave (set from the stage's pacing)")]
+    public int enemyWaveSize = 3;
+    [Tooltip("Seconds between enemies of one wave")]
+    public float enemyWaveSpawnDelay = 0.5f;
+    [Tooltip("Seconds after the player appears until the first, guaranteed enemy")]
+    public float firstEnemyDelay = 5f;
+    private bool firstEnemySpawned = false;
+    private bool waveRunning = false;
     public float[] Ypositions;
     [Header("Game Conditions")]
     public int maxEnemies = 6; // Now public
@@ -111,6 +119,9 @@ public class StageControl : MonoBehaviour
         platformSpawnInterval = pacing.platformInterval.start;
         currentPlatformSpawnChance = pacing.platformLaneChance.start;
         enemySpawnInterval = pacing.enemyInterval.start;
+        enemyWaveSize = Mathf.RoundToInt(pacing.enemyWaveSize.start);
+        enemyWaveSpawnDelay = pacing.enemyWaveSpawnDelay;
+        firstEnemyDelay = pacing.firstEnemyDelay;
         enemySpawnChance = pacing.enemyChance.start;
         maxEnemies = Mathf.RoundToInt(pacing.maxEnemies.start);
     }
@@ -141,56 +152,60 @@ public class StageControl : MonoBehaviour
     }
     void HandleEnemySpawning()
     {
+        // Cleanup destroyed enemies
+        activeEnemies.RemoveAll(e => e == null);
+
         if (enemySpawningPaused) return;
 
         enemyTimer += Time.deltaTime;
 
-        if (enemyTimer >= enemySpawnInterval && activeEnemies.Count < maxEnemies)
+        // The first enemy always appears, no chance roll and no wave
+        if (!firstEnemySpawned)
         {
-            enemyTimer = 0f;
-
-            // First enemy is guaranteed
-            if (firstEnemyGuaranteed)
+            if (enemyTimer >= firstEnemyDelay)
             {
-                SpawnOneEnemy();
-                firstEnemyGuaranteed = false;
-                return;
+                enemyTimer = 0f;
+                firstEnemySpawned = true;
+                if (!SpawnOneEnemy())
+                    Debug.LogWarning("StageControl: Couldn't spawn the first enemy. Does the stage have enemies with prefabs?");
             }
-
-            // Normal wave: up to 3 spawn attempts with delay between each
-            StartCoroutine(SpawnEnemyWave());
+            return;
         }
 
-        // Cleanup destroyed enemies
-        activeEnemies.RemoveAll(e => e == null);
+        if (enemyTimer >= enemySpawnInterval && !waveRunning && activeEnemies.Count < maxEnemies)
+        {
+            enemyTimer = 0f;
+            StartCoroutine(SpawnEnemyWave());
+        }
     }
+
+    // Up to enemyWaveSize enemies; each rolls enemySpawnChance and is a random type from the stage's list
     private IEnumerator SpawnEnemyWave()
     {
-        int attempts = 3;
-        float delayBetweenSpawns = 0.5f; // Half second between each enemy
+        waveRunning = true;
 
-        for (int i = 0; i < attempts; i++)
+        for (int i = 0; i < enemyWaveSize; i++)
         {
             if (activeEnemies.Count >= maxEnemies || enemySpawningPaused)
                 break;
 
-            if (Random.value <= enemySpawnChance)
+            if (Random.value <= enemySpawnChance && SpawnOneEnemy())
             {
-                SpawnOneEnemy();
-
-                // Wait before spawning next enemy (except last one)
-                if (i < attempts - 1)
-                    yield return new WaitForSeconds(delayBetweenSpawns);
+                // Little pause before the next enemy of the wave
+                if (i < enemyWaveSize - 1)
+                    yield return new WaitForSeconds(enemyWaveSpawnDelay);
             }
         }
+
+        waveRunning = false;
     }
 
-    // Helper: spawn single enemy
-    private void SpawnOneEnemy()
+    // Helper: spawn single enemy (random type from the stage's list). Returns false if nothing could spawn.
+    private bool SpawnOneEnemy()
     {
         EnemyDefinition def = PickEnemy();
         GameObject prefab = def != null ? def.prefab : enemyPrefab;
-        if (prefab == null) return;
+        if (prefab == null) return false;
 
         float y = def != null
             ? Random.Range(def.spawnYRange.x, def.spawnYRange.y)
@@ -205,9 +220,10 @@ public class StageControl : MonoBehaviour
 
         activeEnemies.Add(enemy);
         StartCoroutine(CleanupEnemy(enemy));
+        return true;
     }
 
-    // Weighted pick from the stage's enemy pool
+    // Random enemy type from the stage's list (Spawn Weight on the enemy asset; all 1 = equal odds)
     private EnemyDefinition PickEnemy()
     {
         return WeightedRandom.Pick(enemyPool, e => e.prefab != null ? e.spawnWeight : 0f);
@@ -232,7 +248,8 @@ public class StageControl : MonoBehaviour
     {
         playerSpawned = true;
         enemyTimer = 0f;
-        firstEnemyGuaranteed = true;   // ← RESET on new game
+        firstEnemySpawned = false;   // RESET on new game
+        waveRunning = false;
     }
     void HandlePlatformSpawning()
     {

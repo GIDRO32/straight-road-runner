@@ -68,10 +68,17 @@ public class StagePacing
     public DifficultyRange platformLaneChance = new DifficultyRange(0.95f, 0.3f, -0.02f);
 
     [Header("Enemies")]
+    [Tooltip("Seconds after the player appears until the first enemy. The first enemy always spawns (no chance roll).")]
+    public float firstEnemyDelay = 5f;
     [Tooltip("Seconds between enemy waves")]
     public DifficultyRange enemyInterval = new DifficultyRange(20f, 3f, -0.5f);
+    [Tooltip("Max enemies per wave. Each one rolls Enemy Chance and is a random type from the stage's list.")]
+    public DifficultyRange enemyWaveSize = new DifficultyRange(3f, 3f, 0f);
     [Tooltip("Chance (0-1) of each enemy in a wave")]
     public DifficultyRange enemyChance = new DifficultyRange(0.2f, 1f, 0.05f);
+    [Tooltip("Seconds between enemies of the same wave")]
+    public float enemyWaveSpawnDelay = 0.5f;
+    [Tooltip("Max enemies alive at once; waves stop early when it's reached")]
     public DifficultyRange maxEnemies = new DifficultyRange(6f, 20f, 1f);
 
     [Header("Endgame (everything above maxed)")]
