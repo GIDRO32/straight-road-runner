@@ -22,6 +22,10 @@ MonoBehaviour:
   description: A road drawn in a sketchbook.
   introTitle: Volcanic Desert
   musicFolder: 
+  menuBackgroundPrefab: {fileID: 0}
+  menuBackgroundScrollSpeed: 4
+  menuBackgroundWidth: 39
+  titleLogo: {fileID: 0}
   enemies:
   - {fileID: 11400000, guid: a0771887c64e4684a30b2ca9461e985f, type: 2}
   platformPrefab: {fileID: 0}

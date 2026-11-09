@@ -64,6 +64,8 @@ Assets in `Assets/Content/Obstacles`, prefabs in `Assets/Prefabs/Obstacles`. Cre
      Each new platform rolls the special chances (random order, first hit wins), otherwise it's the base platform.
    - **Obstacles**: `obstacleSpawns`, each with a `chance` range, rolled per platform.
    - **Pacing & Difficulty**: platform/enemy intervals and chances, max enemies, endgame speed-up.
+   - **Title Screen**: `menuBackgroundPrefab` (+ scroll speed and tile width) and `titleLogo`, shown on the main menu
+     while this stage is selected. Empty = the menu's default background / logo.
 3. Create a leaderboard in the Unity Cloud dashboard with the stage's id (or set `leaderboardId`).
 4. Load it from the menu with `MenuControl.PlayStage("stage_id")` or `GameSession.LoadStage(stage)`.
 

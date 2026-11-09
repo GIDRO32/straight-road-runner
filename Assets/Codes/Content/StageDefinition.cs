@@ -17,6 +17,15 @@ public class StageDefinition : ContentDefinition
     [Tooltip("StreamingAssets music folder, e.g. \"Music/Regular\". Empty = scene default.")]
     public string musicFolder;
 
+    [Header("Title Screen (when this stage is selected)")]
+    [Tooltip("Scrolling background tile on the main menu. Empty = the menu's default background.")]
+    public GameObject menuBackgroundPrefab;
+    public float menuBackgroundScrollSpeed = 4f;
+    [Tooltip("Width of one background tile in world units (distance between tiles)")]
+    public float menuBackgroundWidth = 39f;
+    [Tooltip("Logo on the title screen. Empty = the default logo.")]
+    public Sprite titleLogo;
+
     [Header("Enemies")]
     public EnemyDefinition[] enemies;
 

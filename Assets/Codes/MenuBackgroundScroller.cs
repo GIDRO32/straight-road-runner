@@ -12,8 +12,12 @@ public class MenuBackgroundScroller : MonoBehaviour
         public float backgroundWidth = 20f;
     }
 
+    [Header("Selected Stage")]
+    [Tooltip("Use the selected stage's Menu Background (StageDefinition > Title Screen) and switch when another stage is picked")]
+    public bool followSelectedStage = true;
+
     [Header("Background Presets")]
-    [Tooltip("First background in array is the default")]
+    [Tooltip("First background in array is the default (used when the stage has no Menu Background)")]
     public BackgroundData[] backgrounds;
 
     [Header("Spawn Settings")]
@@ -30,14 +34,26 @@ public class MenuBackgroundScroller : MonoBehaviour
     private List<GameObject> activeBackgrounds = new List<GameObject>();
     private float nextSpawnX;
 
+    void OnEnable()
+    {
+        GameSession.SelectedStageChanged += OnSelectedStageChanged;
+    }
+
+    void OnDisable()
+    {
+        GameSession.SelectedStageChanged -= OnSelectedStageChanged;
+    }
+
     void Start()
     {
-        // Select background
-        if (string.IsNullOrEmpty(selectedStageName))
+        if (followSelectedStage)
+        {
+            currentBackground = BackgroundForStage(GameSession.SelectedStage);
+        }
+        else if (string.IsNullOrEmpty(selectedStageName))
         {
             // Use default (first background)
-            currentBackground = backgrounds[0];
-            Debug.Log($"Using default background: {currentBackground.stageName}");
+            currentBackground = DefaultBackground();
         }
         else
         {
@@ -47,11 +63,7 @@ public class MenuBackgroundScroller : MonoBehaviour
             if (currentBackground == null)
             {
                 Debug.LogWarning($"Background '{selectedStageName}' not found! Using default.");
-                currentBackground = backgrounds[0];
-            }
-            else
-            {
-                Debug.Log($"Using background: {currentBackground.stageName}");
+                currentBackground = DefaultBackground();
             }
         }
 
@@ -66,6 +78,32 @@ public class MenuBackgroundScroller : MonoBehaviour
 
         // Spawn initial backgrounds to fill screen
         SpawnInitialBackgrounds();
+    }
+
+    private BackgroundData DefaultBackground()
+    {
+        return backgrounds != null && backgrounds.Length > 0 ? backgrounds[0] : null;
+    }
+
+    /// <summary>The stage's own Menu Background, or the default one.</summary>
+    private BackgroundData BackgroundForStage(StageDefinition stage)
+    {
+        if (stage == null || stage.menuBackgroundPrefab == null)
+            return DefaultBackground();
+
+        return new BackgroundData
+        {
+            stageName = stage.DisplayName,
+            backgroundPrefab = stage.menuBackgroundPrefab,
+            scrollSpeed = stage.menuBackgroundScrollSpeed,
+            backgroundWidth = stage.menuBackgroundWidth
+        };
+    }
+
+    private void OnSelectedStageChanged(StageDefinition stage)
+    {
+        if (followSelectedStage)
+            SwitchTo(BackgroundForStage(stage));
     }
 
     void Update()
@@ -170,6 +208,20 @@ public class MenuBackgroundScroller : MonoBehaviour
             Debug.LogWarning($"Background '{stageName}' not found!");
             return;
         }
+
+        SwitchTo(newBackground);
+    }
+
+    /// <summary>Replaces the scrolling background (no-op if it's already showing).</summary>
+    private void SwitchTo(BackgroundData newBackground)
+    {
+        if (newBackground == null || newBackground.backgroundPrefab == null) return;
+
+        if (currentBackground != null && currentBackground.backgroundPrefab == newBackground.backgroundPrefab
+            && Mathf.Approximately(currentBackground.scrollSpeed, newBackground.scrollSpeed))
+            return;
+
+        string stageName = newBackground.stageName;
 
         // Clear current backgrounds
         foreach (GameObject bg in activeBackgrounds)
