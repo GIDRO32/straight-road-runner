@@ -24,6 +24,10 @@ MonoBehaviour:
     witness something uncanny if you take a closer look.
   introTitle: Le Kin Penn's Sketchbook
   musicFolder: 
+  menuBackgroundPrefab: {fileID: 5791166462679130858, guid: 50e480fb79b6d7f4a9ea2766cf94d1f9, type: 3}
+  menuBackgroundScrollSpeed: 4
+  menuBackgroundWidth: 39
+  titleLogo: {fileID: 21300000, guid: 44403fd4b5d687e478f7918b0eeffb76, type: 3}
   enemies:
   - {fileID: 11400000, guid: a0771887c64e4684a30b2ca9461e985f, type: 2}
   platformPrefab: {fileID: 0}

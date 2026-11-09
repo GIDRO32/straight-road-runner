@@ -22,6 +22,10 @@ MonoBehaviour:
   description: Enemies and obstacles from every stage spawn at random.
   introTitle: CHAOS MODE
   musicFolder: 
+  menuBackgroundPrefab: {fileID: 0}
+  menuBackgroundScrollSpeed: 4
+  menuBackgroundWidth: 39
+  titleLogo: {fileID: 0}
   enemies: []
   platformPrefab: {fileID: 0}
   basePlatform: {fileID: 0}
