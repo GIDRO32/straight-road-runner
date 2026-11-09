@@ -1,114 +1,110 @@
-// Platform.cs - NEW SCRIPT (attach to Platform prefab)
+// Platform.cs - attach to the base platform prefab
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// A platform instance. StageControl calls Setup() right after spawning it with the platform type
+/// (look + mechanic, from PlatformDefinition) and the stage's obstacle chances.
+/// </summary>
 public class Platform : MonoBehaviour
 {
-    [Header("Platform Features")]
-    public GameObject sign;
-    public GameObject wall;
-    [Tooltip("Where stage obstacles spawn. Falls back to the built-in wall's position.")]
-    public Transform obstacleAnchor;
-
-    // Set by StageControl right after spawning. When empty, the built-in wall child is used instead.
-    [System.NonSerialized] public IReadOnlyList<ObstacleDefinition> obstaclePool;
-
-    // NEW: Static difficulty variables (shared across all platforms)
-    public static float wallSpawnChance = 0.03f;
-    public static float signSpawnChance = 0.7f;
-    public static float fragileChance = 0.01f; // Starts at 0, increases over time
-
-    [Header("Fragile Platform Settings")]
-    public Sprite normalSprite;
-    public Sprite fragileSprite;
-    public float fragileTime = 3f;
-    public GameObject timerUI; // Assign a UI slider/text prefab
-
-    private bool isFragile = false;
-    private bool playerOnPlatform = false;
-    private float fragileTimer = 0f;
-    private SpriteRenderer spriteRenderer;
-    private GameObject timerInstance;
     [Header("Particle Effects")]
     public ParticleSystem normalLandingParticles;
     public ParticleSystem fragileLandingParticles;
+    [Tooltip("Played when a fragile platform breaks")]
     public ParticleSystem fragileBreak;
 
-    void Start()
+    public PlatformDefinition Definition { get; private set; }
+    public PlatformMechanic Mechanic { get; private set; }
+    public SpriteFrameAnimator FrameAnimator { get; private set; }
+    public bool IsBroken { get; private set; }
+
+    private SpriteRenderer spriteRenderer;
+    private readonly List<GameObject> obstacleInstances = new List<GameObject>();
+
+    void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-
-        // Determine if this platform is fragile
-        isFragile = Random.value < fragileChance;
-
-        if (isFragile && fragileSprite != null)
-        {
-            spriteRenderer.sprite = fragileSprite;
-        }
-        else if (normalSprite != null)
-        {
-            spriteRenderer.sprite = normalSprite;
-        }
-
-        // Spawn features (walls/signs)
-        bool spawnSign = Random.value < signSpawnChance;
-        bool spawnWall = Random.value < wallSpawnChance;
-
-        // Stage obstacles replace the built-in wall when the stage defines any
-        if (spawnWall && TrySpawnStageObstacle())
-            spawnWall = false;
-
-        if (sign != null)
-            sign.SetActive(spawnSign);
-
-        if (wall != null)
-            wall.SetActive(spawnWall);
     }
-    private bool TrySpawnStageObstacle()
+
+    /// <summary>Called once by StageControl right after Instantiate.</summary>
+    public void Setup(PlatformDefinition definition, IReadOnlyList<ObstacleSpawnState> obstacles)
     {
-        if (obstaclePool == null || obstaclePool.Count == 0) return false;
+        Definition = definition;
 
-        ObstacleDefinition obstacle = WeightedRandom.Pick(obstaclePool, o => o.prefab != null ? o.spawnWeight : 0f);
-        if (obstacle == null) return false;
+        if (definition != null)
+        {
+            ApplyLook(definition);
+            AddMechanic(definition);
+        }
 
-        Transform anchor = obstacleAnchor != null ? obstacleAnchor : (wall != null ? wall.transform : transform);
-
-        // Parent to the platform so it scrolls with it, keeping the prefab's world scale
-        GameObject instance = Instantiate(obstacle.prefab, transform, true);
-        instance.transform.position = anchor.position;
-        return true;
+        if (definition == null || definition.allowObstacles)
+            SpawnObstacles(obstacles);
     }
 
-    void Update()
+    private void ApplyLook(PlatformDefinition definition)
     {
-        if (!isFragile) return;
+        if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null) return;
 
-        if (playerOnPlatform)
+        if (definition.idleFrames != null && definition.idleFrames.Length > 0)
         {
-            fragileTimer += Time.deltaTime;
+            FrameAnimator = gameObject.AddComponent<SpriteFrameAnimator>();
+            FrameAnimator.PlayLoop(definition.idleFrames, definition.idleFramesPerSecond);
+        }
+        else if (definition.sprite != null)
+        {
+            spriteRenderer.sprite = definition.sprite;
+        }
 
-            // Update timer UI
-            if (timerInstance != null)
-            {
-                Slider timerSlider = timerInstance.GetComponentInChildren<Slider>();
-                if (timerSlider != null)
-                {
-                    timerSlider.value = fragileTimer / fragileTime;
-                }
-            }
+        // Lava etc. may need the animator for one-shot animations even without an idle loop
+        if (FrameAnimator == null && definition.mechanic == PlatformMechanicType.Lava)
+            FrameAnimator = gameObject.AddComponent<SpriteFrameAnimator>();
+    }
 
-            // Platform breaks
-            if (fragileTimer >= fragileTime)
-            {
-                BreakPlatform();
-            }
+    private void AddMechanic(PlatformDefinition definition)
+    {
+        switch (definition.mechanic)
+        {
+            case PlatformMechanicType.Fragile: Mechanic = gameObject.AddComponent<FragileMechanic>(); break;
+            case PlatformMechanicType.Lava: Mechanic = gameObject.AddComponent<LavaMechanic>(); break;
+            default: Mechanic = null; break;
+        }
+
+        if (Mechanic != null) Mechanic.Init(this, definition);
+    }
+
+    // Each obstacle rolls its chance; only one obstacle per slot
+    private void SpawnObstacles(IReadOnlyList<ObstacleSpawnState> obstacles)
+    {
+        if (obstacles == null) return;
+
+        var usedSlots = new HashSet<ObstacleSlot>();
+        foreach (var spawn in obstacles)
+        {
+            ObstacleDefinition obstacle = spawn.definition;
+            if (obstacle == null || obstacle.prefab == null) continue;
+            if (usedSlots.Contains(obstacle.slot)) continue;
+            if (Random.value >= spawn.chance) continue;
+
+            usedSlots.Add(obstacle.slot);
+
+            // Child of the platform so it scrolls with it; keeps the prefab's world scale
+            GameObject instance = Instantiate(obstacle.prefab, transform, true);
+            instance.transform.localPosition = new Vector3(obstacle.offset.x, obstacle.offset.y, 0f);
+            obstacleInstances.Add(instance);
+
+            WallShatter wall = instance.GetComponentInChildren<WallShatter>(true);
+            if (wall != null && obstacle.hitsToBreak.x > 0)
+                wall.SetHitsToBreak(obstacle.hitsToBreak.x, Mathf.Max(obstacle.hitsToBreak.x, obstacle.hitsToBreak.y));
         }
     }
+
+    // Called by Movement when the player lands from the air
     public void OnPlayerLanded(Vector3 landPosition)
     {
-        ParticleSystem particlesToPlay = isFragile ? fragileLandingParticles : normalLandingParticles;
+        ParticleSystem particlesToPlay = Mechanic != null ? Mechanic.LandingParticles : normalLandingParticles;
 
         if (particlesToPlay != null)
         {
@@ -121,36 +117,32 @@ public class Platform : MonoBehaviour
             particlesToPlay.Play();
         }
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Player") && isFragile)
-        {
-            playerOnPlatform = true;
-
-            // ✅ Optional: Play different particle when stepping on fragile platform
-            if (fragileLandingParticles != null && !fragileLandingParticles.isPlaying)
-            {
-                fragileLandingParticles.Play();
-            }
-        }
+        if (Mechanic != null && collision.gameObject.CompareTag("Player"))
+            Mechanic.OnPlayerEnter(collision.gameObject);
     }
+
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Player") && isFragile)
-        {
-            playerOnPlatform = false;
-            fragileTimer = 0f;
-        }
+        if (Mechanic != null && collision.gameObject.CompareTag("Player"))
+            Mechanic.OnPlayerExit(collision.gameObject);
     }
 
-    private void BreakPlatform()
+    /// <summary>Removes the platform (fragile platforms call this when they give way).</summary>
+    public void Break()
     {
+        if (IsBroken) return;
+        IsBroken = true;
+
         // Disable collider so player falls through
         GetComponent<Collider2D>().enabled = false;
 
-        // Hide the platform sprite
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null) sr.enabled = false;
+        // Hide the platform sprite and whatever stood on it
+        if (spriteRenderer != null) spriteRenderer.enabled = false;
+        foreach (var obstacle in obstacleInstances)
+            if (obstacle != null) obstacle.SetActive(false);
 
         // Play particles and destroy after they finish
         if (fragileBreak != null)

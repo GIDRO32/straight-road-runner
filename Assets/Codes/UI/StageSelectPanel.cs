@@ -46,8 +46,10 @@ public class StageSelectPanel : MonoBehaviour
     [Header("Texts")]
     public string enemiesTitle = "Enemies";
     public string obstaclesTitle = "Obstacles";
+    public string platformsTitle = "Platforms";
     public string noEnemiesText = "No enemies on this stage.";
     public string noObstaclesText = "No obstacles on this stage.";
+    public string noPlatformsText = "Only regular platforms.";
 
     [Header("Play")]
     public Button playButton;
@@ -195,6 +197,7 @@ public class StageSelectPanel : MonoBehaviour
         if (selected == null || infoContent == null) return;
 
         AddSection(enemiesTitle, selected.GetEnemyPool(), noEnemiesText, e => e.description);
+        AddSection(platformsTitle, selected.GetPlatformPool(), noPlatformsText, p => p.description);
         AddSection(obstaclesTitle, selected.GetObstaclePool(), noObstaclesText, o => o.description);
 
         if (infoScroll != null)

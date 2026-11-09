@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0116ee59f7994c9eacd035f4de27e692, type: 3}
+  m_Name: Volcanic Wall
+  m_EditorClassIdentifier: 
+  id: volcanic_wall
+  displayName: Hardened Wall
+  icon: {fileID: 0}
+  sortOrder: 0
+  includeInDemo: 1
+  prefab: {fileID: 4803196070363959240, guid: 47266cb5e7f749d48e05345f85b28e12, type: 3}
+  offset: {x: -2.13, y: 3.72}
+  slot: 0
+  description: Blocks your way. Can take one or two hits to break.
+  hitsToBreak: {x: 1, y: 2}

@@ -17,9 +17,23 @@ public class StageDefinition : ContentDefinition
     [Tooltip("StreamingAssets music folder, e.g. \"Music/Regular\". Empty = scene default.")]
     public string musicFolder;
 
-    [Header("Spawn Pools")]
+    [Header("Enemies")]
     public EnemyDefinition[] enemies;
-    public ObstacleDefinition[] obstacles;
+
+    [Header("Platforms")]
+    [Tooltip("Base platform prefab (collider, scrolling, particles). Empty = the scene's StageControl prefab.")]
+    public GameObject platformPrefab;
+    [Tooltip("Used whenever none of the special platforms below is rolled")]
+    public PlatformDefinition basePlatform;
+    [Tooltip("Fragile, lava... Each new platform rolls these chances; the first hit wins.")]
+    public List<PlatformSpawn> specialPlatforms = new List<PlatformSpawn>();
+
+    [Header("Obstacles")]
+    [Tooltip("Each new platform rolls each chance. Obstacles in the same slot never stack.")]
+    public List<ObstacleSpawn> obstacleSpawns = new List<ObstacleSpawn>();
+
+    [Header("Pacing & Difficulty")]
+    public StagePacing pacing = new StagePacing();
 
     [Header("Bosses")]
     public bool bossesEnabled = true;
@@ -32,7 +46,27 @@ public class StageDefinition : ContentDefinition
     public string LeaderboardId => string.IsNullOrEmpty(leaderboardId) ? id : leaderboardId;
 
     public virtual IReadOnlyList<EnemyDefinition> GetEnemyPool() => Clean(enemies);
-    public virtual IReadOnlyList<ObstacleDefinition> GetObstaclePool() => Clean(obstacles);
+    public virtual PlatformDefinition GetBasePlatform() => basePlatform;
+    public virtual IReadOnlyList<PlatformSpawn> GetSpecialPlatforms() =>
+        SpawnListUtility.Clean(specialPlatforms, s => s.platform);
+    public virtual IReadOnlyList<ObstacleSpawn> GetObstacleSpawns() =>
+        SpawnListUtility.Clean(obstacleSpawns, s => s.obstacle);
+
+    /// <summary>Obstacles that can appear on this stage (for the Stage Select info).</summary>
+    public IReadOnlyList<ObstacleDefinition> GetObstaclePool()
+    {
+        var result = new List<ObstacleDefinition>();
+        foreach (var spawn in GetObstacleSpawns()) result.Add(spawn.obstacle);
+        return Clean(result);
+    }
+
+    /// <summary>Special platforms that can appear on this stage (for the Stage Select info).</summary>
+    public IReadOnlyList<PlatformDefinition> GetPlatformPool()
+    {
+        var result = new List<PlatformDefinition>();
+        foreach (var spawn in GetSpecialPlatforms()) result.Add(spawn.platform);
+        return Clean(result);
+    }
 
     protected static List<T> Clean<T>(IEnumerable<T> source) where T : Object
     {

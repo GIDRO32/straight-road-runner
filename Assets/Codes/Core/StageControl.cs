@@ -5,6 +5,7 @@ using UnityEngine;
 public class StageControl : MonoBehaviour
 {
     [Header("Platform Settings")]
+    [Tooltip("Base platform prefab. A stage can override it (StageDefinition > Platform Prefab).")]
     public GameObject platformPrefab;
     public float platformSpawnX = 20f;
     public float minY = -2f;
@@ -53,10 +54,17 @@ public class StageControl : MonoBehaviour
     // Stage content (from StageDefinition)
     private StageDefinition stage;
     private IReadOnlyList<EnemyDefinition> enemyPool = new List<EnemyDefinition>();
-    private IReadOnlyList<ObstacleDefinition> obstaclePool = new List<ObstacleDefinition>();
     private bool enemySpawningPaused = false;
 
+    // Platforms & obstacles of the current stage, with live chances (nudged by DifficultyManager)
+    private GameObject stagePlatformPrefab;
+    private PlatformDefinition basePlatform;
+    private readonly List<PlatformSpawnState> platformSpawns = new List<PlatformSpawnState>();
+    private readonly List<ObstacleSpawnState> obstacleSpawns = new List<ObstacleSpawnState>();
+
     public StageDefinition Stage => stage;
+    public IReadOnlyList<PlatformSpawnState> PlatformSpawns => platformSpawns;
+    public IReadOnlyList<ObstacleSpawnState> ObstacleSpawns => obstacleSpawns;
 
     void Start()
     {
@@ -67,12 +75,59 @@ public class StageControl : MonoBehaviour
         if (stage != null)
         {
             enemyPool = stage.GetEnemyPool();
-            obstaclePool = stage.GetObstaclePool();
+            LoadStagePlatforms(stage);
+            ApplyPacingStart(stage.pacing);
         }
         else
         {
             Debug.LogWarning("StageControl: No StageDefinition found for this scene, using fallback enemyPrefab.");
         }
+
+        // DifficultyManager nudges the values set up above
+        DifficultyManager difficulty = DifficultyManager.Instance != null ? DifficultyManager.Instance : FindObjectOfType<DifficultyManager>();
+        if (difficulty != null)
+            difficulty.Initialize(this, stage != null ? stage.pacing : null);
+    }
+
+    private void LoadStagePlatforms(StageDefinition stageDefinition)
+    {
+        stagePlatformPrefab = stageDefinition.platformPrefab;
+        basePlatform = stageDefinition.GetBasePlatform();
+
+        platformSpawns.Clear();
+        foreach (var spawn in stageDefinition.GetSpecialPlatforms())
+            platformSpawns.Add(new PlatformSpawnState { definition = spawn.platform, range = spawn.chance, chance = spawn.chance.start });
+
+        obstacleSpawns.Clear();
+        foreach (var spawn in stageDefinition.GetObstacleSpawns())
+            obstacleSpawns.Add(new ObstacleSpawnState { definition = spawn.obstacle, range = spawn.chance, chance = spawn.chance.start });
+    }
+
+    // Starting values of everything DifficultyManager ramps up
+    private void ApplyPacingStart(StagePacing pacing)
+    {
+        if (pacing == null) return;
+
+        platformSpawnInterval = pacing.platformInterval.start;
+        currentPlatformSpawnChance = pacing.platformLaneChance.start;
+        enemySpawnInterval = pacing.enemyInterval.start;
+        enemySpawnChance = pacing.enemyChance.start;
+        maxEnemies = Mathf.RoundToInt(pacing.maxEnemies.start);
+    }
+
+    // Special platforms are rolled in random order; the first that hits wins, otherwise the base platform
+    private PlatformDefinition PickPlatformType()
+    {
+        int count = platformSpawns.Count;
+        int offset = count > 0 ? Random.Range(0, count) : 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            PlatformSpawnState spawn = platformSpawns[(i + offset) % count];
+            if (spawn.definition != null && Random.value < spawn.chance)
+                return spawn.definition;
+        }
+        return basePlatform;
     }
 
     void Update()
@@ -190,7 +245,8 @@ public class StageControl : MonoBehaviour
                 if (Random.value < currentPlatformSpawnChance || i == count - 1)
                 {
                     Vector3 spawnPos = new Vector3(spawnX, Ypositions[i], 0f);
-                    GameObject platform = Instantiate(platformPrefab, spawnPos, Quaternion.identity);
+                    GameObject prefab = stagePlatformPrefab != null ? stagePlatformPrefab : platformPrefab;
+                    GameObject platform = Instantiate(prefab, spawnPos, Quaternion.identity);
 
                     var rb = platform.GetComponent<Rigidbody2D>();
                     rb.bodyType = RigidbodyType2D.Kinematic;
@@ -199,10 +255,10 @@ public class StageControl : MonoBehaviour
                     var so = platform.GetComponent<ScrollingObject>();
                     so.Init(platformScrollSpeed, platformDestroyX);
 
-                    // Platform picks its obstacle from the stage pool in Start()
+                    // Platform type (look + mechanic) and obstacles for this stage
                     var platformScript = platform.GetComponent<Platform>();
                     if (platformScript != null)
-                        platformScript.obstaclePool = obstaclePool;
+                        platformScript.Setup(PickPlatformType(), obstacleSpawns);
 
                     activePlatforms.Add(platform);
                 }
