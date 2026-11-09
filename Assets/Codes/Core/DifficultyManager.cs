@@ -72,7 +72,6 @@ public class DifficultyManager : MonoBehaviour
         Add("Platform lane chance", pacing.platformLaneChance, () => sc.currentPlatformSpawnChance, v => sc.currentPlatformSpawnChance = v);
         Add("Enemy interval", pacing.enemyInterval, () => sc.enemySpawnInterval, v => sc.enemySpawnInterval = v);
         Add("Enemy chance", pacing.enemyChance, () => sc.enemySpawnChance, v => sc.enemySpawnChance = v);
-        Add("Enemy wave size", pacing.enemyWaveSize, () => sc.enemyWaveSize, v => sc.enemyWaveSize = Mathf.RoundToInt(v));
         Add("Max enemies", pacing.maxEnemies, () => sc.maxEnemies, v => sc.maxEnemies = Mathf.RoundToInt(v));
 
         foreach (var spawn in sc.PlatformSpawns)

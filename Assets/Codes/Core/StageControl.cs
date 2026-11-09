@@ -40,8 +40,6 @@ public class StageControl : MonoBehaviour
     private readonly List<GameObject> activeEnemies = new();
     [Tooltip("Seconds between enemy waves (set from the stage's pacing)")]
     public float enemySpawnInterval = 20f;
-    [Tooltip("Max enemies per wave (set from the stage's pacing)")]
-    public int enemyWaveSize = 3;
     [Tooltip("Seconds between enemies of one wave")]
     public float enemyWaveSpawnDelay = 0.5f;
     [Tooltip("Seconds after the player appears until the first, guaranteed enemy")]
@@ -119,7 +117,6 @@ public class StageControl : MonoBehaviour
         platformSpawnInterval = pacing.platformInterval.start;
         currentPlatformSpawnChance = pacing.platformLaneChance.start;
         enemySpawnInterval = pacing.enemyInterval.start;
-        enemyWaveSize = Mathf.RoundToInt(pacing.enemyWaveSize.start);
         enemyWaveSpawnDelay = pacing.enemyWaveSpawnDelay;
         firstEnemyDelay = pacing.firstEnemyDelay;
         enemySpawnChance = pacing.enemyChance.start;
@@ -179,12 +176,14 @@ public class StageControl : MonoBehaviour
         }
     }
 
-    // Up to enemyWaveSize enemies; each rolls enemySpawnChance and is a random type from the stage's list
+    // Up to maxEnemies rolls; each rolls enemySpawnChance and is a random type from the stage's list.
+    // Stops once maxEnemies are alive.
     private IEnumerator SpawnEnemyWave()
     {
         waveRunning = true;
 
-        for (int i = 0; i < enemyWaveSize; i++)
+        int rolls = maxEnemies;
+        for (int i = 0; i < rolls; i++)
         {
             if (activeEnemies.Count >= maxEnemies || enemySpawningPaused)
                 break;
@@ -192,7 +191,7 @@ public class StageControl : MonoBehaviour
             if (Random.value <= enemySpawnChance && SpawnOneEnemy())
             {
                 // Little pause before the next enemy of the wave
-                if (i < enemyWaveSize - 1)
+                if (i < rolls - 1)
                     yield return new WaitForSeconds(enemyWaveSpawnDelay);
             }
         }

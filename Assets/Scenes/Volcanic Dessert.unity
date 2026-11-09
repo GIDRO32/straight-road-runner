@@ -4320,6 +4320,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1047100097}
   - component: {fileID: 1047100098}
+  - component: {fileID: 1968521128}
   m_Layer: 5
   m_Name: Slider
   m_TagString: Untagged
@@ -5940,6 +5941,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1826998791}
   - component: {fileID: 1826998792}
+  - component: {fileID: 1981221182}
   m_Layer: 5
   m_Name: Slider
   m_TagString: Untagged
@@ -6738,3 +6740,29 @@ SceneRoots:
   - {fileID: 1687128566}
   - {fileID: 1956507303}
   - {fileID: 533764143}
+--- !u!114 &1968521128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1047100096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87d291f479024a16994c58dd7539462c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  channel: 1
+--- !u!114 &1981221182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826998790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87d291f479024a16994c58dd7539462c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  channel: 0

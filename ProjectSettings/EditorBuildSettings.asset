@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SketchyRoad.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/Volcanic Dessert.unity
+    guid: ba9d9e6a10114ee42b827d090e502e30
   m_configObjects: {}

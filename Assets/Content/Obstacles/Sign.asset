@@ -20,5 +20,5 @@ MonoBehaviour:
   prefab: {fileID: 4667504208647223258, guid: 9165e4e3d9164f6bbd2a8491d0d7514a, type: 3}
   offset: {x: 0, y: 0}
   slot: 1
-  description: Hit it to refill stamina. Hitting it at full stamina gives points instead.
+  description: Hit it to refill stamina. Stamina that doesn't fit is turned into points.
   hitsToBreak: {x: 0, y: 0}

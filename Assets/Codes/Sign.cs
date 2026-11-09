@@ -39,15 +39,19 @@ public class Sign : MonoBehaviour
         playerData = col.transform.GetComponentInParent<PlayerData>();
         if (playerData != null)
         {
-            bool wasFullStamina = playerData.currentStamina >= playerData.maxStamina;
+            // Remnant rule: stamina that doesn't fit becomes points
+            // (full stamina = staminaGain points; 115/120 with +10 = 5 stamina + 5 points)
+            float room = Mathf.Max(0f, playerData.maxStamina - playerData.currentStamina);
+            float gained = Mathf.Min(staminaGain, room);
+            float remnant = staminaGain - gained;
 
-            playerData.currentStamina = Mathf.Min(playerData.maxStamina,
-                playerData.currentStamina + staminaGain);
+            playerData.currentStamina += gained;
             playerData.UpdateStaminaUI();
 
-            if (wasFullStamina && ScoreManager.Instance != null)
+            int points = Mathf.RoundToInt(remnant);
+            if (points > 0 && ScoreManager.Instance != null)
             {
-                ScoreManager.Instance.AddSignHitScore();
+                ScoreManager.Instance.AddScore(points);
             }
         }
 
