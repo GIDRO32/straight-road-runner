@@ -70,6 +70,7 @@ public class ContentDatabaseBuilder : AssetPostprocessor
         changed |= Assign(ref db.enemies, FindAll<EnemyDefinition>().Where(e => !(e is BossDefinition)).ToList());
         changed |= Assign(ref db.bosses, FindAll<BossDefinition>());
         changed |= Assign(ref db.obstacles, FindAll<ObstacleDefinition>());
+        changed |= Assign(ref db.platforms, FindAll<PlatformDefinition>());
 
         if (db.defaultCharacter == null && db.characters.Count > 0)
         {
@@ -93,7 +94,7 @@ public class ContentDatabaseBuilder : AssetPostprocessor
         if (verbose)
         {
             Debug.Log($"ContentDatabase rebuilt: {db.characters.Count} characters, {db.stages.Count} stages, " +
-                      $"{db.enemies.Count} enemies, {db.bosses.Count} bosses, {db.obstacles.Count} obstacles. " +
+                      $"{db.enemies.Count} enemies, {db.bosses.Count} bosses, {db.obstacles.Count} obstacles, {db.platforms.Count} platforms. " +
                       $"{warnings} warning(s).", db);
         }
 
@@ -144,6 +145,7 @@ public class ContentDatabaseBuilder : AssetPostprocessor
         all.AddRange(db.enemies);
         all.AddRange(db.bosses);
         all.AddRange(db.obstacles);
+        all.AddRange(db.platforms);
 
         foreach (var group in all.Where(d => d != null).GroupBy(d => d.id).Where(g => g.Count() > 1))
             Warn($"Duplicate id '{group.Key}' used by: {string.Join(", ", group.Select(d => d.name))}", group.First());
@@ -181,6 +183,22 @@ public class ContentDatabaseBuilder : AssetPostprocessor
 
         foreach (var o in db.obstacles)
             if (o.prefab == null) Warn($"Obstacle '{o.name}' has no prefab.", o);
+
+        foreach (var p in db.platforms)
+        {
+            if (p.DisplaySprite == null)
+                Warn($"Platform '{p.name}' has no sprite or idle frames.", p);
+            if (p.mechanic == PlatformMechanicType.Lava && p.lava.staminaDamage <= 0f)
+                Warn($"Lava platform '{p.name}' does no damage.", p);
+        }
+
+        foreach (var s in db.stages)
+        {
+            if (!(s is ChaosStageDefinition) && s.basePlatform == null)
+                Warn($"Stage '{s.name}' has no Base Platform; platforms keep the prefab's own sprite.", s);
+            if (s.specialPlatforms.Any(e => e == null || e.platform == null) || s.obstacleSpawns.Any(e => e == null || e.obstacle == null))
+                Warn($"Stage '{s.name}' has empty entries in its platform or obstacle lists.", s);
+        }
 
         return warnings;
     }

@@ -576,34 +576,45 @@ public class Movement : MonoBehaviour
             float staminaDamage = enemy != null ? enemy.ContactStaminaDamage : 10f;
             float stunDuration = enemy != null ? enemy.ContactStunDuration : 1f;
 
-            superJumping = false;
-            soundEffects?.PlayDamageTaken();
+            TakeHit(staminaDamage, stunDuration);
+        }
+    }
 
-            // NEW: Deduct stamina when hit by enemy
-            if (playerData != null)
+    /// <summary>
+    /// Hurts the player: stamina loss + stun (enemy contact, lava platforms...).
+    /// Returns false if the hit was ignored (already stunned or dashing).
+    /// </summary>
+    public virtual bool TakeHit(float staminaDamage, float stunDuration)
+    {
+        if (isStunned || isDashing || !enabled) return false;
+
+        superJumping = false;
+        soundEffects?.PlayDamageTaken();
+
+        if (playerData != null)
+        {
+            playerData.currentStamina = Mathf.Max(0, playerData.currentStamina - staminaDamage);
+            playerData.UpdateStaminaUI();
+
+            // Check if stamina reached zero (optional warning, but no game over)
+            if (playerData.currentStamina <= 0)
             {
-                playerData.currentStamina = Mathf.Max(0, playerData.currentStamina - staminaDamage);
-                playerData.UpdateStaminaUI();
-
-                // Check if stamina reached zero (optional warning, but no game over)
-                if (playerData.currentStamina <= 0)
-                {
-                    Debug.Log("Warning: Stamina depleted!");
-                    // Player can continue, just can't use stamina abilities
-                }
-            }
-
-            StartCoroutine(StunPlayer(stunDuration));
-
-            if (isPunching)
-            {
-                EndPunch();
-            }
-            if (isUppercutting)
-            {
-                EndUppercut();
+                Debug.Log("Warning: Stamina depleted!");
+                // Player can continue, just can't use stamina abilities
             }
         }
+
+        StartCoroutine(StunPlayer(stunDuration));
+
+        if (isPunching)
+        {
+            EndPunch();
+        }
+        if (isUppercutting)
+        {
+            EndUppercut();
+        }
+        return true;
     }
 
     protected virtual void OnCollisionExit2D(Collision2D col)

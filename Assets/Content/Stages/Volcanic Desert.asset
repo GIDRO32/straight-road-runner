@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6b400c43308436aab62a3989ee49e9d, type: 3}
   m_Name: Volcanic Desert
   m_EditorClassIdentifier: 
-  id: sketchy_road
+  id: volcanic_desert
   displayName: Volcanic Desert
   icon: {fileID: 0}
   sortOrder: 1
@@ -24,6 +24,53 @@ MonoBehaviour:
   musicFolder: 
   enemies:
   - {fileID: 11400000, guid: a0771887c64e4684a30b2ca9461e985f, type: 2}
-  obstacles: []
+  platformPrefab: {fileID: 0}
+  basePlatform: {fileID: 11400000, guid: 32db248abcda42b19435af5371ddea48, type: 2}
+  specialPlatforms:
+  - platform: {fileID: 11400000, guid: 8d87ab47b4304335b85f225faf8906e7, type: 2}
+    chance:
+      start: 0.01
+      limit: 0.6
+      step: 0.02
+  - platform: {fileID: 11400000, guid: e99c7787a8a343de99a63c5b59d04d31, type: 2}
+    chance:
+      start: 0.05
+      limit: 0.5
+      step: 0.03
+  obstacleSpawns:
+  - obstacle: {fileID: 11400000, guid: 31418745ad8c470dbf64a2172761205e, type: 2}
+    chance:
+      start: 0.03
+      limit: 0.9
+      step: 0.03
+  - obstacle: {fileID: 11400000, guid: 630126ac08974f1c8274410e97f6bb92, type: 2}
+    chance:
+      start: 0.7
+      limit: 0.05
+      step: -0.02
+  pacing:
+    difficultyInterval: 5
+    platformInterval:
+      start: 1
+      limit: 5
+      step: 0.1
+    platformLaneChance:
+      start: 0.95
+      limit: 0.3
+      step: -0.02
+    enemyInterval:
+      start: 20
+      limit: 3
+      step: -0.5
+    enemyChance:
+      start: 0.2
+      limit: 1
+      step: 0.05
+    maxEnemies:
+      start: 6
+      limit: 20
+      step: 1
+    endgameSpeedStep: 0.2
+    endgameInterval: 5
   bossesEnabled: 1
   leaderboardId: 

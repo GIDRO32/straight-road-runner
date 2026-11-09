@@ -37,20 +37,46 @@ Bosses don't go in stage lists: `BossDirector` picks a random one during any run
 and `minRunTimeSeconds`), pauses normal enemies and difficulty until it is defeated, then resumes.
 Tune timing on the `BossDirector` component (added automatically to the StageControl object).
 
+## Platform types
+Assets in `Assets/Content/Platforms`. Create ▸ SRR ▸ Platform:
+- **Look**: `sprite`, or `idleFrames` + fps for an animated platform.
+- **Mechanic**: `Regular`, `Fragile` (breaks after `breakTime` seconds of standing on it) or
+  `Lava` (after `heatUpTime`, hits like an enemy: `staminaDamage` + `stunDuration`, again every `hitInterval`;
+  plays `hitFrames` once per hit).
+- `allowObstacles`: untick to keep walls/signs off this type.
+- New mechanic (ice, bouncy...): add a value to `PlatformMechanicType`, a `PlatformMechanic` subclass in
+  `Assets/Codes/Platforms`, and a case in `Platform.AddMechanic`.
+
+All types share the stage's base platform prefab (`Cloud.prefab`: collider, scrolling, particles); a stage can use its own
+with `platformPrefab`.
+
 ## Obstacle
-1. Make the prefab (e.g. a wall with `WallShatter`).
-2. Create ▸ SRR ▸ Obstacle, then add it to a stage's `obstacles` list.
-   It spawns on platforms at `Platform.obstacleAnchor` using the difficulty-scaled `Platform.wallSpawnChance`.
-   Stages with no obstacles keep using the Platform prefab's built-in wall.
+Assets in `Assets/Content/Obstacles`, prefabs in `Assets/Prefabs/Obstacles`. Create ▸ SRR ▸ Obstacle:
+- `prefab`, `offset` (position on the platform, platform-local), `slot` (two obstacles in the same slot never share a platform).
+- Walls: `hitsToBreak` x–y (random per wall, e.g. 1–2). 0 = the prefab's `WallShatter` min/max.
+- The same prefab can back several obstacles (e.g. **Wall** = 1 hit, **Hardened Wall** = 1–2 hits).
 
 ## Stage
 1. Make the scene (duplicate `SketchyRoad`, change backgrounds/decorations) and add it to **Build Settings**.
-2. Create ▸ SRR ▸ Stage. Set scene name, artwork, description, intro title, music folder, enemies and obstacles.
+   Several stages may share one scene (Volcanic Desert uses `SketchyRoad` for now).
+2. Create ▸ SRR ▸ Stage. Set scene name, artwork, description, intro title, music folder and enemies, then:
+   - **Platforms**: `basePlatform` (the normal one) and `specialPlatforms`, each with a `chance` range.
+     Each new platform rolls the special chances (random order, first hit wins), otherwise it's the base platform.
+   - **Obstacles**: `obstacleSpawns`, each with a `chance` range, rolled per platform.
+   - **Pacing & Difficulty**: platform/enemy intervals and chances, max enemies, endgame speed-up.
 3. Create a leaderboard in the Unity Cloud dashboard with the stage's id (or set `leaderboardId`).
 4. Load it from the menu with `MenuControl.PlayStage("stage_id")` or `GameSession.LoadStage(stage)`.
 
-**Chaos Mode** (`ChaosMode.asset`) automatically pulls enemies and obstacles from every other stage, so it needs no maintenance.
+**Chaos Mode** (`ChaosMode.asset`) automatically pulls enemies, special platforms and obstacles from every other stage
+(plus other stages' base platforms at `otherBasePlatformChance`), so it needs no maintenance.
 It uses the `SketchyRoad` scene; point it at any stage scene.
+
+## Difficulty
+Every value that ramps up is a **range**: `start` → `limit`, moving by `step` (negative = goes down, 0 = constant).
+Every `pacing.difficultyInterval` seconds, `DifficultyManager` picks ONE random range that hasn't hit its limit and steps it.
+That covers the stage's pacing ranges and every special platform and obstacle chance.
+Once all are at their limits, the endgame starts: platforms speed up by `endgameSpeedStep` every `endgameInterval` seconds.
+Each nudge is logged in the Console (`DifficultyManager > Log Changes`).
 
 ## Leaderboards (Unity Gaming Services)
 - Link the project: **Edit ▸ Project Settings ▸ Services**, then select or create a Unity Cloud project.

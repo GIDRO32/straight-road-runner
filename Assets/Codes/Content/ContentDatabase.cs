@@ -22,6 +22,7 @@ public class ContentDatabase : ScriptableObject
     public List<EnemyDefinition> enemies = new List<EnemyDefinition>();
     public List<BossDefinition> bosses = new List<BossDefinition>();
     public List<ObstacleDefinition> obstacles = new List<ObstacleDefinition>();
+    public List<PlatformDefinition> platforms = new List<PlatformDefinition>();
 
     private static ContentDatabase instance;
 
@@ -48,6 +49,7 @@ public class ContentDatabase : ScriptableObject
     public IReadOnlyList<EnemyDefinition> Enemies => Visible(enemies);
     public IReadOnlyList<BossDefinition> Bosses => Visible(bosses);
     public IReadOnlyList<ObstacleDefinition> Obstacles => Visible(obstacles);
+    public IReadOnlyList<PlatformDefinition> Platforms => Visible(platforms);
 
     // ===== LOOKUPS =====
 
@@ -55,6 +57,7 @@ public class ContentDatabase : ScriptableObject
     public StageDefinition GetStage(string id) => Find(stages, id);
     public EnemyDefinition GetEnemy(string id) => Find(enemies, id) ?? Find(bosses, id);
     public ObstacleDefinition GetObstacle(string id) => Find(obstacles, id);
+    public PlatformDefinition GetPlatform(string id) => Find(platforms, id);
 
     /// <summary>First regular stage using this scene (used when a scene is opened directly in the Editor).</summary>
     public StageDefinition GetStageForScene(string sceneName)
