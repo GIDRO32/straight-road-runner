@@ -65,6 +65,7 @@ public class SmokeHound : EnemyBase
     private Platform standingOn;
     private float standOffsetX;
     private float standTimer;
+    private float landedAt;
 
     private Platform jumpTarget;
     private float jumpTargetOffsetX;
@@ -113,8 +114,10 @@ public class SmokeHound : EnemyBase
 
     private void UpdateStanding()
     {
-        // Platform gone, broken or no longer under our feet: leave
-        if (!IsUsable(standingOn) || !FeetOnPlatform(standingOn))
+        // Platform gone, broken or no longer under our feet: leave.
+        // (Feet check waits a moment after landing: the Jump clip spins the hound and Idle resets it on the next frame.)
+        bool settled = Time.time - landedAt > 0.15f;
+        if (!IsUsable(standingOn) || (settled && !FeetOnPlatform(standingOn)))
         {
             StartJump();
             return;
@@ -175,6 +178,7 @@ public class SmokeHound : EnemyBase
         standingOn = platform;
         standOffsetX = offsetX;
         standTimer = Random.Range(standTimeMin, standTimeMax);
+        landedAt = Time.time;
         rb.MovePosition(LandingPoint(platform, offsetX));
         SetAnim(AnimIdle);
     }
