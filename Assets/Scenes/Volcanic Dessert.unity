@@ -4597,70 +4597,46 @@ MonoBehaviour:
   backgroundWidth: 40
   floorWidth: 38
   decorations:
-  - decorationPrefab: {fileID: 4956991457779123132, guid: 063507feae7e7ca4683fb2fedda3c64d, type: 3}
+  - decorationPrefab: {fileID: 6374565232062749962, guid: c57e80650f0c377409d9dd816635c214, type: 3}
     sortingOrder: 1
     direction: 0
     movementSpeed: 2
     flipObject: 0
     spawnChance: 0.071
-    yPositionRange: {x: 3, y: 3}
-    scaleRange: {x: 1, y: 1}
-  - decorationPrefab: {fileID: 5480916184039949080, guid: c779fd5b5afeebb4a8e7b32e39201edb, type: 3}
+    yPositionRange: {x: 2, y: 2}
+    scaleRange: {x: 0.3, y: 0.7}
+  - decorationPrefab: {fileID: 507142079559040720, guid: 67a55536b65c785468c16ae3b1720dbc, type: 3}
     sortingOrder: 2
     direction: 0
     movementSpeed: 2
     flipObject: 0
-    spawnChance: 0.316
-    yPositionRange: {x: 3, y: 3}
-    scaleRange: {x: 1, y: 1}
-  - decorationPrefab: {fileID: 6575611733479949254, guid: a31781c61b8359c49a9fa60f3bb4bb81, type: 3}
+    spawnChance: 0.437
+    yPositionRange: {x: -1, y: 1.3}
+    scaleRange: {x: 0.3, y: 1.5}
+  - decorationPrefab: {fileID: 5850476615366095129, guid: 422cf11cd4b72ff4cb3bf2b927d5f739, type: 3}
     sortingOrder: 3
-    direction: 1
-    movementSpeed: 25
-    flipObject: 0
-    spawnChance: 0.33
-    yPositionRange: {x: 1, y: 1}
-    scaleRange: {x: 1.3, y: 1.3}
-  - decorationPrefab: {fileID: 4019588347511321071, guid: 4487a535a75420c4187ab060fac6adff, type: 3}
-    sortingOrder: 4
     direction: 0
-    movementSpeed: 15
+    movementSpeed: 8
     flipObject: 0
-    spawnChance: 0.08
-    yPositionRange: {x: 9, y: 9}
-    scaleRange: {x: 1.5, y: 1.5}
-  - decorationPrefab: {fileID: 4664745402169257719, guid: 97456f38ead41c3468df5e2754140730, type: 3}
-    sortingOrder: 5
-    direction: 0
-    movementSpeed: 15
-    flipObject: 0
-    spawnChance: 0.4
-    yPositionRange: {x: 5, y: 5}
-    scaleRange: {x: 1, y: 1}
-  - decorationPrefab: {fileID: 6575611733479949254, guid: a31781c61b8359c49a9fa60f3bb4bb81, type: 3}
-    sortingOrder: 13
-    direction: 0
-    movementSpeed: 60
-    flipObject: 1
-    spawnChance: 0.347
-    yPositionRange: {x: 1, y: 1}
-    scaleRange: {x: 1.5, y: 1.5}
-  - decorationPrefab: {fileID: 4664745402169257719, guid: 97456f38ead41c3468df5e2754140730, type: 3}
-    sortingOrder: 14
-    direction: 0
-    movementSpeed: 16
-    flipObject: 0
-    spawnChance: 0.555
-    yPositionRange: {x: 9, y: 9}
-    scaleRange: {x: 1.5, y: 1.5}
-  - decorationPrefab: {fileID: 4019588347511321071, guid: 4487a535a75420c4187ab060fac6adff, type: 3}
+    spawnChance: 0.489
+    yPositionRange: {x: 0, y: 1}
+    scaleRange: {x: 0.8, y: 1.2}
+  - decorationPrefab: {fileID: 5850476615366095129, guid: 422cf11cd4b72ff4cb3bf2b927d5f739, type: 3}
     sortingOrder: 16
     direction: 0
-    movementSpeed: 15
+    movementSpeed: 20
     flipObject: 0
-    spawnChance: 0.08
-    yPositionRange: {x: 5, y: 5}
-    scaleRange: {x: 1, y: 1}
+    spawnChance: 0.425
+    yPositionRange: {x: -1, y: 0}
+    scaleRange: {x: 1, y: 2}
+  - decorationPrefab: {fileID: 507142079559040720, guid: 67a55536b65c785468c16ae3b1720dbc, type: 3}
+    sortingOrder: 17
+    direction: 0
+    movementSpeed: 20
+    flipObject: 0
+    spawnChance: 0.575
+    yPositionRange: {x: -2, y: -1}
+    scaleRange: {x: 1.2, y: 1.5}
   decorationSpawnInterval: 5
   maxActiveDecorations: 10
 --- !u!1 &1114116080

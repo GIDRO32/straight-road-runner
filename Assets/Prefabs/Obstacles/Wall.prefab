@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6666416864932849470}
   - component: {fileID: 2078660669880145297}
   - component: {fileID: 6558191339284764081}
+  - component: {fileID: -7338687271990709063}
   m_Layer: 3
   m_Name: WallShard1
   m_TagString: Untagged
@@ -147,6 +148,33 @@ PolygonCollider2D:
       - {x: -0.35999998, y: 1.2099999}
       - {x: -0.26, y: 1.4499999}
   m_UseDelaunayMesh: 0
+--- !u!50 &-7338687271990709063
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1923038781625898139}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &2783204790585065739
 GameObject:
   m_ObjectHideFlags: 0
@@ -158,6 +186,7 @@ GameObject:
   - component: {fileID: 6810055944090986269}
   - component: {fileID: 1234742638267072917}
   - component: {fileID: 1423454929207489538}
+  - component: {fileID: -4905155736453893927}
   m_Layer: 3
   m_Name: WallShard4
   m_TagString: Untagged
@@ -291,6 +320,33 @@ PolygonCollider2D:
       - {x: -0.16, y: -2.09}
       - {x: -0.13, y: -2.05}
   m_UseDelaunayMesh: 0
+--- !u!50 &-4905155736453893927
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2783204790585065739}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &3200504257847424423
 GameObject:
   m_ObjectHideFlags: 0
@@ -302,6 +358,7 @@ GameObject:
   - component: {fileID: 7454907747571308264}
   - component: {fileID: 4617068687936485866}
   - component: {fileID: 5583307252297638546}
+  - component: {fileID: -677201363778399056}
   m_Layer: 3
   m_Name: WallShard3
   m_TagString: Untagged
@@ -450,6 +507,33 @@ PolygonCollider2D:
       - {x: -0.16, y: 0.95}
       - {x: -0.049999997, y: 1.0799999}
   m_UseDelaunayMesh: 0
+--- !u!50 &-677201363778399056
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3200504257847424423}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &4803196070363959240
 GameObject:
   m_ObjectHideFlags: 0
@@ -598,6 +682,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 695aa3545efbb0e4dafdd84494fe08cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  minHits: 1
+  maxHits: 1
+  hitFlashColor: {r: 1, g: 0.6, b: 0.6, a: 1}
+  hitShakeDistance: 0.08
+  hitFeedbackDuration: 0.15
   shards:
   - {fileID: 1923038781625898139}
   - {fileID: 6853389786066764554}
@@ -618,6 +707,7 @@ GameObject:
   - component: {fileID: 3146343720963696282}
   - component: {fileID: 3322400585650037472}
   - component: {fileID: 2602264123637072007}
+  - component: {fileID: 8554581093998845947}
   m_Layer: 3
   m_Name: WallShard5
   m_TagString: Untagged
@@ -753,6 +843,33 @@ PolygonCollider2D:
       - {x: 0.59999996, y: 1.04}
       - {x: 0.42999998, y: 1.03}
   m_UseDelaunayMesh: 0
+--- !u!50 &8554581093998845947
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5065321568870686271}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &6853389786066764554
 GameObject:
   m_ObjectHideFlags: 0
@@ -764,6 +881,7 @@ GameObject:
   - component: {fileID: 1324086155401186828}
   - component: {fileID: 7934493789466900042}
   - component: {fileID: 4776072191248107828}
+  - component: {fileID: -4148788864699560479}
   m_Layer: 3
   m_Name: WallShard2
   m_TagString: Untagged
@@ -913,3 +1031,30 @@ PolygonCollider2D:
       - {x: -0.07, y: -1.9799999}
       - {x: 0.04, y: -1.41}
   m_UseDelaunayMesh: 0
+--- !u!50 &-4148788864699560479
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6853389786066764554}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0

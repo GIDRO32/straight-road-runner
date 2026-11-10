@@ -17,8 +17,8 @@ MonoBehaviour:
   icon: {fileID: 0}
   sortOrder: 0
   includeInDemo: 1
-  prefab: {fileID: 4803196070363959240, guid: 47266cb5e7f749d48e05345f85b28e12, type: 3}
-  offset: {x: -2.13, y: 3.72}
+  prefab: {fileID: 6675705939776828954, guid: 0f7fd35c6f402034da947fddc85236ef, type: 3}
+  offset: {x: -2.13, y: 2}
   slot: 0
   description: Blocks your way. Can take one or two hits to break.
   hitsToBreak: {x: 1, y: 2}

@@ -27,10 +27,10 @@ MonoBehaviour:
   fragile:
     breakTime: 0.66
   lava:
-    heatUpTime: 1
+    heatUpTime: 0.6
     hitInterval: 1.5
     staminaDamage: 10
-    stunDuration: 1
+    stunDuration: 0.75
     hitFrames:
     - {fileID: 21300000, guid: 1c0c71ea5ca1d084c8e094a5f4010a93, type: 3}
     - {fileID: 21300000, guid: bed1b26150546b645acc64d53e953b2f, type: 3}
