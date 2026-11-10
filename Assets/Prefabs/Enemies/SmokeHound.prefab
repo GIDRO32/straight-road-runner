@@ -200,8 +200,8 @@ MonoBehaviour:
   fadeDuration: 1
   bodyCollider: {fileID: 8505177341918429002}
   feetSensor: {fileID: 3793661236942719482}
-  standTimeMin: 0.6
-  standTimeMax: 1.4
+  standTimeMin: 2
+  standTimeMax: 3
   edgeMargin: 0.6
   minJumpDistance: 3
   maxJumpDistance: 14

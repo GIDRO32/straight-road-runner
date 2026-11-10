@@ -32,6 +32,9 @@ public abstract class EnemyBase : MonoBehaviour
     public float ContactStaminaDamage => definition != null ? definition.stats.contactStaminaDamage : 10f;
     public float ContactStunDuration => definition != null ? definition.stats.contactStunDuration : 1f;
 
+    /// <summary>False = touching this enemy doesn't hurt the player (it hurts only with its own attacks).</summary>
+    public virtual bool DealsContactDamage => true;
+
     /// <summary>Called by spawners right after Instantiate, before Start.</summary>
     public virtual void Init(EnemyDefinition def)
     {

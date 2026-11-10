@@ -571,7 +571,7 @@ public class Movement : MonoBehaviour
         {
             // Damage and stun come from the enemy's EnemyDefinition
             EnemyBase enemy = col.gameObject.GetComponent<EnemyBase>();
-            if (enemy != null && enemy.IsDefeated) return;
+            if (enemy != null && (enemy.IsDefeated || !enemy.DealsContactDamage)) return;
 
             float staminaDamage = enemy != null ? enemy.ContactStaminaDamage : 10f;
             float stunDuration = enemy != null ? enemy.ContactStunDuration : 1f;

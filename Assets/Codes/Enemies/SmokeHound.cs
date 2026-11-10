@@ -7,6 +7,7 @@ using UnityEngine;
 /// - Appears on a random platform (off-screen ones too) in a puff of smoke.
 /// - Stands for a moment, then jumps in an arc to another platform. Mid-jump, if the player is close,
 ///   it dashes at them; on contact the player takes damage. After the dash it arcs to a new platform.
+/// - Only the dash hurts: touching a standing or jumping hound is harmless.
 /// - First hit: vanishes in smoke and reappears on a random platform. Second hit: dies (damage animation + fade).
 ///
 /// Setup: kinematic Rigidbody2D; Body = trigger collider on this object (takes punches, hurts the player while dashing);
@@ -28,8 +29,9 @@ public class SmokeHound : EnemyBase
     public Collider2D feetSensor;
 
     [Header("Standing")]
-    public float standTimeMin = 0.6f;
-    public float standTimeMax = 1.4f;
+    [Tooltip("Cooldown between jumps: stands on a platform for a random time in this range (seconds)")]
+    public float standTimeMin = 2f;
+    public float standTimeMax = 3f;
     [Tooltip("Keep this far inside a platform's edges")]
     public float edgeMargin = 0.6f;
 
@@ -79,6 +81,9 @@ public class SmokeHound : EnemyBase
     private bool dashHitPlayer;
 
     private float feetOffset; // transform.y - feet bottom
+
+    // Touching a hound is harmless: only its mid-air dash hurts
+    public override bool DealsContactDamage => false;
 
     public override void Init(EnemyDefinition def)
     {
