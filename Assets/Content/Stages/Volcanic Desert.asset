@@ -28,6 +28,7 @@ MonoBehaviour:
   titleLogo: {fileID: 21300000, guid: 73aa75e8966951d44b6d191b4e0f407f, type: 3}
   enemies:
   - {fileID: 11400000, guid: a0771887c64e4684a30b2ca9461e985f, type: 2}
+  - {fileID: 11400000, guid: 84b681abdffb483f8b71322a771ae7df, type: 2}
   platformPrefab: {fileID: 0}
   basePlatform: {fileID: 11400000, guid: 32db248abcda42b19435af5371ddea48, type: 2}
   specialPlatforms:

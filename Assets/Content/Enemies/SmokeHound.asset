@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07ed386375434ff0bb32687e4cc1a278, type: 3}
+  m_Name: SmokeHound
+  m_EditorClassIdentifier: 
+  id: smoke_hound
+  displayName: Smoke Hound
+  icon: {fileID: 21300000, guid: 1a7b2b732ec07cc4981772808446c1de, type: 3}
+  sortOrder: 1
+  includeInDemo: 1
+  prefab: {fileID: 8022802380886674640, guid: b6690d98d0deece47972098d599394a8, type: 3}
+  description: Leaps between platforms and dashes at you mid-air. The first punch only scatters it into smoke; it takes two hits to put down.
+  stats:
+    health: 2
+    contactStaminaDamage: 15
+    contactStunDuration: 1
+    scoreValue: 150
+  sounds:
+    spawn: []
+    hit:
+    - {fileID: 8300000, guid: 0654c5f6442b911489ba4f878791f6bf, type: 3}
+    - {fileID: 8300000, guid: 6cd70d1740f497b4e8886ddcd2fec3de, type: 3}
+    - {fileID: 8300000, guid: a653374c9cbf6d341a96ea4cb73ded53, type: 3}
+    - {fileID: 8300000, guid: 13ce46bbfad8c3342823570db79eb985, type: 3}
+    defeat: []
+    attack: []
+  spawnWeight: 1
+  spawnYRange: {x: -2, y: 2}
