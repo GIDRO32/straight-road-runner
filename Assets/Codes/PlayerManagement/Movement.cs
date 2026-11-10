@@ -617,6 +617,23 @@ public class Movement : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Hit from a boss attack: like TakeHit, but with no stamina left it's game over.
+    /// Returns false if the hit was ignored (already stunned or dashing).
+    /// </summary>
+    public virtual bool TakeBossHit(float staminaDamage, float stunDuration)
+    {
+        if (isStunned || isDashing || !enabled) return false;
+
+        if (playerData != null && playerData.currentStamina <= 0f)
+        {
+            TriggerGameOver();
+            return true;
+        }
+
+        return TakeHit(staminaDamage, stunDuration);
+    }
+
     protected virtual void OnCollisionExit2D(Collision2D col)
     {
         if (col.gameObject.CompareTag("Platform"))

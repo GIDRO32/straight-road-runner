@@ -1,47 +1,80 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Spawns a random boss at a random time during a run.
-/// While a boss is alive, normal enemy spawning and difficulty progression are paused.
+/// Boss fights. Every fightInterval seconds of play (not counting fights) a fight starts:
+/// 1. Stage difficulty and normal enemy spawning freeze, the music switches to the fight folder (Music/Intense).
+/// 2. A red warning with the boss's title fades in and out in the middle of the screen (BossHud).
+/// 3. A random boss from the ContentDatabase is summoned and its health bar + icon appear.
+/// 4. When it's defeated everything resumes and the timer starts again.
 /// Bosses come from ContentDatabase, so new bosses only need a BossDefinition asset.
+/// Added automatically to the StageControl object by IntroControl.
 /// </summary>
 public class BossDirector : MonoBehaviour
 {
+    public static BossDirector Instance { get; private set; }
+
     [Header("Timing (seconds)")]
-    public float minInterval = 90f;
-    public float maxInterval = 180f;
-    [Tooltip("Wait before trying again when no boss was allowed yet (e.g. minRunTimeSeconds not reached)")]
+    [Tooltip("Seconds of play between boss fights (the clock stops during a fight)")]
+    public float fightInterval = 90f;
+    [Tooltip("Wait before trying again when no boss was allowed (e.g. minRunTimeSeconds not reached)")]
     public float retryDelay = 15f;
 
+    [Header("Introduction")]
+    public string warningText = "WARNING!";
+    [Tooltip("Pause between the music switch and the warning")]
+    public float warningDelay = 0.5f;
+    public float warningFadeIn = 0.6f;
+    public float warningHold = 1.8f;
+    public float warningFadeOut = 0.5f;
+    public AudioClip[] warningSounds;
+
+    [Header("Music")]
+    [Tooltip("StreamingAssets folder played during fights (a boss can override it)")]
+    public string fightMusicFolder = "Music/Intense";
+
     [Header("Spawn Position")]
-    [Tooltip("If empty, uses StageControl.enemyStartX with Y = 0")]
+    [Tooltip("Optional. Bosses usually place themselves (e.g. the crab sits on the right screen edge).")]
     public Transform spawnPoint;
 
-    [Header("References (auto-found if empty)")]
+    [Header("References (auto-found or created if empty)")]
     public StageControl stageControl;
     public DifficultyManager difficultyManager;
     public MusicManager musicManager;
+    public BossHud hud;
 
     private bool isRunning = false;
+    private bool fightInProgress = false;
     private float timer;
     private BossBase activeBoss;
     private string previousMusicFolder;
 
+    public bool IsFightInProgress => fightInProgress;
     public bool IsBossActive => activeBoss != null;
     public BossBase ActiveBoss => activeBoss;
+    /// <summary>Seconds until the next fight (while no fight is running).</summary>
+    public float TimeUntilNextFight => timer;
 
     public static event System.Action<BossBase> BossStarted;
     public static event System.Action<BossBase> BossEnded;
 
     void Awake()
     {
+        Instance = this;
         if (stageControl == null) stageControl = GetComponent<StageControl>();
         if (stageControl == null) stageControl = FindObjectOfType<StageControl>();
         if (difficultyManager == null) difficultyManager = DifficultyManager.Instance;
         if (difficultyManager == null) difficultyManager = FindObjectOfType<DifficultyManager>();
         if (musicManager == null) musicManager = FindObjectOfType<MusicManager>();
+        if (hud == null) hud = FindObjectOfType<BossHud>();
+        if (hud == null) hud = new GameObject("BossHud").AddComponent<BossHud>();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     void OnEnable() => BossBase.BossDefeated += HandleBossDefeated;
@@ -51,40 +84,46 @@ public class BossDirector : MonoBehaviour
     public void Begin()
     {
         isRunning = true;
-        ScheduleNext();
+        timer = fightInterval;
     }
 
     void Update()
     {
         if (!isRunning) return;
 
-        if (!ReferenceEquals(activeBoss, null))
+        if (fightInProgress)
         {
             // Unity's "== null" is true for destroyed objects: the boss vanished without being defeated
-            if (activeBoss == null) EndBoss(null);
+            if (!ReferenceEquals(activeBoss, null) && activeBoss == null)
+                EndFight(null);
             return;
         }
 
         timer -= Time.deltaTime;
         if (timer <= 0f)
         {
-            if (!TrySpawnBoss())
+            BossDefinition boss = PickBoss();
+            if (boss != null)
+                StartCoroutine(FightSequence(boss));
+            else
                 timer = retryDelay;
         }
     }
 
-    private void ScheduleNext()
+    // Testing: right-click the BossDirector component in Play mode (it's on the StageControl object)
+    [ContextMenu("Start Boss Fight Now")]
+    private void StartFightNow()
     {
-        timer = Random.Range(minInterval, Mathf.Max(minInterval, maxInterval));
+        if (isRunning && !fightInProgress) timer = 0f;
     }
 
-    private bool TrySpawnBoss()
+    private BossDefinition PickBoss()
     {
         StageDefinition stage = GameSession.CurrentStage;
-        if (stage != null && !stage.bossesEnabled) return false;
+        if (stage != null && !stage.bossesEnabled) return null;
 
         var db = ContentDatabase.Instance;
-        if (db == null) return false;
+        if (db == null) return null;
 
         float runTime = GameSession.CurrentRun != null ? GameSession.CurrentRun.Duration : 0f;
 
@@ -92,14 +131,45 @@ public class BossDirector : MonoBehaviour
             .Where(b => b.prefab != null && b.CanAppearOn(stage) && runTime >= b.minRunTimeSeconds)
             .ToList();
 
-        BossDefinition boss = WeightedRandom.Pick(candidates, b => b.spawnWeight);
-        if (boss == null) return false;
-
-        SpawnBoss(boss);
-        return true;
+        return WeightedRandom.Pick(candidates, b => b.spawnWeight);
     }
 
-    public void SpawnBoss(BossDefinition boss)
+    /// <summary>Starts a fight with this boss right away (warning included).</summary>
+    public void StartFight(BossDefinition boss)
+    {
+        if (fightInProgress || boss == null) return;
+        StartCoroutine(FightSequence(boss));
+    }
+
+    private IEnumerator FightSequence(BossDefinition boss)
+    {
+        fightInProgress = true;
+
+        // 1. Freeze the stage: no difficulty changes, no new enemies
+        if (stageControl != null) stageControl.SetEnemySpawningPaused(true);
+        if (difficultyManager != null) difficultyManager.PauseDifficultyProgression();
+
+        // 2. Fight music
+        string folder = !string.IsNullOrEmpty(boss.musicFolder) ? boss.musicFolder : fightMusicFolder;
+        if (musicManager != null && !string.IsNullOrEmpty(folder) && folder != musicManager.musicFolder)
+        {
+            previousMusicFolder = musicManager.musicFolder;
+            musicManager.PlayFolder(folder);
+        }
+
+        // 3. Warning
+        yield return new WaitForSeconds(warningDelay);
+        if (warningSounds != null && warningSounds.Length > 0)
+            AudioManager.Instance?.PlayRandomClip(warningSounds);
+        if (hud != null)
+            yield return hud.PlayWarning(warningText, boss.Title, warningFadeIn, warningHold, warningFadeOut);
+
+        // 4. Summon
+        if (!SpawnBoss(boss))
+            EndFight(null);
+    }
+
+    private bool SpawnBoss(BossDefinition boss)
     {
         Vector3 pos = spawnPoint != null
             ? spawnPoint.position
@@ -112,23 +182,15 @@ public class BossDirector : MonoBehaviour
         {
             Debug.LogError($"BossDirector: Prefab of boss '{boss.id}' has no BossBase component!");
             Destroy(obj);
-            ScheduleNext();
-            return;
+            return false;
         }
 
         activeBoss.Init(boss);
-
-        if (stageControl != null) stageControl.SetEnemySpawningPaused(true);
-        if (difficultyManager != null) difficultyManager.PauseDifficultyProgression();
-
-        if (musicManager != null && !string.IsNullOrEmpty(boss.musicFolder))
-        {
-            previousMusicFolder = musicManager.musicFolder;
-            musicManager.PlayFolder(boss.musicFolder);
-        }
+        if (hud != null) hud.ShowBoss(activeBoss);
 
         Debug.Log($"Boss incoming: {boss.DisplayName}");
         BossStarted?.Invoke(activeBoss);
+        return true;
     }
 
     private void HandleBossDefeated(BossBase boss)
@@ -138,13 +200,15 @@ public class BossDirector : MonoBehaviour
         if (GameSession.CurrentRun != null)
             GameSession.CurrentRun.bossesDefeated++;
 
-        EndBoss(boss);
+        EndFight(boss);
     }
 
-    private void EndBoss(BossBase boss)
+    private void EndFight(BossBase boss)
     {
         activeBoss = null;
+        fightInProgress = false;
 
+        if (hud != null) hud.HideBoss();
         if (stageControl != null) stageControl.SetEnemySpawningPaused(false);
         if (difficultyManager != null) difficultyManager.ResumeDifficultyProgression();
 
@@ -155,6 +219,6 @@ public class BossDirector : MonoBehaviour
         }
 
         BossEnded?.Invoke(boss);
-        ScheduleNext();
+        timer = fightInterval;
     }
 }

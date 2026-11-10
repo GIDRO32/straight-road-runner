@@ -131,22 +131,22 @@ public abstract class EnemyBase : MonoBehaviour
         AudioManager.Instance?.PlayRandomClip(clips);
     }
 
+    // Fades every sprite of the enemy (multi-part bosses too), then destroys it
     protected IEnumerator FadeAndDestroy()
     {
-        if (spriteRenderer != null)
+        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        Color[] colors = new Color[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++) colors[i] = renderers[i].color;
+
+        float timer = 0f;
+        while (timer < fadeDuration)
         {
-            float timer = 0f;
-            Color originalColor = spriteRenderer.color;
-
-            while (timer < fadeDuration)
-            {
-                timer += Time.deltaTime;
-                float alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
-                spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
-                yield return null;
-            }
-
-            spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+            timer += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
+            for (int i = 0; i < renderers.Length; i++)
+                if (renderers[i] != null)
+                    renderers[i].color = new Color(colors[i].r, colors[i].g, colors[i].b, colors[i].a * alpha);
+            yield return null;
         }
 
         Destroy(gameObject);

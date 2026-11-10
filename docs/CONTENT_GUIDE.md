@@ -38,9 +38,30 @@ Untick `includeInDemo` to hide something without deleting it.
 
 ## Boss
 Same as an enemy, but the script derives from `BossBase` and the asset is Create ▸ SRR ▸ Boss.
-Bosses don't go in stage lists: `BossDirector` picks a random one during any run (respecting `allowedStages`
-and `minRunTimeSeconds`), pauses normal enemies and difficulty until it is defeated, then resumes.
-Tune timing on the `BossDirector` component (added automatically to the StageControl object).
+Bosses don't go in stage lists: `BossDirector` (added automatically to the StageControl object) runs the fights:
+- Every `fightInterval` (90) seconds of play a fight starts. The clock stops during fights.
+- Stage difficulty and normal enemy spawning freeze, the music switches to `Music/Intense` (or the boss's `musicFolder`),
+  a red warning with the boss's `title` fades in and out, then a random boss (respecting `allowedStages` and
+  `minRunTimeSeconds`) is summoned with its health bar and `icon` at the top of the screen (`BossHud`, built at runtime).
+- Defeating it resumes everything and restarts the 90-second clock.
+- Testing: in Play mode right-click the BossDirector component ▸ **Start Boss Fight Now**.
+
+Damaging a boss:
+- Punches on its `hurtboxes` deal `punchDamage` (bosses usually sit where punching is hard).
+- A **sign punched with full stamina** during a fight flies at the boss's `signTarget` and deals `signDamage`.
+  The sign's points are still added.
+
+Boss attacks call `HitPlayer(movement)`: damage/stun from the boss's stats, and **with no stamina left it's game over**.
+Hit sounds, flash on hit, and the fade-out of every sprite on death are handled by `BossBase`/`EnemyBase`.
+
+### Black Ink Crab
+`Assets/Prefabs/Bosses/BlackInkCrab.prefab`, built from the slices of `BlackInkCrab_parts.png`:
+`Rig` (bobs) → `BackClaw`/`FrontClaw`, `Legs` (pivots at the hips), `Body` + `Head/UpperJaw` (hurtboxes), `Head/JawPivot`, `Head/Eye`.
+- Slides in and stays on the right screen edge, walking, scaled with the camera zoom (**Screen Placement** on `BlackInkCrab`).
+- Each claw (`CrabClaw`) attacks on its own: **aim** (follows the player, red ring) → **lock** (stops, shakes, solid ring)
+  → **lunge** (harmless) → **snap** (only this hurts, only inside `SnapZone`) → hold → retract.
+  The arm is copies of the `Segment` sprite stretched from `Shoulder` to the claw.
+- `BlackInkCrab` spaces the attacks (`attackGap`) and gets faster at `enragedHealth`. All timings are in its inspector.
 
 ## Platform types
 Assets in `Assets/Content/Platforms`. Create ▸ SRR ▸ Platform:

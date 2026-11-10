@@ -11,6 +11,14 @@ public class Sign : MonoBehaviour
     public float staminaGain = 25f;
     public float spinSpeed = 720f;  // Degrees per second
 
+    [Header("Boss Fight")]
+    [Tooltip("Punched with full stamina during a boss fight: the sign flies at the boss")]
+    public float throwDuration = 0.55f;
+    public float throwArcHeight = 2.5f;
+    public float throwSpinSpeed = 1080f;
+    [Tooltip("Added to the sprites' sorting order while flying, so the sign is drawn above the boss")]
+    public int throwSortingOrder = 45;
+
     private SpriteRenderer sr;
     private PlayerData playerData;
     private bool isHit = false;
@@ -37,8 +45,11 @@ public class Sign : MonoBehaviour
 
         // Find player and add stamina
         playerData = col.transform.GetComponentInParent<PlayerData>();
+        bool fullStamina = false;
         if (playerData != null)
         {
+            fullStamina = playerData.currentStamina >= playerData.maxStamina;
+
             // Remnant rule: stamina that doesn't fit becomes points
             // (full stamina = staminaGain points; 115/120 with +10 = 5 stamina + 5 points)
             float room = Mathf.Max(0f, playerData.maxStamina - playerData.currentStamina);
@@ -56,7 +67,46 @@ public class Sign : MonoBehaviour
         }
 
         isHit = true;
-        StartCoroutine(SpinAndDestroy());
+
+        // Boss fight + full stamina: the sign flies at the boss (the points above still count)
+        BossBase boss = BossBase.Current;
+        if (fullStamina && boss != null && boss.IsVulnerable)
+            StartCoroutine(ThrowAtBoss(boss));
+        else
+            StartCoroutine(SpinAndDestroy());
+    }
+
+    private System.Collections.IEnumerator ThrowAtBoss(BossBase boss)
+    {
+        // Leave the platform and fly in an arc to the boss
+        transform.SetParent(null, true);
+        foreach (var c in GetComponentsInChildren<Collider2D>()) c.enabled = false;
+        foreach (var r in GetComponentsInChildren<SpriteRenderer>()) r.sortingOrder += throwSortingOrder;
+
+        Vector3 start = transform.position;
+        float t = 0f;
+        while (t < 1f)
+        {
+            if (boss == null || !boss.IsVulnerable)
+            {
+                StartCoroutine(SpinAndDestroy()); // Boss gone mid-flight
+                yield break;
+            }
+
+            t += Time.deltaTime / Mathf.Max(0.05f, throwDuration);
+            float k = Mathf.Clamp01(t);
+            Vector3 end = boss.SignTargetPosition; // The boss may move
+            Vector3 pos = Vector3.Lerp(start, end, k);
+            pos.y += throwArcHeight * 4f * k * (1f - k);
+            transform.position = pos;
+            transform.Rotate(0f, 0f, -throwSpinSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        boss.TakeSignHit(this);
+        soundEffects?.PlayMetalHit();
+        SmokePuff.Spawn(transform.position, 2f, throwSortingOrder + 1, null, new Color(0.08f, 0.08f, 0.08f, 0.9f));
+        Destroy(gameObject);
     }
 
     private System.Collections.IEnumerator SpinAndDestroy()
