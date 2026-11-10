@@ -26,11 +26,7 @@ MonoBehaviour:
     scoreValue: 150
   sounds:
     spawn: []
-    hit:
-    - {fileID: 8300000, guid: 0654c5f6442b911489ba4f878791f6bf, type: 3}
-    - {fileID: 8300000, guid: 6cd70d1740f497b4e8886ddcd2fec3de, type: 3}
-    - {fileID: 8300000, guid: a653374c9cbf6d341a96ea4cb73ded53, type: 3}
-    - {fileID: 8300000, guid: 13ce46bbfad8c3342823570db79eb985, type: 3}
+    hit: []
     defeat: []
     attack: []
   spawnWeight: 1

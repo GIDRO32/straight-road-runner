@@ -15,7 +15,9 @@ public class EnemyStats
 [System.Serializable]
 public class EnemySounds
 {
+    [Tooltip("This enemy's own sounds (one random clip per event). Empty = silent.")]
     public AudioClip[] spawn;
+    [Tooltip("Taking damage")]
     public AudioClip[] hit;
     public AudioClip[] defeat;
     public AudioClip[] attack;

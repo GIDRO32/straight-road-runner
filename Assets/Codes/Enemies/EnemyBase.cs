@@ -74,7 +74,8 @@ public abstract class EnemyBase : MonoBehaviour
         if (isDefeated) return;
 
         currentHealth -= damage;
-        PlaySound(definition != null ? definition.sounds.hit : null);
+        if (ShouldPlayHitSound(currentHealth <= 0))
+            PlaySound(definition != null ? definition.sounds.hit : null);
         OnHit(source);
 
         if (currentHealth <= 0)
@@ -112,6 +113,8 @@ public abstract class EnemyBase : MonoBehaviour
     // ===== HOOKS FOR SUBCLASSES =====
 
     protected virtual void OnSpawned() { }
+    /// <summary>Whether this hit plays the definition's hit sound. fatal = this hit defeats the enemy.</summary>
+    protected virtual bool ShouldPlayHitSound(bool fatal) => true;
     protected virtual void OnHit(Collider2D source) { }
     protected virtual void OnDefeated() { }
 

@@ -289,6 +289,7 @@ MonoBehaviour:
   dashSpeed: 20
   dashDuration: 0.35
   teleportDelay: 0.45
+  screenMargin: 0.5
   smokeEffectPrefab: {fileID: 0}
   smokeSize: 1.5
   deathGravity: 2

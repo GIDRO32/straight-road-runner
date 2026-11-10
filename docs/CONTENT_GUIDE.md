@@ -28,10 +28,12 @@ Untick `includeInDemo` to hide something without deleting it.
    }
    ```
    Hits, health, score, sounds and the fade-out on death are handled by `EnemyBase`.
+   Optional overrides: `DealsContactDamage => false` (touching it doesn't hurt, only its attacks do) and
+   `ShouldPlayHitSound(bool fatal)` (e.g. `=> fatal` to stay silent until the killing hit).
    Enemies that live on platforms (like the **Smoke Hound**) use a kinematic Rigidbody2D, a trigger **body** collider
    (takes punches, hurts the player) and a trigger **Feet** collider on a child (platform recognition); they find platforms
    with `FindObjectsOfType<Platform>()`. `SmokePuff.Spawn(position)` plays a code-built smoke burst (no asset needed).
-2. Create ▸ SRR ▸ Enemy. Set prefab, stats (health, contact damage/stun, score), sounds, spawn weight and Y range.
+2. Create ▸ SRR ▸ Enemy. Set prefab, stats (health, contact damage/stun, score), sounds (each enemy has its own set: spawn, hit, defeat, attack), spawn weight and Y range.
 3. Add it to the `enemies` list of the stage(s) it appears on.
 
 ## Boss
