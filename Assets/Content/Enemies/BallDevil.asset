@@ -23,7 +23,7 @@ MonoBehaviour:
     health: 1
     contactStaminaDamage: 10
     contactStunDuration: 1
-    scoreValue: 100
+    scoreValue: 10
   sounds:
     spawn: []
     hit:

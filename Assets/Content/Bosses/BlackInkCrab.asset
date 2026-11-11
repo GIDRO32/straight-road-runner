@@ -18,12 +18,13 @@ MonoBehaviour:
   sortOrder: 0
   includeInDemo: 1
   prefab: {fileID: 5622221440430762824, guid: 7a09a8b4db474f7986627c93292e3509, type: 3}
-  description: Chases you from the right edge of the screen. Its claws aim, lock on and snap shut - get out of the red ring. Punch signs at it with full stamina.
+  description: Chases you from the right edge of the screen. Its claws aim, lock
+    on and snap shut - get out of the red ring. Punch signs at it with full stamina.
   stats:
     health: 50
     contactStaminaDamage: 30
     contactStunDuration: 1
-    scoreValue: 1000
+    scoreValue: 500
   sounds:
     spawn: []
     hit: []
@@ -33,7 +34,9 @@ MonoBehaviour:
   spawnYRange: {x: -2, y: 2}
   title: Black Ink Crab
   minRunTimeSeconds: 0
-  allowedStages: []
+  allowedStages:
+  - {fileID: 11400000, guid: ffd8cfc2971164447b03793957b55a94, type: 2}
+  - {fileID: 11400000, guid: 5acfd36991074b64a881ecda5985bdb0, type: 2}
   musicFolder: 
-  punchDamage: 1
+  punchDamage: 5
   signDamage: 10

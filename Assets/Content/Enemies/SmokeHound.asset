@@ -18,12 +18,13 @@ MonoBehaviour:
   sortOrder: 1
   includeInDemo: 1
   prefab: {fileID: 8022802380886674640, guid: b6690d98d0deece47972098d599394a8, type: 3}
-  description: Leaps between platforms and dashes at you mid-air. The first punch only scatters it into smoke; it takes two hits to put down.
+  description: Leaps between platforms and dashes at you mid-air. The first punch
+    only scatters it into smoke; it takes two hits to put down.
   stats:
     health: 2
     contactStaminaDamage: 15
     contactStunDuration: 1
-    scoreValue: 150
+    scoreValue: 15
   sounds:
     spawn: []
     hit: []
