@@ -20,7 +20,7 @@ MonoBehaviour:
   prefab: {fileID: 5622221440430762824, guid: 7a09a8b4db474f7986627c93292e3509, type: 3}
   description: Chases you from the right edge of the screen. Its claws aim, lock on and snap shut - get out of the red ring. Punch signs at it with full stamina.
   stats:
-    health: 60
+    health: 50
     contactStaminaDamage: 30
     contactStunDuration: 1
     scoreValue: 1000

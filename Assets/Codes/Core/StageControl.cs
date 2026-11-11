@@ -56,6 +56,8 @@ public class StageControl : MonoBehaviour
     [Range(0f, 1f)]
     public float currentPlatformSpawnChance = 0.8f;
     public float platformSpawnInterval = 0.7f;
+    [Tooltip("Max health of the next boss (set from the stage's pacing, raised by DifficultyManager)")]
+    public int bossMaxHealth = 50;
 
     // Stage content (from StageDefinition)
     private StageDefinition stage;
@@ -121,6 +123,7 @@ public class StageControl : MonoBehaviour
         firstEnemyDelay = pacing.firstEnemyDelay;
         enemySpawnChance = pacing.enemyChance.start;
         maxEnemies = Mathf.RoundToInt(pacing.maxEnemies.start);
+        bossMaxHealth = Mathf.RoundToInt(pacing.bossMaxHealth.start);
     }
 
     // Special platforms are rolled in random order; the first that hits wins, otherwise the base platform

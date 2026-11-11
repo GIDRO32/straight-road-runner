@@ -79,6 +79,10 @@ public class StagePacing
     [Tooltip("Max enemies per wave, and alive at once: a wave keeps rolling until this many are alive")]
     public DifficultyRange maxEnemies = new DifficultyRange(6f, 20f, 1f);
 
+    [Header("Bosses")]
+    [Tooltip("Max health of the next boss (every boss starts with the same health). Nudged during the regular phase.")]
+    public DifficultyRange bossMaxHealth = new DifficultyRange(50f, 200f, 10f);
+
     [Header("Endgame (everything above maxed)")]
     [Tooltip("Platform scroll speed added every endgame interval")]
     public float endgameSpeedStep = 0.2f;

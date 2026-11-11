@@ -2,22 +2,26 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// One claw of the Black Ink Crab. Moves on its own; BlackInkCrab decides when it attacks.
-///
-/// An attack, built to be readable and dodgeable:
-/// 1. Aim: the claw opens wide and follows the player, hovering a little short of them.
-///    A red ring marks the spot it's aiming at.
-/// 2. Lock: the claw stops following and shakes, the ring turns solid. Get out of the ring now!
-/// 3. Lunge: the open claw shoots at the locked spot. Still harmless.
+/// One claw of the Black Ink Crab. BlackInkCrab gives it spots to strike (each already marked
+/// with a red WarningCircle); the claw strikes them one after another:
+/// 1. Approach: the claw opens wide and moves near the spot.
+/// 2. Lock: it stops and shakes, the circle turns solid red. Get out of the circle now!
+/// 3. Lunge: the open claw shoots at the spot. Still harmless.
 /// 4. Snap: the claw snaps shut. Only this moment hurts, and only inside the Snap Zone.
-/// 5. Hold, then retract to the body.
+/// 5. Hold, then the next spot, or back to the body when there are none left.
 ///
 /// Positions are in the claw object's space (= the crab rig's space), so the claw follows the crab.
 /// The arm is a chain of Segment copies stretched from the Shoulder to the Head (wrist).
 /// </summary>
 public class CrabClaw : MonoBehaviour
 {
-    public enum Phase { Idle, Aim, Lock, Lunge, Hold, Retract }
+    public enum Phase { Idle, Approach, Lock, Lunge, Hold, Retract }
+
+    private struct Strike
+    {
+        public Vector3 point;          // World
+        public WarningCircle circle;
+    }
 
     [Header("Rig")]
     [Tooltip("Pivot at the wrist. Its rotation 0 is the rest pose.")]
@@ -43,10 +47,10 @@ public class CrabClaw : MonoBehaviour
     [Header("Reach (world units)")]
     [Tooltip("How far the snap point can get from the shoulder")]
     public float maxReach = 15f;
-    [Tooltip("While aiming, the claw hovers this far short of the player")]
-    public float hoverDistance = 2.5f;
-    [Tooltip("The lunge goes this far past the locked spot")]
-    public float overshoot = 0.4f;
+    [Tooltip("Before lunging, the claw waits this far short of the spot")]
+    public float hoverDistance = 2.2f;
+    [Tooltip("The lunge goes this far past the spot")]
+    public float overshoot = 0.3f;
     [Tooltip("Max rotation of the claw away from its drawn direction")]
     public float maxTurn = 80f;
 
@@ -54,33 +58,30 @@ public class CrabClaw : MonoBehaviour
     public float idleSway = 0.3f;
     public float idleSwaySpeed = 1.6f;
 
-    [Header("Attack Timing (seconds, BlackInkCrab overrides them per phase)")]
-    public float aimTime = 0.8f;
-    public float lockTime = 0.45f;
-    public float lungeTime = 0.16f;
+    [Header("Strike Timing (seconds, BlackInkCrab overrides approach/lock per phase)")]
+    public float approachTime = 0.55f;
+    public float lockTime = 0.35f;
+    public float lungeTime = 0.14f;
     public float snapTime = 0.06f;
-    public float holdTime = 0.35f;
-    public float retractTime = 0.55f;
-    [Tooltip("Rest after retracting before this claw can attack again")]
-    public float cooldown = 0.5f;
+    public float holdTime = 0.2f;
+    public float retractTime = 0.6f;
     [Tooltip("Shake while locked (world units)")]
     public float lockShake = 0.06f;
 
     [Header("Drawing")]
     [Tooltip("Added to the pincer's sorting orders while it attacks, so it's drawn over the crab's head and the player")]
     public int attackSortingBoost = 14;
-    public Color markerAimColor = new Color(1f, 0.15f, 0.15f, 0.35f);
-    public Color markerLockColor = new Color(1f, 0.1f, 0.1f, 0.9f);
 
     public Phase CurrentPhase { get; private set; } = Phase.Idle;
-    public bool IsReady => CurrentPhase == Phase.Idle && !stopped && Time.time >= readyTime;
-    public bool IsAiming => CurrentPhase == Phase.Aim || CurrentPhase == Phase.Lock;
+    /// <summary>Has spots left to strike or is still moving back.</summary>
+    public bool IsBusy => CurrentPhase != Phase.Idle || queue.Count > 0;
+    public bool IsAttacking => CurrentPhase == Phase.Approach || CurrentPhase == Phase.Lock || CurrentPhase == Phase.Lunge;
 
     private BlackInkCrab crab;
-    private Transform target;
     private bool stopped;
-    private float readyTime;
     private float phaseTimer;
+    private readonly Queue<Strike> queue = new Queue<Strike>();
+    private Strike current;
 
     private Vector3 restPos;
     private float fingerRest;
@@ -89,9 +90,9 @@ public class CrabClaw : MonoBehaviour
 
     private float headAngle;
     private Vector3 velocity;
-    private Vector3 lockedSnapPoint;    // Claw space
-    private Vector3 lockWrist;
-    private Vector3 lungeFrom, lungeTo; // Wrist positions
+    private Vector3 hoverPoint, lockedPoint; // World
+    private Vector3 lockWrist;              // Claw space
+    private Vector3 lungeFrom;
     private Vector3 retractFrom;
     private float retractAngleFrom, retractFingerFrom;
     private float fingerAngle;
@@ -101,7 +102,6 @@ public class CrabClaw : MonoBehaviour
     private SpriteRenderer[] renderers;
     private int[] baseOrders;
     private int armBaseOrder;
-    private SpriteRenderer marker;
 
     public void Init(BlackInkCrab owner)
     {
@@ -127,51 +127,57 @@ public class CrabClaw : MonoBehaviour
             segments.Add(armSegment);
             armBaseOrder = armSegment.sortingOrder;
         }
-        CacheRenderers();
 
-        marker = new GameObject(name + " Target").AddComponent<SpriteRenderer>();
-        marker.sprite = RingSprite();
-        marker.sortingOrder = 47; // Above the lifted pincers
-        marker.enabled = false;
-    }
-
-    void OnDestroy()
-    {
-        if (marker != null) Destroy(marker.gameObject);
+        // Only the pincer (palm + finger) is lifted while attacking; the arm keeps its order
+        renderers = head.GetComponentsInChildren<SpriteRenderer>(true);
+        baseOrders = new int[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++) baseOrders[i] = renderers[i].sortingOrder;
     }
 
     // ===== CONTROL (from BlackInkCrab) =====
 
-    public void Attack(Transform player)
+    /// <summary>Adds a spot (world position) to strike. The circle is locked and popped by the claw.</summary>
+    public void QueueStrike(Vector3 worldPoint, WarningCircle circle)
     {
-        if (player == null || !IsReady) return;
-        target = player;
-        SetBoost(true);
-        Enter(Phase.Aim);
+        if (stopped) return;
+        queue.Enqueue(new Strike { point = worldPoint, circle = circle });
+        if (CurrentPhase == Phase.Idle || CurrentPhase == Phase.Retract) StartNextStrike();
     }
 
-    /// <summary>Stop attacking for good (crab defeated): go back to rest and stay there.</summary>
+    /// <summary>Whether a spot (world) is within this claw's reach.</summary>
+    public bool CanReach(Vector3 worldPoint, float margin = 0.3f)
+    {
+        return Vector2.Distance(shoulder.position, worldPoint) <= maxReach - margin;
+    }
+
+    /// <summary>Stop attacking for good (crab defeated): drop the spots and go back to rest.</summary>
     public void Stop()
     {
         stopped = true;
+        while (queue.Count > 0) PopCircle(queue.Dequeue().circle);
+        PopCircle(current.circle);
         if (CurrentPhase != Phase.Idle && CurrentPhase != Phase.Retract) StartRetract();
-        if (marker != null) marker.enabled = false;
     }
 
     // ===== UPDATE =====
 
     void Update()
     {
-        float dt = Time.deltaTime;
-        phaseTimer += dt;
+        phaseTimer += Time.deltaTime;
 
         switch (CurrentPhase)
         {
             case Phase.Idle: UpdateIdle(); break;
-            case Phase.Aim: UpdateAim(dt); break;
+            case Phase.Approach: UpdateApproach(); break;
             case Phase.Lock: UpdateLock(); break;
             case Phase.Lunge: UpdateLunge(); break;
-            case Phase.Hold: if (phaseTimer >= holdTime) StartRetract(); break;
+            case Phase.Hold:
+                if (phaseTimer >= holdTime)
+                {
+                    if (queue.Count > 0) StartNextStrike();
+                    else StartRetract();
+                }
+                break;
             case Phase.Retract: UpdateRetract(); break;
         }
 
@@ -191,46 +197,50 @@ public class CrabClaw : MonoBehaviour
         fingerAngle = fingerIdleAngle + Mathf.Sin(t * 1.7f) * 3f;
     }
 
-    private void UpdateAim(float dt)
+    private void StartNextStrike()
     {
-        if (target == null) { StartRetract(); return; }
+        current = queue.Dequeue();
+        SetBoost(true);
 
-        // Hover a bit short of the player, pointing at them
-        Vector3 player = ToLocal(target.position);
-        Vector3 from = shoulder.localPosition;
-        Vector3 dir = player - from;
-        float dist = dir.magnitude;
-        dir = dist > 0.001f ? dir / dist : Vector3.left;
+        // Come in along the line from the shoulder to the spot
+        Vector3 from = shoulder.position;
+        Vector3 dir = current.point - from;
+        dir.z = 0f;
+        dir = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.left;
+        hoverPoint = ClampReach(current.point - dir * hoverDistance);
+        lockedPoint = ClampReach(current.point + dir * overshoot);
 
-        Vector3 snapPoint = ClampReach(player - dir * WorldToLocal(hoverDistance));
-        AimAt(player, snapPoint);
-        Vector3 wrist = snapPoint - (Vector3)Rotate(snapOffset, headAngle);
-        head.localPosition = Vector3.SmoothDamp(head.localPosition, wrist, ref velocity, 0.18f, Mathf.Infinity, dt);
+        Enter(Phase.Approach);
+    }
 
-        fingerAngle = Mathf.Lerp(fingerIdleAngle, fingerOpenAngle, Mathf.Clamp01(phaseTimer / (aimTime * 0.5f)));
-        ShowMarker(target.position, markerAimColor, 0.8f);
+    private void UpdateApproach()
+    {
+        Vector3 hover = ToLocal(hoverPoint);
+        AimAt(ToLocal(current.point), hover);
+        Vector3 wrist = hover - (Vector3)Rotate(snapOffset, headAngle);
+        head.localPosition = Vector3.SmoothDamp(head.localPosition, wrist, ref velocity, approachTime * 0.3f);
+        fingerAngle = Mathf.Lerp(fingerAngle, fingerOpenAngle, Time.deltaTime * 10f);
 
-        if (phaseTimer >= aimTime)
+        if (phaseTimer >= approachTime)
         {
-            lockedSnapPoint = ClampReach(player + dir * WorldToLocal(overshoot));
             lockWrist = head.localPosition;
+            if (current.circle != null) current.circle.Lock();
             Enter(Phase.Lock);
         }
     }
 
     private void UpdateLock()
     {
-        // Stop following: turn to the locked spot, shake in place and show the solid ring where it will strike
-        AimAt(lockedSnapPoint, lockWrist + (Vector3)Rotate(snapOffset, headAngle));
+        // Stop, turn to the spot and shake: the circle is solid now
+        Vector3 locked = ToLocal(lockedPoint);
+        AimAt(locked, lockWrist + (Vector3)Rotate(snapOffset, headAngle));
         head.localPosition = lockWrist + (Vector3)(Random.insideUnitCircle * WorldToLocal(lockShake));
         fingerAngle = fingerOpenAngle - 4f;
-        ShowMarker(transform.TransformPoint(lockedSnapPoint), markerLockColor, 1f);
 
         if (phaseTimer >= lockTime)
         {
             head.localPosition = lockWrist;
             lungeFrom = lockWrist;
-            lungeTo = lockedSnapPoint - (Vector3)Rotate(snapOffset, headAngle);
             Enter(Phase.Lunge);
         }
     }
@@ -238,6 +248,7 @@ public class CrabClaw : MonoBehaviour
     private void UpdateLunge()
     {
         float k = Mathf.Clamp01(phaseTimer / Mathf.Max(0.01f, lungeTime));
+        Vector3 lungeTo = ToLocal(lockedPoint) - (Vector3)Rotate(snapOffset, headAngle);
         head.localPosition = Vector3.Lerp(lungeFrom, lungeTo, k * k); // Speeds up
 
         if (k >= 1f)
@@ -247,7 +258,8 @@ public class CrabClaw : MonoBehaviour
                 Mathf.Abs(fingerClosedAngle - fingerOpenAngle) * Time.deltaTime / Mathf.Max(0.01f, snapTime));
             if (Mathf.Approximately(fingerAngle, fingerClosedAngle))
             {
-                if (marker != null) marker.enabled = false;
+                PopCircle(current.circle);
+                current.circle = null;
                 if (crab != null) crab.OnClawSnap(this, SnapWorldPosition(), SnapWorldRadius());
                 Enter(Phase.Hold);
             }
@@ -259,7 +271,6 @@ public class CrabClaw : MonoBehaviour
         retractFrom = head.localPosition;
         retractAngleFrom = headAngle;
         retractFingerFrom = fingerAngle;
-        if (marker != null) marker.enabled = false;
         Enter(Phase.Retract);
     }
 
@@ -273,7 +284,6 @@ public class CrabClaw : MonoBehaviour
         if (k >= 1f)
         {
             SetBoost(false);
-            readyTime = Time.time + cooldown;
             Enter(Phase.Idle);
         }
     }
@@ -283,6 +293,11 @@ public class CrabClaw : MonoBehaviour
         CurrentPhase = phase;
         phaseTimer = 0f;
         velocity = Vector3.zero;
+    }
+
+    private static void PopCircle(WarningCircle circle)
+    {
+        if (circle != null) circle.Pop();
     }
 
     // ===== POSE =====
@@ -340,30 +355,11 @@ public class CrabClaw : MonoBehaviour
         segments.Add(copy);
     }
 
-    // Only the pincer (palm + finger) is lifted while attacking; the arm keeps its order
-    private void CacheRenderers()
-    {
-        renderers = head.GetComponentsInChildren<SpriteRenderer>(true);
-        baseOrders = new int[renderers.Length];
-        for (int i = 0; i < renderers.Length; i++) baseOrders[i] = renderers[i].sortingOrder;
-    }
-
     private void SetBoost(bool on)
     {
         for (int i = 0; i < renderers.Length; i++)
             if (renderers[i] != null)
                 renderers[i].sortingOrder = baseOrders[i] + (on ? attackSortingBoost : 0);
-    }
-
-    private void ShowMarker(Vector3 world, Color color, float pulse)
-    {
-        if (marker == null) return;
-        marker.enabled = true;
-        marker.transform.position = new Vector3(world.x, world.y, 0f);
-        float r = SnapWorldRadius() * 2.2f;
-        float s = r * (1f + (1f - pulse) * 0.15f * Mathf.Sin(Time.time * 18f));
-        marker.transform.localScale = Vector3.one * s;
-        marker.color = color;
     }
 
     // ===== HELPERS =====
@@ -385,12 +381,13 @@ public class CrabClaw : MonoBehaviour
 
     private float WorldToLocal(float d) => d / Mathf.Max(0.0001f, Mathf.Abs(transform.lossyScale.x));
 
-    private Vector3 ClampReach(Vector3 snapPoint)
+    // World point, kept within reach of the shoulder
+    private Vector3 ClampReach(Vector3 world)
     {
-        Vector3 from = shoulder.localPosition;
-        Vector3 d = snapPoint - from;
-        float max = WorldToLocal(maxReach);
-        return d.magnitude > max ? from + d.normalized * max : snapPoint;
+        Vector3 from = shoulder.position;
+        Vector3 d = world - from;
+        d.z = 0f;
+        return d.magnitude > maxReach ? from + d.normalized * maxReach : new Vector3(world.x, world.y, from.z);
     }
 
     private static Vector2 Rotate(Vector2 v, float degrees)
@@ -398,26 +395,5 @@ public class CrabClaw : MonoBehaviour
         float r = degrees * Mathf.Deg2Rad;
         float c = Mathf.Cos(r), s = Mathf.Sin(r);
         return new Vector2(c * v.x - s * v.y, s * v.x + c * v.y);
-    }
-
-    // Red target ring, generated once
-    private static Sprite ring;
-    private static Sprite RingSprite()
-    {
-        if (ring != null) return ring;
-        const int size = 128;
-        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-        float c = size * 0.5f;
-        for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
-            {
-                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(c, c)) / c;
-                float a = Mathf.Clamp01(1f - Mathf.Abs(d - 0.85f) / 0.12f);   // Ring
-                a = Mathf.Max(a, d < 0.75f ? 0.25f : 0f);                       // Soft fill
-                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
-            }
-        tex.Apply();
-        ring = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size); // 1 unit wide
-        return ring;
     }
 }

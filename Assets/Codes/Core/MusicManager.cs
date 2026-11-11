@@ -49,6 +49,13 @@ public class MusicManager : MonoBehaviour
     private bool isPaused = false;
     private bool lostFocusPause = false;
     private float fade = 1f; // Crossfade multiplier on top of the saved volume
+    private bool trackStarted = false; // A song is playing and hasn't finished yet
+
+    /// <summary>
+    /// A song finished playing on its own (not skipped, stopped or switched away from).
+    /// Argument: the folder it came from. BossDirector starts boss fights on it.
+    /// </summary>
+    public event System.Action<string> TrackFinished;
 
     void Awake()
     {
@@ -94,6 +101,13 @@ public class MusicManager : MonoBehaviour
         if (!isLoading && !isLoadingTrack && !isTransitioning && !isPaused && !lostFocusPause
             && trackPaths.Count > 0 && !musicSource.isPlaying)
         {
+            if (trackStarted)
+            {
+                trackStarted = false;
+                string folder = musicFolder;
+                TrackFinished?.Invoke(folder);
+                if (folder != musicFolder) return; // A listener switched folders (e.g. boss music)
+            }
             PlayNextTrack();
         }
     }
@@ -236,6 +250,7 @@ public class MusicManager : MonoBehaviour
             musicSource.clip = currentTrack;
             ApplyVolume();
             musicSource.Play();
+            trackStarted = true;
             lastPlayedPath = path;
         }
 
@@ -337,6 +352,7 @@ public class MusicManager : MonoBehaviour
     /// </summary>
     public void StopMusic()
     {
+        trackStarted = false;
         musicSource.Stop();
         currentTrack = null;
     }

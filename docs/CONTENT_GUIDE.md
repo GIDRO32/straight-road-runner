@@ -39,11 +39,13 @@ Untick `includeInDemo` to hide something without deleting it.
 ## Boss
 Same as an enemy, but the script derives from `BossBase` and the asset is Create ▸ SRR ▸ Boss.
 Bosses don't go in stage lists: `BossDirector` (added automatically to the StageControl object) runs the fights:
-- Every `fightInterval` (90) seconds of play a fight starts. The clock stops during fights.
-- Stage difficulty and normal enemy spawning freeze, the music switches to `Music/Intense` (or the boss's `musicFolder`),
-  a red warning with the boss's `title` fades in and out, then a random boss (respecting `allowedStages` and
-  `minRunTimeSeconds`) is summoned with its health bar and `icon` at the top of the screen (`BossHud`, built at runtime).
-- Defeating it resumes everything and restarts the 90-second clock.
+- A fight starts **whenever a regular song ends** (`MusicManager.TrackFinished`). Without music it falls back to every `fallbackInterval` seconds.
+- Stage difficulty and normal enemy spawning freeze, the music switches to `Music/Intense` (or the boss's `musicFolder`)
+  and keeps playing until the boss is defeated. A red warning with the boss's `title` fades in and out, then a random boss
+  (respecting `allowedStages` and `minRunTimeSeconds`) is summoned. Its health bar and `icon` appear in the bottom right corner (`BossHud`, built at runtime).
+- **Health**: every boss gets the stage's current **Boss Max Health** (`pacing.bossMaxHealth`, default 50 → 200, +10 per nudge);
+  it's one of the values DifficultyManager raises during the regular phase. The boss asset's own health is only a fallback.
+- Defeating it brings back the stage music and resumes everything; the end of the next song brings the next boss.
 - Testing: in Play mode right-click the BossDirector component ▸ **Start Boss Fight Now**.
 
 Damaging a boss:
@@ -53,15 +55,16 @@ Damaging a boss:
 
 Boss attacks call `HitPlayer(movement)`: damage/stun from the boss's stats, and **with no stamina left it's game over**.
 Hit sounds, flash on hit, and the fade-out of every sprite on death are handled by `BossBase`/`EnemyBase`.
+`WarningCircle.Create(position, radius, sortingOrder)` makes a red warning circle (`Lock()` = solid, `Pop()` = gone) for any boss attack.
 
 ### Black Ink Crab
 `Assets/Prefabs/Bosses/BlackInkCrab.prefab`, built from the slices of `BlackInkCrab_parts.png`:
 `Rig` (bobs) → `BackClaw`/`FrontClaw`, `Legs` (pivots at the hips), `Body` + `Head/UpperJaw` (hurtboxes), `Head/JawPivot`, `Head/Eye`.
-- Slides in and stays on the right screen edge, walking, scaled with the camera zoom (**Screen Placement** on `BlackInkCrab`).
-- Each claw (`CrabClaw`) attacks on its own: **aim** (follows the player, red ring) → **lock** (stops, shakes, solid ring)
-  → **lunge** (harmless) → **snap** (only this hurts, only inside `SnapZone`) → hold → retract.
-  The arm is copies of the `Segment` sprite stretched from `Shoulder` to the claw.
-- `BlackInkCrab` spaces the attacks (`attackGap`) and gets faster at `enragedHealth`. All timings are in its inspector.
+- Slides in and stands on the floor (the object tagged `Ground`) at the right edge of the screen, walking. It doesn't follow the camera.
+- **Volleys**: 3–6 random spots get red circles (sometimes one on the player), then the claws take turns striking them:
+  approach → **lock** (circle turns solid, claw shakes) → lunge (harmless) → **snap** (only this hurts, only inside `SnapZone`).
+  Then it rests 3–5 seconds. Below `enragedHealth` the strikes get faster. All numbers are on `BlackInkCrab` (**Volleys**).
+- The arm is copies of the `Segment` sprite stretched from `Shoulder` to the claw.
 
 ## Platform types
 Assets in `Assets/Content/Platforms`. Create ▸ SRR ▸ Platform:
@@ -108,7 +111,8 @@ A wave stops once `maxEnemies` are alive. Interval, chance and max enemies are d
 ## Difficulty
 Every value that ramps up is a **range**: `start` → `limit`, moving by `step` (negative = goes down, 0 = constant).
 Every `pacing.difficultyInterval` seconds, `DifficultyManager` picks ONE random range that hasn't hit its limit and steps it.
-That covers the stage's pacing ranges and every special platform and obstacle chance.
+That covers the stage's pacing ranges (including Boss Max Health) and every special platform and obstacle chance.
+It's paused during boss fights.
 Once all are at their limits, the endgame starts: platforms speed up by `endgameSpeedStep` every `endgameInterval` seconds.
 Each nudge is logged in the Console (`DifficultyManager > Log Changes`).
 

@@ -4,11 +4,14 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Boss fights. Every fightInterval seconds of play (not counting fights) a fight starts:
-/// 1. Stage difficulty and normal enemy spawning freeze, the music switches to the fight folder (Music/Intense).
+/// Boss fights. Whenever a regular song ends, a fight starts:
+/// 1. Stage difficulty and normal enemy spawning freeze, the music switches to the fight folder (Music/Intense),
+///    which keeps playing until the boss is defeated.
 /// 2. A red warning with the boss's title fades in and out in the middle of the screen (BossHud).
-/// 3. A random boss from the ContentDatabase is summoned and its health bar + icon appear.
-/// 4. When it's defeated everything resumes and the timer starts again.
+/// 3. A random boss from the ContentDatabase is summoned with the stage's current Boss Max Health
+///    (same for every boss, raised by DifficultyManager), and its health bar + icon appear.
+/// 4. When it's defeated the stage music and everything else resume. The next song's end brings the next boss.
+/// Without a MusicManager (or songs), a fight starts every fallbackInterval seconds instead.
 /// Bosses come from ContentDatabase, so new bosses only need a BossDefinition asset.
 /// Added automatically to the StageControl object by IntroControl.
 /// </summary>
@@ -16,11 +19,9 @@ public class BossDirector : MonoBehaviour
 {
     public static BossDirector Instance { get; private set; }
 
-    [Header("Timing (seconds)")]
-    [Tooltip("Seconds of play between boss fights (the clock stops during a fight)")]
-    public float fightInterval = 90f;
-    [Tooltip("Wait before trying again when no boss was allowed (e.g. minRunTimeSeconds not reached)")]
-    public float retryDelay = 15f;
+    [Header("Timing")]
+    [Tooltip("Only used when there's no music to follow: seconds of play between fights")]
+    public float fallbackInterval = 90f;
 
     [Header("Introduction")]
     public string warningText = "WARNING!";
@@ -47,6 +48,7 @@ public class BossDirector : MonoBehaviour
 
     private bool isRunning = false;
     private bool fightInProgress = false;
+    private bool fightRequested = false;
     private float timer;
     private BossBase activeBoss;
     private string previousMusicFolder;
@@ -54,8 +56,6 @@ public class BossDirector : MonoBehaviour
     public bool IsFightInProgress => fightInProgress;
     public bool IsBossActive => activeBoss != null;
     public BossBase ActiveBoss => activeBoss;
-    /// <summary>Seconds until the next fight (while no fight is running).</summary>
-    public float TimeUntilNextFight => timer;
 
     public static event System.Action<BossBase> BossStarted;
     public static event System.Action<BossBase> BossEnded;
@@ -77,15 +77,37 @@ public class BossDirector : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    void OnEnable() => BossBase.BossDefeated += HandleBossDefeated;
-    void OnDisable() => BossBase.BossDefeated -= HandleBossDefeated;
+    void OnEnable()
+    {
+        BossBase.BossDefeated += HandleBossDefeated;
+        if (musicManager != null) musicManager.TrackFinished += HandleTrackFinished;
+    }
+
+    void OnDisable()
+    {
+        BossBase.BossDefeated -= HandleBossDefeated;
+        if (musicManager != null) musicManager.TrackFinished -= HandleTrackFinished;
+    }
 
     /// <summary>Called once the player has spawned.</summary>
     public void Begin()
     {
         isRunning = true;
-        timer = fightInterval;
+        timer = fallbackInterval;
     }
+
+    // A regular song ended: boss time
+    private void HandleTrackFinished(string folder)
+    {
+        if (!isRunning || fightInProgress || Time.timeScale <= 0f) return;
+        if (folder == fightMusicFolder) return;
+        fightRequested = true;
+        TryStartFight(); // Right away, so the fight music replaces the next regular song
+    }
+
+    // No music to follow (no MusicManager, or no songs in its folder)
+    private bool UsesFallbackTimer =>
+        musicManager == null || (!musicManager.IsLoading() && musicManager.GetTotalTracks() == 0);
 
     void Update()
     {
@@ -99,22 +121,32 @@ public class BossDirector : MonoBehaviour
             return;
         }
 
-        timer -= Time.deltaTime;
-        if (timer <= 0f)
+        if (UsesFallbackTimer)
         {
-            BossDefinition boss = PickBoss();
-            if (boss != null)
-                StartCoroutine(FightSequence(boss));
-            else
-                timer = retryDelay;
+            timer -= Time.deltaTime;
+            if (timer <= 0f)
+            {
+                timer = fallbackInterval;
+                fightRequested = true;
+            }
         }
+
+        if (fightRequested) TryStartFight();
+    }
+
+    private void TryStartFight()
+    {
+        if (fightInProgress) return;
+        fightRequested = false;
+        BossDefinition boss = PickBoss();
+        if (boss != null) StartCoroutine(FightSequence(boss)); // Otherwise wait for the next song
     }
 
     // Testing: right-click the BossDirector component in Play mode (it's on the StageControl object)
     [ContextMenu("Start Boss Fight Now")]
     private void StartFightNow()
     {
-        if (isRunning && !fightInProgress) timer = 0f;
+        if (isRunning && !fightInProgress) fightRequested = true;
     }
 
     private BossDefinition PickBoss()
@@ -186,6 +218,7 @@ public class BossDirector : MonoBehaviour
         }
 
         activeBoss.Init(boss);
+        if (stageControl != null) activeBoss.SetMaxHealth(stageControl.bossMaxHealth); // Same for every boss
         if (hud != null) hud.ShowBoss(activeBoss);
 
         Debug.Log($"Boss incoming: {boss.DisplayName}");
@@ -219,6 +252,6 @@ public class BossDirector : MonoBehaviour
         }
 
         BossEnded?.Invoke(boss);
-        timer = fightInterval;
+        timer = fallbackInterval;
     }
 }

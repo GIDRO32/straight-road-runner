@@ -5,7 +5,8 @@ using UnityEngine;
 /// <summary>
 /// Ramps up a run's difficulty. Every pacing.difficultyInterval seconds it picks ONE random value
 /// that hasn't reached its limit yet and steps it: platform/enemy pacing from StageDefinition.pacing,
-/// plus every special platform and obstacle chance from the stage's lists.
+/// plus every special platform and obstacle chance from the stage's lists, and the next boss's max health.
+/// Paused during boss fights.
 /// When everything has reached its limit, the endgame starts: platforms keep speeding up.
 /// All numbers live on the stage asset, so each stage can ramp differently.
 /// </summary>
@@ -73,6 +74,7 @@ public class DifficultyManager : MonoBehaviour
         Add("Enemy interval", pacing.enemyInterval, () => sc.enemySpawnInterval, v => sc.enemySpawnInterval = v);
         Add("Enemy chance", pacing.enemyChance, () => sc.enemySpawnChance, v => sc.enemySpawnChance = v);
         Add("Max enemies", pacing.maxEnemies, () => sc.maxEnemies, v => sc.maxEnemies = Mathf.RoundToInt(v));
+        Add("Boss max health", pacing.bossMaxHealth, () => sc.bossMaxHealth, v => sc.bossMaxHealth = Mathf.RoundToInt(v));
 
         foreach (var spawn in sc.PlatformSpawns)
         {

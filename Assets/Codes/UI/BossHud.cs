@@ -212,30 +212,31 @@ public class BossHud : MonoBehaviour
         Stretch(warningSubLabel.rectTransform, Vector2.zero, new Vector2(1f, 0.38f));
     }
 
+    // Bottom right corner: name and bar, icon to the right of the bar
     private void BuildBar(RectTransform root)
     {
-        RectTransform panel = MakeRect("BossBar", root, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(1000f, 120f));
-        panel.pivot = new Vector2(0.5f, 1f);
+        RectTransform panel = MakeRect("BossBar", root, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-40f, 40f), new Vector2(900f, 120f));
+        panel.pivot = new Vector2(1f, 0f);
         barGroup = panel.gameObject.AddComponent<CanvasGroup>();
         barGroup.blocksRaycasts = false;
         barGroup.interactable = false;
 
-        // Icon in a dark frame on the left
-        RectTransform frame = MakeRect("IconFrame", panel, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(60f, 0f), new Vector2(120f, 120f));
+        // Icon in a dark frame on the right
+        RectTransform frame = MakeRect("IconFrame", panel, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-60f, 0f), new Vector2(120f, 120f));
         frame.gameObject.AddComponent<Image>().color = barBackColor;
         iconImage = MakeRect("Icon", frame, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(-12f, -12f)).gameObject.AddComponent<Image>();
         iconImage.preserveAspect = true;
 
         // Name above the bar
         nameLabel = MakeText("Name", panel, 40f, Color.white, FontStyles.Bold);
-        nameLabel.alignment = TextAlignmentOptions.BottomLeft;
+        nameLabel.alignment = TextAlignmentOptions.BottomRight;
         RectTransform nameRt = nameLabel.rectTransform;
         nameRt.anchorMin = new Vector2(0f, 0.5f); nameRt.anchorMax = new Vector2(1f, 1f);
-        nameRt.offsetMin = new Vector2(140f, 6f); nameRt.offsetMax = Vector2.zero;
+        nameRt.offsetMin = new Vector2(0f, 6f); nameRt.offsetMax = new Vector2(-140f, 0f);
 
-        // Bar: back, chip, fill
+        // Bar: back, chip, fill (drains toward the icon)
         RectTransform bar = MakeRect("Bar", panel, new Vector2(0f, 0f), new Vector2(1f, 0.5f), Vector2.zero, Vector2.zero);
-        bar.offsetMin = new Vector2(140f, 14f); bar.offsetMax = new Vector2(0f, -4f);
+        bar.offsetMin = new Vector2(0f, 14f); bar.offsetMax = new Vector2(-140f, -4f);
         bar.gameObject.AddComponent<Image>().color = barBackColor;
 
         barChip = FilledImage("Chip", bar, barChipColor);
@@ -250,7 +251,7 @@ public class BossHud : MonoBehaviour
         img.color = color;
         img.type = Image.Type.Filled;
         img.fillMethod = Image.FillMethod.Horizontal;
-        img.fillOrigin = (int)Image.OriginHorizontal.Left;
+        img.fillOrigin = (int)Image.OriginHorizontal.Right;
         img.fillAmount = 1f;
         return img;
     }

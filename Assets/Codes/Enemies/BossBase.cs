@@ -53,6 +53,13 @@ public abstract class BossBase : EnemyBase
         if (Current == this) Current = null;
     }
 
+    /// <summary>All bosses share the stage's current Boss Max Health (BossDirector sets it on spawn).</summary>
+    public void SetMaxHealth(int health)
+    {
+        maxHealthOverride = Mathf.Max(1, health);
+        currentHealth = MaxHealth;
+    }
+
     // ===== TAKING DAMAGE =====
 
     protected override void OnTriggerEnter2D(Collider2D collision)

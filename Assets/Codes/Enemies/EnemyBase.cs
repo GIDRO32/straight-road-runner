@@ -23,12 +23,14 @@ public abstract class EnemyBase : MonoBehaviour
     protected SpriteRenderer spriteRenderer;
     protected Animator animator;
     protected int currentHealth;
+    protected int maxHealthOverride; // > 0: replaces the definition's health (bosses)
     protected bool isDefeated = false;
 
     public EnemyDefinition Definition => definition;
     public bool IsDefeated => isDefeated;
     public int CurrentHealth => currentHealth;
-    public int MaxHealth => definition != null ? Mathf.Max(1, definition.stats.health) : 1;
+    public int MaxHealth => maxHealthOverride > 0 ? maxHealthOverride
+        : definition != null ? Mathf.Max(1, definition.stats.health) : 1;
     public float ContactStaminaDamage => definition != null ? definition.stats.contactStaminaDamage : 10f;
     public float ContactStunDuration => definition != null ? definition.stats.contactStunDuration : 1f;
 
