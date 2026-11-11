@@ -143,10 +143,10 @@ public class ZapauloMovement : Movement
             return;
         }
 
-        // Let go, out of stamina, or the platform broke / scrolled away
+        // Let go, out of stamina, or the platform broke / scrolled away: stop where he is and fall
         if (!Input.GetKey(graspKey) || !HasStamina || graspTarget == null || !graspTarget.enabled)
         {
-            StopGrasp();
+            CancelGrasp();
             return;
         }
 
@@ -172,6 +172,16 @@ public class ZapauloMovement : Movement
         animator.SetBool("IsJumping", false);
         soundEffects?.PlayWhoosh();
         return true;
+    }
+
+    // Released before reaching the platform: drop the pull speed instead of flying off with it
+    private void CancelGrasp()
+    {
+        if (!isGrasping) return;
+        StopGrasp();
+        rb.velocity = Vector2.zero;
+        isOnGround = false;
+        animator.SetBool("IsJumping", true); // Falling; cleared again on landing
     }
 
     private void StopGrasp()
@@ -221,7 +231,7 @@ public class ZapauloMovement : Movement
     {
         if (graspTarget == null)
         {
-            StopGrasp();
+            CancelGrasp();
             return;
         }
 
@@ -253,7 +263,7 @@ public class ZapauloMovement : Movement
     protected override void OnStunned()
     {
         StopScratching();
-        StopGrasp();
+        CancelGrasp();
     }
 
     private void DrainStamina(float amount)

@@ -287,6 +287,7 @@ public class Movement : MonoBehaviour
 
         float currentRunSpeed = runSpeed;
         isOnGround = Mathf.Abs(rb.velocity.y) < 0.01f;
+        SyncLanding();
 
         if (isPunching || isUppercutting)
             currentRunSpeed -= punchSpeedReduction;
@@ -643,6 +644,38 @@ public class Movement : MonoBehaviour
                 currentPlatformRb = null;
             }
         }
+    }
+
+    // Landing is normally caught by OnTriggerEnter2D, but that misses landings that start inside a platform's
+    // trigger (e.g. jumping up through a one-way platform, or entering it during the cooldown). So every physics step:
+    // standing on top of a platform and not moving up = landed, and the jump / fall animation is cleared.
+    protected void SyncLanding()
+    {
+        if (rb.velocity.y > 0.1f || groundCheckCooldown > 0f || !IsStandingOnPlatform()) return;
+
+        isOnGround = true;
+        if (animator.GetBool("IsJumping") || animator.GetBool("IsSuperJumping") || superJumping)
+        {
+            superJumping = false;
+            animator.SetBool("IsJumping", false);
+            animator.SetBool("IsSuperJumping", false);
+        }
+    }
+
+    /// <summary>A solid platform right under the feet (its top at the feet, not above them).</summary>
+    protected bool IsStandingOnPlatform()
+    {
+        if (playerCollider == null) return false;
+        Bounds feet = playerCollider.bounds;
+        Vector2 center = new Vector2(feet.center.x, feet.min.y - 0.05f);
+        Vector2 size = new Vector2(feet.size.x * 0.9f, 0.12f);
+
+        foreach (Collider2D col in Physics2D.OverlapBoxAll(center, size, 0f))
+        {
+            if (col == null || col.isTrigger || !col.CompareTag("Platform")) continue;
+            if (col.bounds.max.y <= feet.min.y + 0.15f) return true;
+        }
+        return false;
     }
 
     protected virtual void OnTriggerEnter2D(Collider2D collision)
