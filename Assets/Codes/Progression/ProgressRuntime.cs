@@ -8,7 +8,8 @@ using UnityEngine.UI;
 /// <summary>
 /// Created automatically, lives across scenes:
 /// - saves PlayerProgress when leaving a scene, when the game is paused/unfocused and on quit;
-/// - shows a "Task complete! +1 Shard" note in the top right corner when a task pays out.
+/// - shows a small "Task complete! +1 Shard" note in the bottom left corner when a task pays out
+///   (clear of the boss health bar in the bottom right).
 /// </summary>
 public class ProgressRuntime : MonoBehaviour
 {
@@ -80,7 +81,7 @@ public class ProgressRuntime : MonoBehaviour
         {
             float k = Mathf.SmoothStep(0f, 1f, t / duration);
             toastGroup.alpha = Mathf.Lerp(from, to, k);
-            rt.anchoredPosition = new Vector2(-30f, Mathf.Lerp(from < to ? 60f : -30f, from < to ? -30f : 60f, k));
+            rt.anchoredPosition = new Vector2(30f, Mathf.Lerp(from < to ? -60f : 30f, from < to ? 30f : -60f, k)); // Slides up in, down out
             yield return null;
         }
         toastGroup.alpha = to;
@@ -106,23 +107,23 @@ public class ProgressRuntime : MonoBehaviour
         var panel = new GameObject("Toast", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
         var rt = (RectTransform)panel.transform;
         rt.SetParent(canvasGo.transform, false);
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
-        rt.sizeDelta = new Vector2(560f, 140f);
-        rt.anchoredPosition = new Vector2(-30f, -30f);
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 0f);
+        rt.sizeDelta = new Vector2(400f, 96f);
+        rt.anchoredPosition = new Vector2(30f, 30f);
         panel.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.75f);
         panel.GetComponent<Image>().raycastTarget = false;
         toastGroup = panel.GetComponent<CanvasGroup>();
         toastGroup.alpha = 0f;
         toastGroup.blocksRaycasts = false;
 
-        toastTitle = MakeText(rt, font, 40f, TextAlignmentOptions.MidlineLeft, new Vector2(24f, 0f), new Vector2(-170f, 0f));
+        toastTitle = MakeText(rt, font, 28f, TextAlignmentOptions.MidlineLeft, new Vector2(16f, 0f), new Vector2(-118f, 0f));
 
         var icon = new GameObject("Shard", typeof(RectTransform), typeof(Image));
         var iconRt = (RectTransform)icon.transform;
         iconRt.SetParent(rt, false);
         iconRt.anchorMin = iconRt.anchorMax = new Vector2(1f, 0.5f);
-        iconRt.anchoredPosition = new Vector2(-60f, 0f);
-        iconRt.sizeDelta = new Vector2(90f, 90f);
+        iconRt.anchoredPosition = new Vector2(-40f, 0f);
+        iconRt.sizeDelta = new Vector2(60f, 60f);
         toastIcon = icon.GetComponent<Image>();
         toastIcon.preserveAspect = true;
         toastIcon.raycastTarget = false;
@@ -130,7 +131,7 @@ public class ProgressRuntime : MonoBehaviour
         toastIcon.sprite = db != null ? db.shardIcon : null;
         toastIcon.enabled = toastIcon.sprite != null;
 
-        toastReward = MakeText(rt, font, 44f, TextAlignmentOptions.MidlineRight, new Vector2(0f, 0f), new Vector2(-110f, 0f));
+        toastReward = MakeText(rt, font, 32f, TextAlignmentOptions.MidlineRight, new Vector2(0f, 0f), new Vector2(-74f, 0f));
     }
 
     private static TextMeshProUGUI MakeText(RectTransform parent, TMP_FontAsset font, float size, TextAlignmentOptions align, Vector2 offsetMin, Vector2 offsetMax)

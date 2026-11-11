@@ -8,7 +8,8 @@ using UnityEngine;
 /// - Stands for a few seconds, then jumps in an arc to another on-screen platform. Mid-jump, if the player
 ///   is close, it dashes at them (one dash per jump). Hit or miss, it then vanishes in smoke and reappears
 ///   on a random on-screen platform. No dash = it simply lands.
-/// - Leaving the screen (e.g. its platform scrolls away) = it teleports to an on-screen platform.
+/// - Carried off the left/right of the screen while standing (its platform scrolls away) = it teleports to an
+///   on-screen platform. Above/below the screen, and during jumps and dashes, it doesn't.
 /// - Only the dash hurts: touching a standing or jumping hound is harmless.
 /// - First hit: vanishes in smoke and reappears elsewhere (silent). Second hit: dies (hit sound, damage animation, fade).
 ///
@@ -82,6 +83,13 @@ public class SmokeHound : EnemyBase
     private Vector2 dashDirection;
     private float dashTimer;
 
+    [Header("Getting Hit")]
+    [Tooltip("A punch touching the hound for several frames only counts once in this time")]
+    public float punchCooldown = 0.3f;
+    private float lastPunchTime = -10f;
+    private ContactFilter2D punchFilter;
+    private readonly Collider2D[] overlapResults = new Collider2D[8];
+
     private float feetOffset; // transform.y - feet bottom
     private float bodyTop;    // body top - transform.y
 
@@ -97,6 +105,7 @@ public class SmokeHound : EnemyBase
         rb.bodyType = RigidbodyType2D.Kinematic;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         if (bodyCollider == null) bodyCollider = GetComponent<Collider2D>();
+        punchFilter = new ContactFilter2D().NoFilter(); // Includes triggers (the player's punch hitboxes)
     }
 
     protected override void OnSpawned()
@@ -116,11 +125,14 @@ public class SmokeHound : EnemyBase
             case State.Jumping: UpdateJumping(); break;
             case State.Dashing: UpdateDashing(); break;
         }
+
+        CheckPunches();
     }
 
     private void UpdateStanding()
     {
-        // Platform gone/broken, or carried off-screen: teleport to an on-screen platform
+        // Platform gone/broken, or carried off the left/right of the screen: teleport to an on-screen platform
+        // (above or below the screen is fine)
         if (!IsUsable(standingOn) || LeavingScreen())
         {
             Teleport();
@@ -146,7 +158,8 @@ public class SmokeHound : EnemyBase
     private void UpdateJumping()
     {
         // Target broke or left the screen, or we did: teleport instead
-        if (!IsUsable(jumpTarget) || !IsOnScreen(jumpTarget) || OffScreen())
+        // The screen doesn't matter mid-jump; only a broken / vanished target does
+        if (!IsUsable(jumpTarget))
         {
             Teleport();
             return;
@@ -180,7 +193,7 @@ public class SmokeHound : EnemyBase
         rb.MovePosition(rb.position + dashDirection * dashSpeed * Time.fixedDeltaTime);
 
         dashTimer -= Time.fixedDeltaTime;
-        if (dashTimer <= 0f || OffScreen())
+        if (dashTimer <= 0f)
             Teleport(); // Missed: vanish and reappear on another platform
     }
 
@@ -236,9 +249,37 @@ public class SmokeHound : EnemyBase
 
     protected override void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!TouchesBody(collision)) return; // Ignore the feet sensor
-        base.OnTriggerEnter2D(collision); // Punches ("Hits")
-        TryHitPlayer(collision);
+        if (collision.CompareTag("Hits"))
+        {
+            RegisterPunch(collision);
+            return;
+        }
+        if (TouchesBody(collision)) TryHitPlayer(collision); // Ignore the feet sensor
+    }
+
+    // Backup for fast, spinning jumps where the trigger "enter" can be missed: check the body every physics step
+    private void CheckPunches()
+    {
+        if (state == State.Hidden || state == State.Dead || bodyCollider == null || !bodyCollider.enabled) return;
+
+        int count = bodyCollider.OverlapCollider(punchFilter, overlapResults);
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D col = overlapResults[i];
+            if (col != null && col.enabled && col.CompareTag("Hits"))
+            {
+                RegisterPunch(col);
+                return;
+            }
+        }
+    }
+
+    // One punch = one hit (it touches the hound for several frames)
+    private void RegisterPunch(Collider2D punch)
+    {
+        if (isDefeated || Time.time - lastPunchTime < punchCooldown) return;
+        lastPunchTime = Time.time;
+        TakeHit(1, punch);
     }
 
     void OnTriggerStay2D(Collider2D collision)
@@ -361,12 +402,13 @@ public class SmokeHound : EnemyBase
         return col != null && col.enabled;
     }
 
-    // Usable platforms that are fully on screen (with room for the hound on top)
-    private List<Platform> OnScreenPlatforms()
+    // Usable platforms that are fully on screen (with room for the hound on top).
+    // horizontalOnly: only the left/right edges matter (jumps may go above / below the screen).
+    private List<Platform> OnScreenPlatforms(bool horizontalOnly = false)
     {
         var result = new List<Platform>();
         foreach (Platform p in FindObjectsOfType<Platform>())
-            if (IsUsable(p) && IsOnScreen(p)) result.Add(p);
+            if (IsUsable(p) && IsOnScreen(p, horizontalOnly)) result.Add(p);
         return result;
     }
 
@@ -376,10 +418,10 @@ public class SmokeHound : EnemyBase
         return all.Count > 0 ? all[Random.Range(0, all.Count)] : null;
     }
 
-    // A different on-screen platform within jump range; otherwise the nearest other on-screen one
+    // A different platform within jump range and between the left/right screen edges; otherwise the nearest one
     private Platform PickJumpTarget()
     {
-        var all = OnScreenPlatforms();
+        var all = OnScreenPlatforms(horizontalOnly: true);
         all.Remove(standingOn);
 
         var inRange = all.FindAll(p =>
@@ -454,28 +496,22 @@ public class SmokeHound : EnemyBase
     }
 
     // The whole platform is in view, with room for the hound standing on it
-    private bool IsOnScreen(Platform platform)
+    private bool IsOnScreen(Platform platform, bool horizontalOnly = false)
     {
         if (!ScreenRect(out Rect view)) return true;
         Bounds b = platform.GetComponent<Collider2D>().bounds;
+        bool horizontal = b.min.x >= view.xMin + screenMargin && b.max.x <= view.xMax - screenMargin;
+        if (horizontalOnly) return horizontal;
         float houndTop = b.max.y + feetOffset + bodyTop;
-        return b.min.x >= view.xMin + screenMargin && b.max.x <= view.xMax - screenMargin
-            && b.max.y >= view.yMin + screenMargin && houndTop <= view.yMax;
+        return horizontal && b.max.y >= view.yMin + screenMargin && houndTop <= view.yMax;
     }
 
-    // Standing: any part of the body crossing the screen edge
+    // Standing: any part of the body crossing the left or right screen edge (above / below is fine)
     private bool LeavingScreen()
     {
         if (!ScreenRect(out Rect view) || bodyCollider == null || !bodyCollider.enabled) return false;
         Bounds b = bodyCollider.bounds;
-        return b.min.x < view.xMin || b.max.x > view.xMax || b.min.y < view.yMin || b.max.y > view.yMax;
-    }
-
-    // In the air: the body's centre out of view
-    private bool OffScreen()
-    {
-        if (!ScreenRect(out Rect view)) return false;
-        return !view.Contains(rb.position);
+        return b.min.x < view.xMin || b.max.x > view.xMax;
     }
 
     // ===== HELPERS =====
