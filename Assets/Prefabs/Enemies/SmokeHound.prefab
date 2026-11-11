@@ -285,11 +285,12 @@ MonoBehaviour:
   jumpHeight: 10
   jumpDuration: 3
   dashRange: 24
-  dashWindow: {x: 0.2, y: 0.3}
+  dashWindow: {x: 0.2, y: 0.5}
   dashSpeed: 14
   dashDuration: 0.6
   teleportDelay: 0.05
-  screenMargin: 0.05
+  screenMargin: -2
   smokeEffectPrefab: {fileID: 0}
   smokeSize: 1.5
   deathGravity: 2
+  punchCooldown: 0.3
