@@ -278,18 +278,18 @@ MonoBehaviour:
   bodyCollider: {fileID: 8505177341918429002}
   feetSensor: {fileID: 3793661236942719482}
   standTimeMin: 0.75
-  standTimeMax: 2
+  standTimeMax: 1.5
   edgeMargin: 0.6
-  minJumpDistance: 8
-  maxJumpDistance: 16
+  minJumpDistance: 12
+  maxJumpDistance: 24
   jumpHeight: 10
-  jumpDuration: 2
-  dashRange: 12
-  dashWindow: {x: 0.45, y: 0.75}
+  jumpDuration: 3
+  dashRange: 24
+  dashWindow: {x: 0.2, y: 0.3}
   dashSpeed: 14
-  dashDuration: 0.5
+  dashDuration: 0.6
   teleportDelay: 0.05
-  screenMargin: 0.3
+  screenMargin: 0.05
   smokeEffectPrefab: {fileID: 0}
   smokeSize: 1.5
   deathGravity: 2

@@ -320,10 +320,10 @@ MonoBehaviour:
   fingerIdleAngle: 0
   fingerOpenAngle: -10
   fingerClosedAngle: 20
-  maxReach: 15
+  maxReach: 35
   hoverDistance: 2.2
   overshoot: 0.3
-  maxTurn: 80
+  maxTurn: 0
   idleSway: 0.3
   idleSwaySpeed: 1.6
   approachTime: 0.55
@@ -575,10 +575,10 @@ MonoBehaviour:
   fingerIdleAngle: -4
   fingerOpenAngle: -14
   fingerClosedAngle: 5
-  maxReach: 15
+  maxReach: 35
   hoverDistance: 2.2
   overshoot: 0.3
-  maxTurn: 80
+  maxTurn: 90
   idleSway: 0.3
   idleSwaySpeed: 1.6
   approachTime: 0.55
@@ -1528,7 +1528,7 @@ MonoBehaviour:
   extentRight: 2
   extentBottom: 10.3
   fullWidth: 15
-  rightOverhang: 5
+  rightOverhang: 12
   bottomOverhang: 0.6
   frontEdge: -9.5
   walkSpeed: 1.8
@@ -1544,9 +1544,9 @@ MonoBehaviour:
   warningLead: 0.8
   clawStagger: 0.55
   circleRadius: 0
-  minSpotSpacing: 2.2
+  minSpotSpacing: 1.95
   screenMargin: 1
-  playerSpotChance: 0.35
+  playerSpotChance: 0.66
   approachTime: 0.55
   lockTime: 0.35
   enragedHealth: 0.5
