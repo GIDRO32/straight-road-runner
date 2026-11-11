@@ -169,14 +169,16 @@ Open `MainMenu` and run **Tools ▸ Straight Road Runner ▸ Build Tasks, Shop a
 Run it again to rebuild (it replaces what it made before; Ctrl+Z undoes it).
 
 ## Save files
-- **Save** asks for a password (twice) and warns that a forgotten password makes the save unrecoverable.
-  It writes `Saves/SRR_Save_<date>.srrsave` (in `Application.persistentDataPath`; **Open Folder** shows it).
+- **Save** asks for a password (twice) and warns that a forgotten password makes the save unrecoverable,
+  then **Save As...** opens the system's save dialog: the player picks the folder and the file name (`.srrsave`).
 - The file holds the Shards, unlocked characters and stages, Epic Signs and task progress, encrypted with
   **AES-256-GCM**. The key comes from the password (PBKDF2-HMAC-SHA256, 100,000 rounds, random salt); the password
   isn't stored. Any change to the file, or a wrong password, makes it fail to open. (`SaveCrypto` implements GCM itself,
   because Unity's Mono doesn't support .NET's `AesGcm`.)
-- **Load** lists the `.srrsave` files in the Saves folder (copy files there to move progress between computers),
-  asks for the password and replaces the current progress.
+- **Load** opens the system's file dialog right away; after picking the file the player types its password,
+  and the current progress is replaced.
+- File dialogs (`NativeFileDialog`): Unity's panels in the Editor, the Windows dialog in Windows builds.
+  Other platforms fall back to a `Saves` folder in `Application.persistentDataPath` with a file list.
 
 ## TextMeshPro
 All UI text uses TextMeshPro (`TMP_Text` fields in code). To convert legacy `Text` in scenes/prefabs, run

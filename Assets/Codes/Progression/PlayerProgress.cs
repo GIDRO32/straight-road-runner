@@ -36,7 +36,7 @@ public class TaskProgress
 public static class PlayerProgress
 {
     private const string LocalFileName = "progress.dat";
-    private const string SaveExtension = ".srrsave";
+    public const string SaveExtension = ".srrsave";
     private static readonly byte[] LocalAad = Encoding.ASCII.GetBytes("SRR local progress v1");
 
     private static ProgressData data;
@@ -262,15 +262,30 @@ public static class PlayerProgress
 
     // ===== SAVE FILES (password) =====
 
-    /// <summary>Encrypts the progress with the password into a new file in the Saves folder. Returns its path.</summary>
-    public static string ExportSave(string password)
+    /// <summary>Suggested name for a new save file.</summary>
+    public static string DefaultSaveName => $"SRR_Save_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}{SaveExtension}";
+
+    /// <summary>
+    /// Encrypts the progress with the password into a file. Path = where the player chose to save it;
+    /// empty = a new file in the Saves folder. Returns the path.
+    /// </summary>
+    public static string ExportSave(string password, string path = null)
     {
         Data.savedAt = DateTime.UtcNow.ToString("o");
         byte[] plain = Encoding.UTF8.GetBytes(JsonUtility.ToJson(Data));
         byte[] file = SaveCrypto.EncryptWithPassword(plain, password);
 
-        Directory.CreateDirectory(SavesFolder);
-        string path = Path.Combine(SavesFolder, $"SRR_Save_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}{SaveExtension}");
+        if (string.IsNullOrEmpty(path))
+        {
+            Directory.CreateDirectory(SavesFolder);
+            path = Path.Combine(SavesFolder, DefaultSaveName);
+        }
+        else
+        {
+            string folder = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
+        }
+
         File.WriteAllBytes(path, file);
         return path;
     }

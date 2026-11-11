@@ -5,8 +5,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Settings > Save: the player picks a password (typed twice) and the progress is written to an
-/// AES-256-GCM encrypted file in the Saves folder. The password isn't stored anywhere.
+/// Settings > Save: the player creates a password (typed twice), then picks the folder and file name
+/// in the system's "Save as" dialog. The progress is written there, AES-256-GCM encrypted.
+/// The password isn't stored anywhere. (Without a file dialog, e.g. on Mac/Linux builds, it goes to the Saves folder.)
 /// </summary>
 public class SaveGamePanel : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class SaveGamePanel : MonoBehaviour
     public TMP_Text warningText;
     public TMP_Text statusText;
     public Button saveButton;
+    [Tooltip("Only shown when there's no file dialog (the file then goes to the Saves folder)")]
     public Button openFolderButton;
     public int minPasswordLength = 4;
 
@@ -35,6 +37,7 @@ public class SaveGamePanel : MonoBehaviour
         if (passwordInput != null) passwordInput.text = "";
         if (confirmInput != null) confirmInput.text = "";
         if (warningText != null) warningText.text = warning;
+        if (openFolderButton != null) openFolderButton.gameObject.SetActive(!NativeFileDialog.IsSupported);
         SetStatus("", Color.white);
     }
 
@@ -55,10 +58,19 @@ public class SaveGamePanel : MonoBehaviour
             return;
         }
 
-        StartCoroutine(SaveRoutine(password));
+        // Where and under which name
+        string path = null;
+        if (NativeFileDialog.IsSupported &&
+            !NativeFileDialog.TrySaveFile("Save Game", PlayerProgress.DefaultSaveName, PlayerProgress.SaveExtension, out path))
+        {
+            SetStatus("Saving cancelled.", Color.white);
+            return;
+        }
+
+        StartCoroutine(SaveRoutine(password, path));
     }
 
-    private IEnumerator SaveRoutine(string password)
+    private IEnumerator SaveRoutine(string password, string path)
     {
         busy = true;
         SetStatus("Encrypting...", Color.white);
@@ -66,8 +78,8 @@ public class SaveGamePanel : MonoBehaviour
 
         try
         {
-            string path = PlayerProgress.ExportSave(password);
-            SetStatus($"Saved as {Path.GetFileName(path)}", okColor);
+            string saved = PlayerProgress.ExportSave(password, path);
+            SetStatus($"Saved: {saved}", okColor);
             if (passwordInput != null) passwordInput.text = "";
             if (confirmInput != null) confirmInput.text = "";
         }

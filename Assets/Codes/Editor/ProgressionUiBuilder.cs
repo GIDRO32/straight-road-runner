@@ -195,27 +195,36 @@ public static class ProgressionUiBuilder
         panel.warningText = AddText(warning, "If you forget your password, your save data will become unrecoverable.", 36,
             TextAlignmentOptions.Center, new Color(1f, 0.55f, 0.4f, 1f), true);
 
-        panel.saveButton = MakeButton(frame.transform, "SaveButton", "Save", new Vector2(0, -200), new Vector2(420, 110), 50);
+        panel.saveButton = MakeButton(frame.transform, "SaveButton", "Save As...", new Vector2(0, -200), new Vector2(420, 110), 50);
         panel.openFolderButton = MakeButton(frame.transform, "OpenFolder", "Open Folder", new Vector2(420, -200), new Vector2(300, 90), 30);
 
         GameObject status = NewUI("Status", frame.transform);
-        SetRect(status, Center, Center, new Vector2(0, -300), new Vector2(1000, 60));
-        panel.statusText = AddText(status, "", 32, TextAlignmentOptions.Center, Color.white, false);
+        SetRect(status, Center, Center, new Vector2(0, -300), new Vector2(1100, 60));
+        panel.statusText = AddText(status, "", 28, TextAlignmentOptions.Center, Color.white, false);
         return root;
     }
 
+    // Step 1: Choose File (system dialog), Step 2: password + Load.
+    // The file list is only used where there's no file dialog (Mac/Linux builds).
     private static GameObject BuildLoadPanel(MenuRefs refs, out PanelManager panelManager)
     {
         GameObject root = CreatePanelRoot("LoadGame", refs, out panelManager);
         LoadGamePanel panel = root.AddComponent<LoadGamePanel>();
-        GameObject frame = CreateFrame(root, "Load Game", refs.settingsPanel, panelManager, new Vector2(1200, 860));
+        GameObject frame = CreateFrame(root, "Load Game", refs.settingsPanel, panelManager, new Vector2(1200, 800));
 
-        // Save files
+        // Step 1
+        panel.chooseFileButton = MakeButton(frame.transform, "ChooseFile", "Choose File...", new Vector2(0, 200), new Vector2(460, 110), 44);
+        GameObject selected = NewUI("SelectedFile", frame.transform);
+        SetRect(selected, Center, Center, new Vector2(0, 95), new Vector2(1050, 80));
+        panel.selectedFileText = AddText(selected, "No save file chosen.", 28, TextAlignmentOptions.Center, new Color(1, 1, 1, 0.85f), false);
+
+        // Fallback list (no file dialog)
         GameObject list = NewUI("SaveFiles", frame.transform);
-        SetRect(list, Center, Center, new Vector2(0, 140), new Vector2(900, 330));
+        SetRect(list, Center, Center, new Vector2(0, 150), new Vector2(900, 260));
         AddImage(list, null, DarkPanel);
         RectTransform content = CreateScrollView(list, true, out _);
         MakeVerticalList(content, 10);
+        panel.fileListRoot = list;
         panel.fileListContent = content;
 
         Button template = MakeButton(content, "SaveFileTemplate", "Save file", Vector2.zero, new Vector2(0, 80), 32);
@@ -228,15 +237,19 @@ public static class ProgressionUiBuilder
         SetRect(noFiles, Center, Center, Vector2.zero, new Vector2(840, 200));
         panel.noFilesText = AddText(noFiles, "No save files yet.\nSave one, or put .srrsave files into the Saves folder.", 32,
             TextAlignmentOptions.Center, new Color(1, 1, 1, 0.75f), false);
+        panel.refreshButton = MakeButton(frame.transform, "Refresh", "Refresh", new Vector2(-420, -230), new Vector2(280, 90), 30);
+        panel.openFolderButton = MakeButton(frame.transform, "OpenFolder", "Open Folder", new Vector2(420, -230), new Vector2(280, 90), 30);
 
-        panel.passwordInput = MakeInput(frame.transform, "Password", "Password", new Vector2(0, -95), new Vector2(800, 100), true);
-        panel.loadButton = MakeButton(frame.transform, "LoadButton", "Load", new Vector2(0, -220), new Vector2(420, 110), 50);
-        panel.refreshButton = MakeButton(frame.transform, "Refresh", "Refresh", new Vector2(-420, -220), new Vector2(300, 90), 30);
-        panel.openFolderButton = MakeButton(frame.transform, "OpenFolder", "Open Folder", new Vector2(420, -220), new Vector2(300, 90), 30);
+        // Step 2
+        GameObject step = NewUI("PasswordStep", frame.transform);
+        SetRect(step, Center, Center, new Vector2(0, -110), new Vector2(900, 260));
+        panel.passwordStep = step;
+        panel.passwordInput = MakeInput(step.transform, "Password", "Password", new Vector2(0, 60), new Vector2(800, 100), true);
+        panel.loadButton = MakeButton(step.transform, "LoadButton", "Load", new Vector2(0, -70), new Vector2(420, 110), 50);
 
         GameObject status = NewUI("Status", frame.transform);
-        SetRect(status, Center, Center, new Vector2(0, -320), new Vector2(1000, 60));
-        panel.statusText = AddText(status, "", 32, TextAlignmentOptions.Center, Color.white, false);
+        SetRect(status, Center, Center, new Vector2(0, -320), new Vector2(1050, 60));
+        panel.statusText = AddText(status, "", 30, TextAlignmentOptions.Center, Color.white, false);
         return root;
     }
 

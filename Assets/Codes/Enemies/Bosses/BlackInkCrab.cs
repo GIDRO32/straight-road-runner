@@ -63,7 +63,7 @@ public class BlackInkCrab : BossBase
     public float warningLead = 0.8f;
     [Tooltip("The second claw starts this much later, so the claws take turns")]
     public float clawStagger = 0.55f;
-    [Tooltip("Radius of the warning circles (world units). 0 = the claws' snap zone.")]
+    [Tooltip("Radius of the warning circles AND of the snap damage (world units). 0 = the claws' Snap Zone radius.")]
     public float circleRadius = 0f;
     [Tooltip("Spots are at least this far apart (world units)")]
     public float minSpotSpacing = 2.2f;
@@ -269,6 +269,7 @@ public class BlackInkCrab : BossBase
     {
         PlayAttackSound();
         if (isDefeated) return;
+        if (circleRadius > 0f) radius = circleRadius; // Damage area = the warning circle
 
         foreach (Collider2D col in Physics2D.OverlapCircleAll(center, radius))
         {
