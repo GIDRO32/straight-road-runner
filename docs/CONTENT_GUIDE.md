@@ -144,6 +144,40 @@ It creates `PanelCollection/CharacterSelect` plus the **Character** button left 
   Labels can be renamed on the `CharacterSelectPanel` component.
 - Picking a character saves it immediately and updates the main menu art; **Select** just closes the panel.
 
+## Shards, unlocks and tasks
+**Shards** are the currency. All of it lives in `PlayerProgress` (shards, unlocked content, task progress, Epic Signs),
+kept on this device in an encrypted file (`progress.dat` in `Application.persistentDataPath`) and saved automatically.
+Testing: **Tools ▸ Straight Road Runner ▸ Progress ▸ Add 10 Shards / Reset Progress / Show Progress**.
+
+- **Unlocks**: every character and stage has `unlockCost` (Shards; 0 = unlocked from the start). Zapaulo and Volcanic Desert cost 5.
+  Locked tiles get a lock and the price; the Select / Play button turns into **Unlock (N Shards)**.
+  Locked content can be looked at but not picked, and a locked saved selection falls back to the default.
+- **Tasks**: assets in `Assets/Content/Tasks`, Create ▸ SRR ▸ Task. `type` (ScorePoints, DefeatEnemy, DestroyWall),
+  `targets` (which enemies / bosses / obstacles count; empty = any), `goal`, `rewardShards`, `repeatable`
+  (the counter resets after paying out, leftover progress carries over). They show up in the Tasks panel automatically.
+  Score, kills (enemies and bosses) and walls are already reported; for a new kind of task add a `TaskType`
+  and call `PlayerProgress.Report(type, subject, amount)` where it happens.
+- **Epic Signs**: bought in the Tasks panel for `epicSignPrice` (3) Shards (ContentDatabase ▸ Shards & Shop).
+  While the player owns more than are on screen, each sign has `epicSignChance` to be epic: purple, purple particles,
+  `epicStaminaGain` (50) stamina. One is used up only when it's punched; missed ones come back later.
+
+## Tasks, shop and save UI
+Open `MainMenu` and run **Tools ▸ Straight Road Runner ▸ Build Tasks, Shop and Save UI**, then save the scene.
+- The main menu's **How to play?** button becomes **Tasks** (task list with progress bars, Shard balance, Epic Sign shop).
+- Settings gets the tutorial button (**How to play?**), **Save** and **Load** (the Upcoming Features button moves to the left).
+- Shard counters on the main menu (top right), Stage Select and Character Select.
+Run it again to rebuild (it replaces what it made before; Ctrl+Z undoes it).
+
+## Save files
+- **Save** asks for a password (twice) and warns that a forgotten password makes the save unrecoverable.
+  It writes `Saves/SRR_Save_<date>.srrsave` (in `Application.persistentDataPath`; **Open Folder** shows it).
+- The file holds the Shards, unlocked characters and stages, Epic Signs and task progress, encrypted with
+  **AES-256-GCM**. The key comes from the password (PBKDF2-HMAC-SHA256, 100,000 rounds, random salt); the password
+  isn't stored. Any change to the file, or a wrong password, makes it fail to open. (`SaveCrypto` implements GCM itself,
+  because Unity's Mono doesn't support .NET's `AesGcm`.)
+- **Load** lists the `.srrsave` files in the Saves folder (copy files there to move progress between computers),
+  asks for the password and replaces the current progress.
+
 ## TextMeshPro
 All UI text uses TextMeshPro (`TMP_Text` fields in code). To convert legacy `Text` in scenes/prefabs, run
 **Tools ▸ Straight Road Runner ▸ Convert Legacy Text to TextMeshPro** (it asks you to import TMP Essential Resources first if needed).

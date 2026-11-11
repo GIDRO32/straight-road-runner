@@ -74,6 +74,9 @@ public static class SmokePuff
         ps.Play();
     }
 
+    /// <summary>Soft round particle material (white, tinted by particle color). Shared by other code-built effects.</summary>
+    public static Material SoftMaterial => GetMaterial();
+
     // Soft round blob, generated once
     private static Material GetMaterial()
     {

@@ -52,9 +52,15 @@ public class StageSelectPanel : MonoBehaviour
     public string noPlatformsText = "Only regular platforms.";
 
     [Header("Play")]
+    [Tooltip("Plays the selected stage, or unlocks it when it's locked")]
     public Button playButton;
     [Tooltip("Optional: fades out before loading the stage")]
     public UIFader fader;
+
+    [Header("Locked Stages")]
+    [Tooltip("Play button label for a locked stage. {0} = price in Shards")]
+    public string unlockFormat = "Unlock ({0} Shards)";
+    public string notEnoughText = "Not enough Shards";
 
     private readonly List<StageDefinition> stages = new List<StageDefinition>();
     private readonly List<ContentEntryView> tiles = new List<ContentEntryView>();
@@ -62,6 +68,9 @@ public class StageSelectPanel : MonoBehaviour
     private StageDefinition selected;
     private bool showingInfo = false;
     private bool initialized = false;
+    private TMP_Text playLabel;
+    private string playText;
+    private float notEnoughUntil;
 
     public StageDefinition Selected => selected;
 
@@ -71,7 +80,22 @@ public class StageSelectPanel : MonoBehaviour
         if (!initialized)
             Initialize();
 
+        PlayerProgress.Changed += RefreshLocks;
         Select(GameSession.SelectedStage);
+    }
+
+    void OnDisable()
+    {
+        PlayerProgress.Changed -= RefreshLocks;
+    }
+
+    void Update()
+    {
+        if (notEnoughUntil > 0f && Time.unscaledTime > notEnoughUntil)
+        {
+            notEnoughUntil = 0f;
+            RefreshPlayLabel();
+        }
     }
 
     private void Initialize()
@@ -80,7 +104,12 @@ public class StageSelectPanel : MonoBehaviour
 
         if (artworkTabButton != null) artworkTabButton.onClick.AddListener(ShowArtwork);
         if (infoTabButton != null) infoTabButton.onClick.AddListener(ShowInfo);
-        if (playButton != null) playButton.onClick.AddListener(PlaySelected);
+        if (playButton != null)
+        {
+            playButton.onClick.AddListener(PlaySelected);
+            playLabel = playButton.GetComponentInChildren<TMP_Text>(true);
+            if (playLabel != null) playText = playLabel.text;
+        }
 
         HideTemplates();
         BuildGrid();
@@ -130,10 +159,12 @@ public class StageSelectPanel : MonoBehaviour
         if (stage == null || !stages.Contains(stage)) stage = stages[0];
 
         selected = stage;
-        GameSession.SelectedStage = stage;
+        if (PlayerProgress.IsUnlocked(stage))
+            GameSession.SelectedStage = stage; // Locked ones can be looked at, not picked
 
         for (int i = 0; i < tiles.Count; i++)
             tiles[i].SetHighlighted(stages[i] == stage, tileNormalColor, tileSelectedColor);
+        RefreshLocks();
 
         RefreshArtwork();
         RefreshInfo();
@@ -169,6 +200,23 @@ public class StageSelectPanel : MonoBehaviour
     {
         if (tab != null && tab.targetGraphic != null)
             tab.targetGraphic.color = active ? tabActiveColor : tabInactiveColor;
+    }
+
+    // ===== LOCKS =====
+
+    private void RefreshLocks()
+    {
+        TMP_FontAsset font = stageNameText != null ? stageNameText.font : null;
+        for (int i = 0; i < tiles.Count; i++)
+            LockBadge.For(tiles[i], font).Show(!PlayerProgress.IsUnlocked(stages[i]), stages[i].unlockCost);
+        RefreshPlayLabel();
+    }
+
+    private void RefreshPlayLabel()
+    {
+        if (playLabel == null || notEnoughUntil > 0f) return;
+        bool locked = selected != null && !PlayerProgress.IsUnlocked(selected);
+        playLabel.text = locked ? string.Format(unlockFormat, selected.unlockCost) : playText;
     }
 
     // ===== RIGHT SIDE CONTENT =====
@@ -241,6 +289,18 @@ public class StageSelectPanel : MonoBehaviour
     public void PlaySelected()
     {
         if (selected == null) return;
+
+        if (!PlayerProgress.IsUnlocked(selected))
+        {
+            if (PlayerProgress.TryUnlock(selected))
+                GameSession.SelectedStage = selected;
+            else
+            {
+                if (playLabel != null) playLabel.text = notEnoughText;
+                notEnoughUntil = Time.unscaledTime + 1.5f;
+            }
+            return; // Unlocking doesn't start the stage: press Play next
+        }
 
         GameSession.SelectedStage = selected;
 

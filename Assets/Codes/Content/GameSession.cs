@@ -33,11 +33,12 @@ public static class GameSession
         {
             var db = ContentDatabase.Instance;
             if (db == null) return null;
-            return db.GetCharacter(PlayerPrefs.GetString(CharacterKey, "")) ?? db.DefaultCharacter;
+            CharacterDefinition c = db.GetCharacter(PlayerPrefs.GetString(CharacterKey, ""));
+            return c != null && PlayerProgress.IsUnlocked(c) ? c : FirstUnlocked(db.Characters, db.DefaultCharacter);
         }
         set
         {
-            if (value == null) return;
+            if (value == null || !PlayerProgress.IsUnlocked(value)) return; // Locked: buy it first
             bool changed = PlayerPrefs.GetString(CharacterKey, "") != value.id;
             PlayerPrefs.SetString(CharacterKey, value.id);
             PlayerPrefs.Save();
@@ -51,16 +52,39 @@ public static class GameSession
         {
             var db = ContentDatabase.Instance;
             if (db == null) return null;
-            return db.GetStage(PlayerPrefs.GetString(StageKey, "")) ?? db.DefaultStage;
+            StageDefinition s = db.GetStage(PlayerPrefs.GetString(StageKey, ""));
+            return s != null && PlayerProgress.IsUnlocked(s) ? s : FirstUnlocked(db.Stages, db.DefaultStage);
         }
         set
         {
-            if (value == null) return;
+            if (value == null || !PlayerProgress.IsUnlocked(value)) return; // Locked: buy it first
             bool changed = PlayerPrefs.GetString(StageKey, "") != value.id;
             PlayerPrefs.SetString(StageKey, value.id);
             PlayerPrefs.Save();
             if (changed) SelectedStageChanged?.Invoke(value);
         }
+    }
+
+    // The default if it's unlocked, else the first unlocked one
+    private static T FirstUnlocked<T>(System.Collections.Generic.IReadOnlyList<T> list, T fallback) where T : ContentDefinition
+    {
+        if (fallback != null && PlayerProgress.IsUnlocked(fallback)) return fallback;
+        foreach (var item in list)
+            if (item != null && PlayerProgress.IsUnlocked(item)) return item;
+        return fallback;
+    }
+
+    /// <summary>
+    /// After progress changes (e.g. a save was loaded), tells menus if the selection fell back to other content.
+    /// </summary>
+    public static void RefreshSelection()
+    {
+        CharacterDefinition character = SelectedCharacter;
+        if (character != null && PlayerPrefs.GetString(CharacterKey, "") != character.id)
+            SelectedCharacter = character;
+        StageDefinition stage = SelectedStage;
+        if (stage != null && PlayerPrefs.GetString(StageKey, "") != stage.id)
+            SelectedStage = stage;
     }
 
     /// <summary>
@@ -87,6 +111,11 @@ public static class GameSession
         if (stage == null)
         {
             Debug.LogWarning("GameSession: No stage to load!");
+            return;
+        }
+        if (!PlayerProgress.IsUnlocked(stage))
+        {
+            Debug.LogWarning($"GameSession: Stage '{stage.id}' is locked!");
             return;
         }
         if (string.IsNullOrEmpty(stage.sceneName))

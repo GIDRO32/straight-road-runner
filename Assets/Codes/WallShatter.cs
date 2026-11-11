@@ -30,6 +30,8 @@ public class WallShatter : MonoBehaviour
     public SoundEffects soundEffects;
 
     public int HitsLeft => hitsLeft;
+    /// <summary>Set by Platform when it spawns the wall (for "Destroy walls" tasks).</summary>
+    public ObstacleDefinition Definition { get; set; }
 
     private void Awake()
     {
@@ -102,6 +104,7 @@ public class WallShatter : MonoBehaviour
     private void Shatter()
     {
         isShattered = true;
+        PlayerProgress.Report(TaskType.DestroyWall, Definition);
         if (feedback != null) StopCoroutine(feedback);
         if (spriteRenderer != null) spriteRenderer.color = baseColor;
 

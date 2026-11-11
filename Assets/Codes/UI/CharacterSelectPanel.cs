@@ -54,9 +54,14 @@ public class CharacterSelectPanel : MonoBehaviour
     public string moveNameFormat = "{0}  <color=#FFD04D>[{1}]</color>";
 
     [Header("Confirm")]
-    [Tooltip("Optional: closes the panel (the selection is already saved on click)")]
+    [Tooltip("Optional: closes the panel (the selection is already saved on click). Unlocks locked characters.")]
     public Button confirmButton;
     public PanelManager panelManager;
+
+    [Header("Locked Characters")]
+    [Tooltip("Confirm button label for a locked character. {0} = price in Shards")]
+    public string unlockFormat = "Unlock ({0} Shards)";
+    public string notEnoughText = "Not enough Shards";
 
     private readonly List<CharacterDefinition> characters = new List<CharacterDefinition>();
     private readonly List<ContentEntryView> tiles = new List<ContentEntryView>();
@@ -64,6 +69,9 @@ public class CharacterSelectPanel : MonoBehaviour
     private CharacterDefinition selected;
     private InfoTab currentTab = InfoTab.Bio;
     private bool initialized = false;
+    private TMP_Text confirmLabel;
+    private string confirmText;
+    private float notEnoughUntil;
 
     public CharacterDefinition Selected => selected;
 
@@ -73,7 +81,22 @@ public class CharacterSelectPanel : MonoBehaviour
         if (!initialized)
             Initialize();
 
+        PlayerProgress.Changed += RefreshLocks;
         Select(GameSession.SelectedCharacter);
+    }
+
+    void OnDisable()
+    {
+        PlayerProgress.Changed -= RefreshLocks;
+    }
+
+    void Update()
+    {
+        if (notEnoughUntil > 0f && Time.unscaledTime > notEnoughUntil)
+        {
+            notEnoughUntil = 0f;
+            RefreshConfirmLabel();
+        }
     }
 
     private void Initialize()
@@ -83,7 +106,12 @@ public class CharacterSelectPanel : MonoBehaviour
         if (bioTabButton != null) bioTabButton.onClick.AddListener(() => ShowTab(InfoTab.Bio));
         if (statsTabButton != null) statsTabButton.onClick.AddListener(() => ShowTab(InfoTab.Stats));
         if (movesetTabButton != null) movesetTabButton.onClick.AddListener(() => ShowTab(InfoTab.Moveset));
-        if (confirmButton != null) confirmButton.onClick.AddListener(Confirm);
+        if (confirmButton != null)
+        {
+            confirmButton.onClick.AddListener(Confirm);
+            confirmLabel = confirmButton.GetComponentInChildren<TMP_Text>(true);
+            if (confirmLabel != null) confirmText = confirmLabel.text;
+        }
 
         if (panelManager == null) panelManager = GetComponent<PanelManager>();
 
@@ -133,10 +161,12 @@ public class CharacterSelectPanel : MonoBehaviour
         if (character == null || !characters.Contains(character)) character = characters[0];
 
         selected = character;
-        GameSession.SelectedCharacter = character;
+        if (PlayerProgress.IsUnlocked(character))
+            GameSession.SelectedCharacter = character; // Locked ones can be looked at, not picked
 
         for (int i = 0; i < tiles.Count; i++)
             tiles[i].SetHighlighted(characters[i] == character, tileNormalColor, tileSelectedColor);
+        RefreshLocks();
 
         if (characterNameText != null) characterNameText.text = character.DisplayName;
         ShowArtwork(character);
@@ -152,7 +182,36 @@ public class CharacterSelectPanel : MonoBehaviour
 
     public void Confirm()
     {
+        if (selected != null && !PlayerProgress.IsUnlocked(selected))
+        {
+            if (PlayerProgress.TryUnlock(selected))
+                GameSession.SelectedCharacter = selected;
+            else
+            {
+                if (confirmLabel != null) confirmLabel.text = notEnoughText;
+                notEnoughUntil = Time.unscaledTime + 1.5f;
+            }
+            return; // Stay open: the player sees it unlocked
+        }
+
         if (panelManager != null) panelManager.ClosePanel();
+    }
+
+    // ===== LOCKS =====
+
+    private void RefreshLocks()
+    {
+        TMP_FontAsset font = characterNameText != null ? characterNameText.font : null;
+        for (int i = 0; i < tiles.Count; i++)
+            LockBadge.For(tiles[i], font).Show(!PlayerProgress.IsUnlocked(characters[i]), characters[i].unlockCost);
+        RefreshConfirmLabel();
+    }
+
+    private void RefreshConfirmLabel()
+    {
+        if (confirmLabel == null || notEnoughUntil > 0f) return;
+        bool locked = selected != null && !PlayerProgress.IsUnlocked(selected);
+        confirmLabel.text = locked ? string.Format(unlockFormat, selected.unlockCost) : confirmText;
     }
 
     // ===== MIDDLE: ARTWORK =====

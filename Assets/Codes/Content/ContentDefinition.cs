@@ -18,6 +18,10 @@ public abstract class ContentDefinition : ScriptableObject
     [Tooltip("Untick to hide this content from the demo build without deleting it")]
     public bool includeInDemo = true;
 
+    [Header("Unlock")]
+    [Tooltip("Shards needed to unlock it (characters and stages). 0 = unlocked from the start.")]
+    [Min(0)] public int unlockCost = 0;
+
     public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
 
     protected virtual void OnValidate()

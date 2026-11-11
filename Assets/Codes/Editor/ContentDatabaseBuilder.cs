@@ -71,6 +71,7 @@ public class ContentDatabaseBuilder : AssetPostprocessor
         changed |= Assign(ref db.bosses, FindAll<BossDefinition>());
         changed |= Assign(ref db.obstacles, FindAll<ObstacleDefinition>());
         changed |= Assign(ref db.platforms, FindAll<PlatformDefinition>());
+        changed |= Assign(ref db.tasks, FindAll<TaskDefinition>());
 
         if (db.defaultCharacter == null && db.characters.Count > 0)
         {
@@ -94,7 +95,7 @@ public class ContentDatabaseBuilder : AssetPostprocessor
         if (verbose)
         {
             Debug.Log($"ContentDatabase rebuilt: {db.characters.Count} characters, {db.stages.Count} stages, " +
-                      $"{db.enemies.Count} enemies, {db.bosses.Count} bosses, {db.obstacles.Count} obstacles, {db.platforms.Count} platforms. " +
+                      $"{db.enemies.Count} enemies, {db.bosses.Count} bosses, {db.obstacles.Count} obstacles, {db.platforms.Count} platforms, {db.tasks.Count} tasks. " +
                       $"{warnings} warning(s).", db);
         }
 

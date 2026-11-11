@@ -23,6 +23,17 @@ public class ContentDatabase : ScriptableObject
     public List<BossDefinition> bosses = new List<BossDefinition>();
     public List<ObstacleDefinition> obstacles = new List<ObstacleDefinition>();
     public List<PlatformDefinition> platforms = new List<PlatformDefinition>();
+    public List<TaskDefinition> tasks = new List<TaskDefinition>();
+
+    [Header("Shards & Shop")]
+    public Sprite shardIcon;
+    public Sprite lockIcon;
+    [Tooltip("Shown in the shop next to the Epic Sign")]
+    public Sprite epicSignIcon;
+    [Tooltip("Shards per Epic Sign")]
+    public int epicSignPrice = 3;
+    [Tooltip("Chance (0-1) that a sign in a level is an Epic Sign, while the player owns more than are on screen")]
+    [Range(0f, 1f)] public float epicSignChance = 0.2f;
 
     private static ContentDatabase instance;
 
@@ -50,6 +61,7 @@ public class ContentDatabase : ScriptableObject
     public IReadOnlyList<BossDefinition> Bosses => Visible(bosses);
     public IReadOnlyList<ObstacleDefinition> Obstacles => Visible(obstacles);
     public IReadOnlyList<PlatformDefinition> Platforms => Visible(platforms);
+    public IReadOnlyList<TaskDefinition> Tasks => Visible(tasks);
 
     // ===== LOOKUPS =====
 
@@ -58,6 +70,7 @@ public class ContentDatabase : ScriptableObject
     public EnemyDefinition GetEnemy(string id) => Find(enemies, id) ?? Find(bosses, id);
     public ObstacleDefinition GetObstacle(string id) => Find(obstacles, id);
     public PlatformDefinition GetPlatform(string id) => Find(platforms, id);
+    public TaskDefinition GetTask(string id) => Find(tasks, id);
 
     /// <summary>First regular stage using this scene (used when a scene is opened directly in the Editor).</summary>
     public StageDefinition GetStageForScene(string sceneName)

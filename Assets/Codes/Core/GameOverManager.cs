@@ -74,6 +74,7 @@ public class GameOverManager : MonoBehaviour
         
         isGameOver = true;
         Time.timeScale = 0f; // Pause game
+        PlayerProgress.Save(); // Points / kills of this run count toward tasks
         
         // Show game over panel
         if (gameOverPanel != null)

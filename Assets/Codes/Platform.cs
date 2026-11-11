@@ -96,6 +96,7 @@ public class Platform : MonoBehaviour
             obstacleInstances.Add(instance);
 
             WallShatter wall = instance.GetComponentInChildren<WallShatter>(true);
+            if (wall != null) wall.Definition = obstacle;
             if (wall != null && obstacle.hitsToBreak.x > 0)
                 wall.SetHitsToBreak(obstacle.hitsToBreak.x, Mathf.Max(obstacle.hitsToBreak.x, obstacle.hitsToBreak.y));
         }

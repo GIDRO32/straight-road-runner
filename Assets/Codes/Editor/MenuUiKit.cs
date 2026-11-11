@@ -172,16 +172,23 @@ public static class MenuUiKit
     /// <summary>Frame image + title + close button.</summary>
     public static GameObject CreateFrame(GameObject root, string title, Transform settingsPanel, PanelManager panelManager)
     {
+        return CreateFrame(root, title, settingsPanel, panelManager, FrameSize);
+    }
+
+    /// <summary>Frame of any size: title along the top, close button in the top right corner.</summary>
+    public static GameObject CreateFrame(GameObject root, string title, Transform settingsPanel, PanelManager panelManager, Vector2 size)
+    {
         GameObject frame = NewUI("Frame", root.transform);
-        SetRect(frame, Center, Center, Vector2.zero, FrameSize);
+        SetRect(frame, Center, Center, Vector2.zero, size);
         AddImage(frame, FrameSprite, Color.white);
 
         GameObject titleGo = NewUI("Title", frame.transform);
-        SetRect(titleGo, Center, Center, new Vector2(0, 375), new Vector2(800, 100));
+        SetRect(titleGo, Center, Center, new Vector2(0, size.y / 2f - 75f), new Vector2(800, 100));
         AddText(titleGo, title, 70, TextAlignmentOptions.Center, Color.white, true);
 
         Button close = BuildCloseButton(frame.transform, settingsPanel, panelManager);
         close.name = "Close";
+        close.GetComponent<RectTransform>().anchoredPosition = new Vector2(size.x / 2f - 110f, size.y / 2f - 80f);
         return frame;
     }
 

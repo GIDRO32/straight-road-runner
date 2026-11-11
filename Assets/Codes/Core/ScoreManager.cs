@@ -38,6 +38,7 @@ public class ScoreManager : MonoBehaviour
     {
         currentScore += amount;
         UpdateScoreUI();
+        PlayerProgress.Report(TaskType.ScorePoints, null, amount); // "Earn 100,000 points" tasks
     }
     
     public void AddEnemyKillScore()

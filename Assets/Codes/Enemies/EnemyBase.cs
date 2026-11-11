@@ -108,6 +108,8 @@ public abstract class EnemyBase : MonoBehaviour
             rb.AddForce(force, ForceMode2D.Impulse);
         }
 
+        PlayerProgress.Report(TaskType.DefeatEnemy, definition); // "Defeat 100 Ball Devils" tasks
+
         OnDefeated();
         StartCoroutine(FadeAndDestroy());
     }

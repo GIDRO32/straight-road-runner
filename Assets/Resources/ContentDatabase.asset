@@ -36,3 +36,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 04c3853b0d134cb4bdfab4323e83854f, type: 2}
   - {fileID: 11400000, guid: 8d87ab47b4304335b85f225faf8906e7, type: 2}
   - {fileID: 11400000, guid: e99c7787a8a343de99a63c5b59d04d31, type: 2}
+  tasks:
+  - {fileID: 11400000, guid: 72f3e6bb71284f92baa089dd3ae635f1, type: 2}
+  - {fileID: 11400000, guid: bd6bcd8f5217423eb5a7afc44241c92b, type: 2}
+  - {fileID: 11400000, guid: a9d54141671049ca9839bc9bbe3d0cac, type: 2}
+  - {fileID: 11400000, guid: ab909082875547ca88a6b6c8e7aa3df9, type: 2}
+  - {fileID: 11400000, guid: 99e54ce6e5be40afafd0e49fcb5c205a, type: 2}
+  shardIcon: {fileID: 21300000, guid: 549776cd1ff7a264390415ea3b86183c, type: 3}
+  lockIcon: {fileID: 21300000, guid: b991aca048959b340a5c4874e8cb36c6, type: 3}
+  epicSignIcon: {fileID: 21300000, guid: b76ca3ce4889d9946a177db8b238fd9b, type: 3}
+  epicSignPrice: 3
+  epicSignChance: 0.2

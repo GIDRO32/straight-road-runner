@@ -17,6 +17,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: a965581d1ba6f6342976f942c28ff6a3, type: 3}
   sortOrder: 1
   includeInDemo: 1
+  unlockCost: 5
   sceneName: Volcanic Dessert
   artwork: {fileID: 21300000, guid: 810f2b98d184b5049889bf1b75e84485, type: 3}
   description: A road drawn in a sketchbook.
