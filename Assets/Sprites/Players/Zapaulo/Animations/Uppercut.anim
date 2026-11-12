@@ -34,15 +34,15 @@ AnimationClip:
       value: {fileID: 21300000, guid: 338d3c4dd4115b543910618b35e70d18, type: 3}
     - time: 0.26666668
       value: {fileID: 21300000, guid: 0bbcacfb798f8784db4f44d9696938f7, type: 3}
-    - time: 0.36666667
+    - time: 0.33333334
       value: {fileID: 21300000, guid: 0c4d135eb4ddeb84d9316b40e0f8edfa, type: 3}
-    - time: 0.41666666
+    - time: 0.36666667
       value: {fileID: 21300000, guid: 545da7041647e9f4daf6b807f01d965a, type: 3}
-    - time: 0.5
+    - time: 0.43333334
       value: {fileID: 21300000, guid: 02ce8aa5818e09c4289b651d6804cf49, type: 3}
-    - time: 0.56666666
+    - time: 0.46666667
       value: {fileID: 21300000, guid: d06918414cc71ca43b82dc6ab0032c29, type: 3}
-    - time: 0.65
+    - time: 0.53333336
       value: {fileID: 21300000, guid: c52d5045b8bf7d342bf9c05d1145cd5d, type: 3}
     attribute: m_Sprite
     path: 
@@ -83,7 +83,7 @@ AnimationClip:
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.6666666
+    m_StopTime: 0.55
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -110,14 +110,14 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.36666667
+  - time: 0.33333334
     functionName: DeactivateUppercutHitbox
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.65
+  - time: 0.53333336
     functionName: EndUppercut
     data: 
     objectReferenceParameter: {fileID: 0}

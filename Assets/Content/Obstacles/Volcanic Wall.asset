@@ -17,6 +17,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   sortOrder: 0
   includeInDemo: 1
+  unlockCost: 0
   prefab: {fileID: 6675705939776828954, guid: 0f7fd35c6f402034da947fddc85236ef, type: 3}
   offset: {x: -2.13, y: 2}
   slot: 0

@@ -1561,6 +1561,14 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 519420031}
+    - target: {fileID: 7466872843457571167, guid: 9e204ab63e3705248ac3d5b14c26bac3, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1687128564}
+    - target: {fileID: 7466872843457571167, guid: 9e204ab63e3705248ac3d5b14c26bac3, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: RestartGame
+      objectReference: {fileID: 0}
     - target: {fileID: 7513881979259660621, guid: 9e204ab63e3705248ac3d5b14c26bac3, type: 3}
       propertyPath: m_Name
       value: MainInterface

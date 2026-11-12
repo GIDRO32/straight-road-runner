@@ -7103,10 +7103,10 @@ RectTransform:
   - {fileID: 14539369}
   - {fileID: 199439319}
   - {fileID: 1136949826}
-  - {fileID: 303982151}
   - {fileID: 1569175489}
   - {fileID: 762563751}
   - {fileID: 1906327496}
+  - {fileID: 303982151}
   m_Father: {fileID: 1747236572}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -9131,7 +9131,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Padding: {x: 0, y: 0, z: 0, w: 0}
+  m_Padding: {x: 25, y: 35, z: 55, w: 35}
   m_Softness: {x: 0, y: 0}
 --- !u!114 &606994246
 MonoBehaviour:
@@ -18439,10 +18439,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 25
-    m_Right: 25
-    m_Top: 20
-    m_Bottom: 20
+    m_Left: 40
+    m_Right: 75
+    m_Top: 35
+    m_Bottom: 35
   m_ChildAlignment: 0
   m_Spacing: 15
   m_ChildForceExpandWidth: 1

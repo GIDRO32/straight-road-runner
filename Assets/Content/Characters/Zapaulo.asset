@@ -20,7 +20,7 @@ MonoBehaviour:
   unlockCost: 5
   prefab: {fileID: 5277714748452175156, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
   selectArtwork: {fileID: 21300000, guid: d3d7ef3adf3678540b3d328a29d8d98e, type: 3}
-  menuArt: {fileID: 0}
+  menuArt: {fileID: 4886932708286904114, guid: 89082ffd3fc33d640a421b123d926d5c, type: 3}
   bio: Zapaulo is a femboy blue anthropomorphic cat from the White Shard of the HEX
     Mirror Universe, known for his incredible running speed, impressive endurance,
     and determination. He holds the in-universe record for the longest distance ever
