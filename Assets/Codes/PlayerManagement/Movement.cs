@@ -1,12 +1,16 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// Default character controller. For a character with a unique moveset, create a subclass
+/// (e.g. NinjaMovement : Movement), override the virtual methods and put it on that character's prefab.
+/// </summary>
 public class Movement : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float runSpeed = 7f;
-    float jumpHeight = 10f;
-    float superRunSpeed = 15f;
+    protected float jumpHeight = 10f;
+    protected float superRunSpeed = 15f;
 
     [Header("Components")]
     public Rigidbody2D rb;
@@ -29,48 +33,48 @@ public class Movement : MonoBehaviour
     public float uppercutSpeedReduction = 2f;
 
     // State variables
-    private bool isFacingRight = false;
-    private bool isOnGround = false;
-    private bool superJumping = false;
-    private bool isSuperRunning = false;
-    private bool isPunching = false;
-    private bool isUppercutting = false;
-    private bool isDashing = false;
-    private bool isDucking = false;
-    private bool canSuperJump = false;
-    private bool isChargingSuperJump = false;
-    private bool isStunned = false;
+    protected bool isFacingRight = false;
+    protected bool isOnGround = false;
+    protected bool superJumping = false;
+    protected bool isSuperRunning = false;
+    protected bool isPunching = false;
+    protected bool isUppercutting = false;
+    protected bool isDashing = false;
+    protected bool isDucking = false;
+    protected bool canSuperJump = false;
+    protected bool isChargingSuperJump = false;
+    protected bool isStunned = false;
 
     // Platform tracking - NEW APPROACH
-    private Rigidbody2D currentPlatformRb;
-    private Vector2 platformVelocity;
+    protected Rigidbody2D currentPlatformRb;
+    protected Vector2 platformVelocity;
 
     // Timers
-    private float duckTime = 0f;
-    private float superJumpChargeTime = 0.66f;
-    private float superJumpHeight = 15f;
-    private float stunTime = 2f;
-    private float dashTime = 0.2f;
-    private float dashCooldown = 0.5f;
-    private float lastDashTime = -1f;
-    private float lastInputTime = 0f;
-    private float dashSpeedMultiplier = 2f;
+    protected float duckTime = 0f;
+    protected float superJumpChargeTime = 0.66f;
+    protected float superJumpHeight = 15f;
+    protected float stunTime = 2f;
+    protected float dashTime = 0.2f;
+    protected float dashCooldown = 0.5f;
+    protected float lastDashTime = -1f;
+    protected float lastInputTime = 0f;
+    protected float dashSpeedMultiplier = 2f;
     [Header("Speed Limiter")]
     public bool enableSpeedLimiter = true;
-    private float baseRunSpeed; // Store original run speed
+    protected float baseRunSpeed; // Store original run speed
 
-    private KeyCode lastKey;
-    private PlayerData playerData;
-    private Vector2 defaultColliderSize;
-    private Vector2 defaultColliderOffset;
+    protected KeyCode lastKey;
+    protected PlayerData playerData;
+    protected Vector2 defaultColliderSize;
+    protected Vector2 defaultColliderOffset;
     [Header("Sound Effects")]
     public SoundEffects soundEffects;
 
-    private bool punchHitSomething = false;
-    private bool uppercutHitSomething = false;
-    private float groundCheckCooldown = 0f;
-    private const float GROUND_CHECK_DELAY = 0.1f;
-    void Start()
+    protected bool punchHitSomething = false;
+    protected bool uppercutHitSomething = false;
+    protected float groundCheckCooldown = 0f;
+    protected const float GROUND_CHECK_DELAY = 0.1f;
+    protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
@@ -99,10 +103,50 @@ public class Movement : MonoBehaviour
         if (playerData != null)
             playerData.UpdateStaminaUI();
     }
-    void Update()
+    /// <summary>Applies the stats from the character's CharacterDefinition. Called when the player spawns.</summary>
+    public virtual void ApplyStats(CharacterStats stats)
+    {
+        if (stats == null) return;
+
+        runSpeed = stats.runSpeed;
+        baseRunSpeed = stats.runSpeed;
+        superRunSpeed = stats.superRunSpeed;
+        jumpHeight = stats.jumpHeight;
+        superJumpHeight = stats.superJumpHeight;
+        dashSpeedMultiplier = stats.dashSpeedMultiplier;
+        punchSpeedReduction = stats.punchSpeedReduction;
+        uppercutSpeedReduction = stats.uppercutSpeedReduction;
+    }
+
+    protected virtual void Update()
     {
         if (isStunned) return;
 
+        HandleDuckAndSuperJump();
+
+        // Stop here if ducking - don't process other inputs
+        if (isDucking) return;
+
+        float horizontalInput = ReadHorizontalInput();
+        FlipSprite(horizontalInput);
+
+        HandleSuperRun();
+        HandleJump(horizontalInput);
+        HandleAttacks();
+        HandleAirDash(horizontalInput);
+    }
+
+    // ===== MOVES (override or skip these in a character's own Movement subclass) =====
+
+    protected float ReadHorizontalInput()
+    {
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) return -1f;
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) return 1f;
+        return 0f;
+    }
+
+    protected virtual void HandleDuckAndSuperJump()
+    {
         bool holdingDown = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
 
         // Duck & Charge SuperJump
@@ -151,20 +195,10 @@ public class Movement : MonoBehaviour
             soundEffects?.PlaySuperJump();
             PerformSuperJump();
         }
+    }
 
-        // Stop here if ducking - don't process other inputs
-        if (isDucking) return;
-
-        // Horizontal movement input (only if not ducking)
-        float horizontalInput = 0f;
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            horizontalInput = -1f;
-        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            horizontalInput = 1f;
-
-        FlipSprite(horizontalInput);
-
-        // SuperRun logic
+    protected virtual void HandleSuperRun()
+    {
         isSuperRunning = Input.GetKey(KeyCode.LeftShift) && isOnGround;
         animator.SetBool("IsSuperRunning", isSuperRunning);
 
@@ -179,8 +213,10 @@ public class Movement : MonoBehaviour
             else if (!isSuperRunning && superRunParticles.isPlaying)
                 superRunParticles.Stop();
         }
+    }
 
-        // Jumping
+    protected virtual void HandleJump(float horizontalInput)
+    {
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) && isOnGround)
         {
             float jumpSpeed = isSuperRunning ? superRunSpeed : runSpeed;
@@ -189,9 +225,14 @@ public class Movement : MonoBehaviour
             superJumping = isSuperRunning;
             animator.SetBool("IsJumping", true);
         }
+    }
 
+    protected virtual bool CanAttack => !isPunching && !isUppercutting;
+
+    protected virtual void HandleAttacks()
+    {
         // Punching
-        if (Input.GetKeyDown(KeyCode.Z) && !isPunching && !isUppercutting)
+        if (Input.GetKeyDown(KeyCode.Z) && CanAttack)
         {
             isPunching = true;
             punchHitSomething = false;
@@ -201,7 +242,7 @@ public class Movement : MonoBehaviour
         }
 
         // Uppercutting
-        if (Input.GetKeyDown(KeyCode.X) && !isUppercutting && !isPunching)
+        if (Input.GetKeyDown(KeyCode.X) && CanAttack)
         {
             isUppercutting = true;
             uppercutHitSomething = false;
@@ -209,8 +250,10 @@ public class Movement : MonoBehaviour
             runSpeed -= uppercutSpeedReduction;
             soundEffects?.PlayWhoosh();
         }
+    }
 
-        // Air dash detection
+    protected virtual void HandleAirDash(float horizontalInput)
+    {
         if (!isOnGround && (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) ||
                 Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)))
         {
@@ -229,7 +272,7 @@ public class Movement : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         if (isStunned) return;
 
@@ -244,6 +287,7 @@ public class Movement : MonoBehaviour
 
         float currentRunSpeed = runSpeed;
         isOnGround = Mathf.Abs(rb.velocity.y) < 0.01f;
+        SyncLanding();
 
         if (isPunching || isUppercutting)
             currentRunSpeed -= punchSpeedReduction;
@@ -303,7 +347,7 @@ public class Movement : MonoBehaviour
         animator.SetFloat("YHeight", rb.velocity.y);
     }
 
-    private void UpdatePlatformVelocity()
+    protected void UpdatePlatformVelocity()
     {
         if (currentPlatformRb != null)
         {
@@ -315,7 +359,7 @@ public class Movement : MonoBehaviour
         }
     }
 
-    private void FlipSprite(float horizontalInput)
+    protected void FlipSprite(float horizontalInput)
     {
         if (isFacingRight && horizontalInput < 0f || !isFacingRight && horizontalInput > 0f)
         {
@@ -326,7 +370,7 @@ public class Movement : MonoBehaviour
         }
     }
 
-    private void StartDucking()
+    protected void StartDucking()
     {
         isDucking = true;
         duckTime = 0f;
@@ -336,7 +380,7 @@ public class Movement : MonoBehaviour
         playerCollider.offset = new Vector2(playerCollider.offset.x, -1.3f);
     }
 
-    private void StopDucking()
+    protected void StopDucking()
     {
         isDucking = false;
         canSuperJump = false;
@@ -348,7 +392,7 @@ public class Movement : MonoBehaviour
         playerCollider.offset = defaultColliderOffset;
     }
 
-    private void PerformSuperJump()
+    protected virtual void PerformSuperJump()
     {
         rb.velocity = new Vector2(rb.velocity.x, superJumpHeight);
         animator.SetBool("IsSuperJumping", true);
@@ -359,7 +403,7 @@ public class Movement : MonoBehaviour
         StopDucking();
     }
 
-    private IEnumerator SideDash(float direction)
+    protected virtual IEnumerator SideDash(float direction)
     {
         if (Time.time - lastDashTime > dashCooldown && !isOnGround)
         {
@@ -382,10 +426,11 @@ public class Movement : MonoBehaviour
         }
     }
 
-    private IEnumerator StunPlayer(float duration)
+    protected IEnumerator StunPlayer(float duration)
     {
         isStunned = true;
         animator.SetBool("IsStunned", true);
+        OnStunned();
 
         // ✅ Force reset all combat states
         if (isPunching)
@@ -449,7 +494,13 @@ public class Movement : MonoBehaviour
         uppercutHitbox.SetActive(false);
         uppercutHitSomething = false;
     }
-    public void OnPunchHit()
+    /// <summary>Called when the player gets stunned or loses: subclasses stop their own moves here.</summary>
+    protected virtual void OnStunned() { }
+
+    /// <summary>A hitbox other than Punch/Uppercut hit a wall or enemy (e.g. a character's special move).</summary>
+    public virtual void OnOtherHitboxHit(Hitbox hitbox) { }
+
+    public virtual void OnPunchHit()
     {
         if (!punchHitSomething)
         {
@@ -458,7 +509,7 @@ public class Movement : MonoBehaviour
         }
     }
 
-    public void OnUppercutHit()
+    public virtual void OnUppercutHit()
     {
         if (!uppercutHitSomething)
         {
@@ -476,7 +527,7 @@ public class Movement : MonoBehaviour
         uppercutHitbox.SetActive(false);
     }
 
-    void OnCollisionEnter2D(Collision2D col)
+    protected virtual void OnCollisionEnter2D(Collision2D col)
     {
         if (col.gameObject.CompareTag("Platform"))
         {
@@ -519,37 +570,72 @@ public class Movement : MonoBehaviour
         }
         if (col.gameObject.CompareTag("Enemy") && !isStunned && isOnGround && !isDashing)
         {
-            superJumping = false;
-            soundEffects?.PlayDamageTaken();
+            // Damage and stun come from the enemy's EnemyDefinition
+            EnemyBase enemy = col.gameObject.GetComponent<EnemyBase>();
+            if (enemy != null && (enemy.IsDefeated || !enemy.DealsContactDamage)) return;
 
-            // NEW: Deduct stamina when hit by enemy
-            if (playerData != null)
-            {
-                playerData.currentStamina = Mathf.Max(0, playerData.currentStamina - 10f);
-                playerData.UpdateStaminaUI();
+            float staminaDamage = enemy != null ? enemy.ContactStaminaDamage : 10f;
+            float stunDuration = enemy != null ? enemy.ContactStunDuration : 1f;
 
-                // Check if stamina reached zero (optional warning, but no game over)
-                if (playerData.currentStamina <= 0)
-                {
-                    Debug.Log("Warning: Stamina depleted!");
-                    // Player can continue, just can't use stamina abilities
-                }
-            }
-
-            StartCoroutine(StunPlayer(1f));
-
-            if (isPunching)
-            {
-                EndPunch();
-            }
-            if (isUppercutting)
-            {
-                EndUppercut();
-            }
+            TakeHit(staminaDamage, stunDuration);
         }
     }
 
-    void OnCollisionExit2D(Collision2D col)
+    /// <summary>
+    /// Hurts the player: stamina loss + stun (enemy contact, lava platforms...).
+    /// Returns false if the hit was ignored (already stunned or dashing).
+    /// </summary>
+    public virtual bool TakeHit(float staminaDamage, float stunDuration)
+    {
+        if (isStunned || isDashing || !enabled) return false;
+
+        superJumping = false;
+        soundEffects?.PlayDamageTaken();
+
+        if (playerData != null)
+        {
+            playerData.currentStamina = Mathf.Max(0, playerData.currentStamina - staminaDamage);
+            playerData.UpdateStaminaUI();
+
+            // Check if stamina reached zero (optional warning, but no game over)
+            if (playerData.currentStamina <= 0)
+            {
+                Debug.Log("Warning: Stamina depleted!");
+                // Player can continue, just can't use stamina abilities
+            }
+        }
+
+        StartCoroutine(StunPlayer(stunDuration));
+
+        if (isPunching)
+        {
+            EndPunch();
+        }
+        if (isUppercutting)
+        {
+            EndUppercut();
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Hit from a boss attack: like TakeHit, but with no stamina left it's game over.
+    /// Returns false if the hit was ignored (already stunned or dashing).
+    /// </summary>
+    public virtual bool TakeBossHit(float staminaDamage, float stunDuration)
+    {
+        if (isStunned || isDashing || !enabled) return false;
+
+        if (playerData != null && playerData.currentStamina <= 0f)
+        {
+            TriggerGameOver();
+            return true;
+        }
+
+        return TakeHit(staminaDamage, stunDuration);
+    }
+
+    protected virtual void OnCollisionExit2D(Collision2D col)
     {
         if (col.gameObject.CompareTag("Platform"))
         {
@@ -560,7 +646,39 @@ public class Movement : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    // Landing is normally caught by OnTriggerEnter2D, but that misses landings that start inside a platform's
+    // trigger (e.g. jumping up through a one-way platform, or entering it during the cooldown). So every physics step:
+    // standing on top of a platform and not moving up = landed, and the jump / fall animation is cleared.
+    protected void SyncLanding()
+    {
+        if (rb.velocity.y > 0.1f || groundCheckCooldown > 0f || !IsStandingOnPlatform()) return;
+
+        isOnGround = true;
+        if (animator.GetBool("IsJumping") || animator.GetBool("IsSuperJumping") || superJumping)
+        {
+            superJumping = false;
+            animator.SetBool("IsJumping", false);
+            animator.SetBool("IsSuperJumping", false);
+        }
+    }
+
+    /// <summary>A solid platform right under the feet (its top at the feet, not above them).</summary>
+    protected bool IsStandingOnPlatform()
+    {
+        if (playerCollider == null) return false;
+        Bounds feet = playerCollider.bounds;
+        Vector2 center = new Vector2(feet.center.x, feet.min.y - 0.05f);
+        Vector2 size = new Vector2(feet.size.x * 0.9f, 0.12f);
+
+        foreach (Collider2D col in Physics2D.OverlapBoxAll(center, size, 0f))
+        {
+            if (col == null || col.isTrigger || !col.CompareTag("Platform")) continue;
+            if (col.bounds.max.y <= feet.min.y + 0.15f) return true;
+        }
+        return false;
+    }
+
+    protected virtual void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Platform"))
         {
@@ -639,7 +757,7 @@ public class Movement : MonoBehaviour
             }
         }
     }
-    private void OnTriggerExit2D(Collider2D collision)
+    protected virtual void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.CompareTag("Platform"))
         {
@@ -658,7 +776,7 @@ public class Movement : MonoBehaviour
             }
         }
     }
-    private void TriggerGameOver()
+    protected void TriggerGameOver()
     {
         Debug.Log("Game Over - Insufficient stamina!");
 
@@ -668,6 +786,7 @@ public class Movement : MonoBehaviour
 
         // Disable controls
         isStunned = true;
+        OnStunned();
 
         // Play damage sound
         soundEffects?.PlayDamageTaken();

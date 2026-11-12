@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6b400c43308436aab62a3989ee49e9d, type: 3}
+  m_Name: SketchyRoad 1
+  m_EditorClassIdentifier: 
+  id: sketchy_road
+  displayName: Le Kin Penn's Sketchbook
+  icon: {fileID: 21300000, guid: 0611cf0febd462b478ac824137dd5a68, type: 3}
+  sortOrder: 0
+  includeInDemo: 1
+  unlockCost: 0
+  sceneName: SketchyRoad
+  artwork: {fileID: 21300000, guid: 7614009d6b08a4449a28069fd3b7b6e3, type: 3}
+  description: In this sketchbook, you won't find a single minimalistic object or
+    entity. If you ever see something that looks simple or low-effort, prepare to
+    witness something uncanny if you take a closer look.
+  introTitle: Le Kin Penn's Sketchbook
+  musicFolder: 
+  menuBackgroundPrefab: {fileID: 5791166462679130858, guid: 50e480fb79b6d7f4a9ea2766cf94d1f9, type: 3}
+  menuBackgroundScrollSpeed: 4
+  menuBackgroundWidth: 39
+  titleLogo: {fileID: 21300000, guid: 44403fd4b5d687e478f7918b0eeffb76, type: 3}
+  enemies:
+  - {fileID: 11400000, guid: a0771887c64e4684a30b2ca9461e985f, type: 2}
+  platformPrefab: {fileID: 0}
+  basePlatform: {fileID: 11400000, guid: 032ab7b8ed1d49a1b9f944eb2df915dd, type: 2}
+  specialPlatforms:
+  - platform: {fileID: 11400000, guid: 04c3853b0d134cb4bdfab4323e83854f, type: 2}
+    chance:
+      start: 0.01
+      limit: 1
+      step: 0.03
+  obstacleSpawns:
+  - obstacle: {fileID: 11400000, guid: 60c6adafa6654efa893973cb5169b495, type: 2}
+    chance:
+      start: 0.03
+      limit: 0.9
+      step: 0.03
+  - obstacle: {fileID: 11400000, guid: 630126ac08974f1c8274410e97f6bb92, type: 2}
+    chance:
+      start: 0.7
+      limit: 0.05
+      step: -0.02
+  pacing:
+    difficultyInterval: 5
+    platformInterval:
+      start: 1
+      limit: 5
+      step: 0.1
+    platformLaneChance:
+      start: 0.95
+      limit: 0.3
+      step: -0.02
+    firstEnemyDelay: 5
+    enemyInterval:
+      start: 20
+      limit: 3
+      step: -0.5
+    enemyChance:
+      start: 0.2
+      limit: 1
+      step: 0.025
+    enemyWaveSpawnDelay: 0.5
+    maxEnemies:
+      start: 6
+      limit: 20
+      step: 1
+    bossMaxHealth:
+      start: 100
+      limit: 2000
+      step: 10
+    endgameSpeedStep: 0.2
+    endgameInterval: 5
+  bossesEnabled: 1
+  leaderboardId: 

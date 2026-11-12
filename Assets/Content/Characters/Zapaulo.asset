@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a5aa9b78f3c48e882945762992745a1, type: 3}
+  m_Name: Zapaulo
+  m_EditorClassIdentifier: 
+  id: Zapaulo
+  displayName: Zapaulo
+  icon: {fileID: 21300000, guid: fb0d8c6d05230374daba1f1e685ece33, type: 3}
+  sortOrder: 1
+  includeInDemo: 1
+  unlockCost: 5
+  prefab: {fileID: 5277714748452175156, guid: 6f2e15fda34922e4d88264352338b398, type: 3}
+  selectArtwork: {fileID: 21300000, guid: d3d7ef3adf3678540b3d328a29d8d98e, type: 3}
+  menuArt: {fileID: 4886932708286904114, guid: 89082ffd3fc33d640a421b123d926d5c, type: 3}
+  bio: Zapaulo is a femboy blue anthropomorphic cat from the White Shard of the HEX
+    Mirror Universe, known for his incredible running speed, impressive endurance,
+    and determination. He holds the in-universe record for the longest distance ever
+    run without stopping, covering an astonishing 1,170 kilometers at a velocity
+    of 90 km/h. However, even someone as extraordinarily fast as Zapaulo can get
+    into trouble! During his record-breaking journey, he stopped at the Volcanic
+    Dessert and ended up getting lost in its dangerous, unforgiving landscape. Stranded
+    far from civilization, he survived by hunting Smoke Hounds for sustenance, relying
+    on his athletic abilities and survival instincts to endure the harsh environment.
+    It took him two whole weeks to finally find his way out, turning what began as
+    an incredible athletic achievement into an unexpected survival adventure. Despite
+    the ordeal, Zapaulo's legendary run remains a remarkable feat in the HEX Mirror
+    Universe, proving that his speed and endurance are matched only by his ability
+    to persevere when things go terribly wrong.
+  profile:
+    speed: 5
+    jump: 5
+    size: 3
+    weight: 1
+  stats:
+    runSpeed: 7
+    superRunSpeed: 15
+    jumpHeight: 15
+    superJumpHeight: 15
+    dashSpeedMultiplier: 2
+    punchSpeedReduction: 4
+    uppercutSpeedReduction: 2
+    maxStamina: 130
+  moveset:
+  - moveName: Run
+    input: A / D or Left / Right
+    description: Run along the road.
+    icon: {fileID: 0}
+  - moveName: Jump
+    input: Space, W or Up
+    description: Jump.
+    icon: {fileID: 0}
+  - moveName: Punch
+    input: Z
+    description: Punch enemies, walls and signs in front of you.
+    icon: {fileID: 0}
+  - moveName: Uppercut
+    input: X
+    description: Upward strike.
+    icon: {fileID: 0}
+  - moveName: Platform Grasp
+    input: C
+    description: Immediately jumps on the nearest platofrm. Drains 70 stamina per
+      second
+    icon: {fileID: 0}
+  - moveName: Agressive Scratching
+    input: Hold Shift
+    description: Hold to attack in all direction at the same time. Drains 20 stamina
+      per second
+    icon: {fileID: 0}

@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6b400c43308436aab62a3989ee49e9d, type: 3}
+  m_Name: Volcanic Desert
+  m_EditorClassIdentifier: 
+  id: volcanic_desert
+  displayName: Volcanic Desert
+  icon: {fileID: 21300000, guid: a965581d1ba6f6342976f942c28ff6a3, type: 3}
+  sortOrder: 1
+  includeInDemo: 1
+  unlockCost: 5
+  sceneName: Volcanic Dessert
+  artwork: {fileID: 21300000, guid: 810f2b98d184b5049889bf1b75e84485, type: 3}
+  description: A road drawn in a sketchbook.
+  introTitle: Volcanic Desert
+  musicFolder: 
+  menuBackgroundPrefab: {fileID: 5791166462679130858, guid: 15c431c77cfb7d84a996a260d267645c, type: 3}
+  menuBackgroundScrollSpeed: 4
+  menuBackgroundWidth: 39
+  titleLogo: {fileID: 21300000, guid: 73aa75e8966951d44b6d191b4e0f407f, type: 3}
+  enemies:
+  - {fileID: 11400000, guid: 84b681abdffb483f8b71322a771ae7df, type: 2}
+  platformPrefab: {fileID: 0}
+  basePlatform: {fileID: 11400000, guid: 32db248abcda42b19435af5371ddea48, type: 2}
+  specialPlatforms:
+  - platform: {fileID: 11400000, guid: 8d87ab47b4304335b85f225faf8906e7, type: 2}
+    chance:
+      start: 0.01
+      limit: 0.6
+      step: 0.02
+  - platform: {fileID: 11400000, guid: e99c7787a8a343de99a63c5b59d04d31, type: 2}
+    chance:
+      start: 0.05
+      limit: 0.5
+      step: 0.03
+  obstacleSpawns:
+  - obstacle: {fileID: 11400000, guid: 31418745ad8c470dbf64a2172761205e, type: 2}
+    chance:
+      start: 0.03
+      limit: 0.9
+      step: 0.03
+  - obstacle: {fileID: 11400000, guid: 630126ac08974f1c8274410e97f6bb92, type: 2}
+    chance:
+      start: 0.7
+      limit: 0.05
+      step: -0.02
+  pacing:
+    difficultyInterval: 5
+    platformInterval:
+      start: 1
+      limit: 5
+      step: 0.1
+    platformLaneChance:
+      start: 0.95
+      limit: 0.3
+      step: -0.02
+    firstEnemyDelay: 5
+    enemyInterval:
+      start: 25
+      limit: 10
+      step: -0.5
+    enemyChance:
+      start: 0.15
+      limit: 1
+      step: 0.025
+    enemyWaveSpawnDelay: 0.5
+    maxEnemies:
+      start: 3
+      limit: 20
+      step: 1
+    bossMaxHealth:
+      start: 100
+      limit: 2000
+      step: 10
+    endgameSpeedStep: 0.2
+    endgameInterval: 5
+  bossesEnabled: 1
+  leaderboardId: 

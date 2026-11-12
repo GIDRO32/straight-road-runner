@@ -1,0 +1,195 @@
+# Adding content
+
+All characters, stages, enemies, bosses and obstacles are **ScriptableObject assets** in `Assets/Content/`.
+Create one with **right-click ▸ Create ▸ SRR ▸ …**. It is registered in `Assets/Resources/ContentDatabase.asset`
+automatically (or run **Tools ▸ Straight Road Runner ▸ Rebuild Content Database**; it also logs warnings for missing prefabs, duplicate ids, etc.).
+
+Every asset has an `id` (auto-filled from the file name). Saves and leaderboards store this id, so **don't change it after release**.
+Untick `includeInDemo` to hide something without deleting it.
+
+## Character
+1. Make the gameplay prefab (tag `Player`, with `Movement` + `PlayerData`), e.g. in `Assets/Prefabs/Players`.
+   For a unique moveset, subclass `Movement` (e.g. `NinjaMovement : Movement`), override `Update`, `PerformSuperJump`, `OnPunchHit`, … and use it on the prefab instead.
+2. Create ▸ SRR ▸ Character. Set prefab, icon (selection tile + HUD), select artwork (Character Select), menu art (animated, title screen only),
+   bio, profile (Speed/Jump grade F–S, Size XS–XL, Weight), gameplay stats and moveset.
+   The stats are applied to the prefab when it spawns.
+
+## Enemy
+1. Make the prefab (tag `Enemy`, Rigidbody2D, Collider2D). Put a script on it that derives from `EnemyBase`:
+   ```csharp
+   public class Slime : EnemyBase
+   {
+       void FixedUpdate()
+       {
+           if (player == null || isDefeated) return;
+           // movement / attacks here, call PlayAttackSound() when attacking
+       }
+       protected override void OnHit(Collider2D source) { /* flash, knockback... */ }
+   }
+   ```
+   Hits, health, score, sounds and the fade-out on death are handled by `EnemyBase`.
+   Optional overrides: `DealsContactDamage => false` (touching it doesn't hurt, only its attacks do) and
+   `ShouldPlayHitSound(bool fatal)` (e.g. `=> fatal` to stay silent until the killing hit).
+   Enemies that live on platforms (like the **Smoke Hound**) use a kinematic Rigidbody2D, a trigger **body** collider
+   (takes punches, hurts the player) and a trigger **Feet** collider on a child (platform recognition); they find platforms
+   with `FindObjectsOfType<Platform>()`. `SmokePuff.Spawn(position)` plays a code-built smoke burst (no asset needed).
+2. Create ▸ SRR ▸ Enemy. Set prefab, stats (health, contact damage/stun, score), sounds (each enemy has its own set: spawn, hit, defeat, attack), spawn weight and Y range.
+3. Add it to the `enemies` list of the stage(s) it appears on.
+
+## Boss
+Same as an enemy, but the script derives from `BossBase` and the asset is Create ▸ SRR ▸ Boss.
+Bosses don't go in stage lists: `BossDirector` (added automatically to the StageControl object) runs the fights:
+- A fight starts **whenever a regular song ends** (`MusicManager.TrackFinished`). Without music it falls back to every `fallbackInterval` seconds.
+- Stage difficulty and normal enemy spawning freeze, the music switches to `Music/Intense` (or the boss's `musicFolder`)
+  and keeps playing until the boss is defeated. A red warning with the boss's `title` fades in and out, then a random boss
+  (respecting `allowedStages` and `minRunTimeSeconds`) is summoned. Its health bar and `icon` appear in the bottom right corner (`BossHud`, built at runtime).
+- **Health**: every boss gets the stage's current **Boss Max Health** (`pacing.bossMaxHealth`, default 50 → 200, +10 per nudge);
+  it's one of the values DifficultyManager raises during the regular phase. The boss asset's own health is only a fallback.
+- Defeating it brings back the stage music and resumes everything; the end of the next song brings the next boss.
+- Testing: in Play mode right-click the BossDirector component ▸ **Start Boss Fight Now**.
+
+Damaging a boss:
+- Punches on its `hurtboxes` deal `punchDamage` (bosses usually sit where punching is hard).
+- A **sign punched with full stamina** during a fight flies at the boss's `signTarget` and deals `signDamage`.
+  The sign's points are still added.
+
+Boss attacks call `HitPlayer(movement)`: damage/stun from the boss's stats, and **with no stamina left it's game over**.
+Hit sounds, flash on hit, and the fade-out of every sprite on death are handled by `BossBase`/`EnemyBase`.
+`WarningCircle.Create(position, radius, sortingOrder)` makes a red warning circle (`Lock()` = solid, `Pop()` = gone) for any boss attack.
+
+### Black Ink Crab
+`Assets/Prefabs/Bosses/BlackInkCrab.prefab`, built from the slices of `BlackInkCrab_parts.png`:
+`Rig` (bobs) → `BackClaw`/`FrontClaw`, `Legs` (pivots at the hips), `Body` + `Head/UpperJaw` (hurtboxes), `Head/JawPivot`, `Head/Eye`.
+- Slides in and stands on the floor (the object tagged `Ground`) at the right edge of the screen, walking. It doesn't follow the camera.
+- **Volleys**: 3–6 random spots get red circles (sometimes one on the player), then the claws take turns striking them:
+  approach → **lock** (circle turns solid, claw shakes) → lunge (harmless) → **snap** (only this hurts, only inside `SnapZone`).
+  Then it rests 3–5 seconds. Below `enragedHealth` the strikes get faster. All numbers are on `BlackInkCrab` (**Volleys**).
+- The arm is copies of the `Segment` sprite stretched from `Shoulder` to the claw.
+
+## Platform types
+Assets in `Assets/Content/Platforms`. Create ▸ SRR ▸ Platform:
+- **Look**: `sprite`, or `idleFrames` + fps for an animated platform.
+- **Mechanic**: `Regular`, `Fragile` (breaks after `breakTime` seconds of standing on it) or
+  `Lava` (after `heatUpTime`, hits like an enemy: `staminaDamage` + `stunDuration`, again every `hitInterval`;
+  plays `hitFrames` once per hit).
+- `allowObstacles`: untick to keep walls/signs off this type.
+- New mechanic (ice, bouncy...): add a value to `PlatformMechanicType`, a `PlatformMechanic` subclass in
+  `Assets/Codes/Platforms`, and a case in `Platform.AddMechanic`.
+
+All types share the stage's base platform prefab (`Cloud.prefab`: collider, scrolling, particles); a stage can use its own
+with `platformPrefab`.
+
+## Obstacle
+Assets in `Assets/Content/Obstacles`, prefabs in `Assets/Prefabs/Obstacles`. Create ▸ SRR ▸ Obstacle:
+- `prefab`, `offset` (position on the platform, platform-local), `slot` (two obstacles in the same slot never share a platform).
+- Walls: `hitsToBreak` x–y (random per wall, e.g. 1–2). 0 = the prefab's `WallShatter` min/max.
+- The same prefab can back several obstacles (e.g. **Wall** = 1 hit, **Hardened Wall** = 1–2 hits).
+
+## Stage
+1. Make the scene (duplicate `SketchyRoad`, change backgrounds/decorations) and add it to **Build Settings**.
+   Several stages may share one scene (Volcanic Desert uses `SketchyRoad` for now).
+2. Create ▸ SRR ▸ Stage. Set scene name, artwork, description, intro title, music folder and enemies, then:
+   - **Platforms**: `basePlatform` (the normal one) and `specialPlatforms`, each with a `chance` range.
+     Each new platform rolls the special chances (random order, first hit wins), otherwise it's the base platform.
+   - **Obstacles**: `obstacleSpawns`, each with a `chance` range, rolled per platform.
+   - **Pacing & Difficulty**: platform/enemy intervals and chances, max enemies, endgame speed-up.
+   - **Title Screen**: `menuBackgroundPrefab` (+ scroll speed and tile width) and `titleLogo`, shown on the main menu
+     while this stage is selected. Empty = the menu's default background / logo.
+3. Create a leaderboard in the Unity Cloud dashboard with the stage's id (or set `leaderboardId`).
+4. Load it from the menu with `MenuControl.PlayStage("stage_id")` or `GameSession.LoadStage(stage)`.
+
+**Chaos Mode** (`ChaosMode.asset`) automatically pulls enemies, special platforms and obstacles from every other stage
+(plus other stages' base platforms at `otherBasePlatformChance`), so it needs no maintenance.
+It uses the `SketchyRoad` scene; point it at any stage scene.
+
+## Enemies per stage
+List the stage's enemy types in `enemies`. After `pacing.firstEnemyDelay` the first enemy ALWAYS spawns (no chance roll).
+Then every `enemyInterval` a wave: up to `maxEnemies` rolls of `enemyChance`, each spawn a random type from the list
+(weighted by the enemy asset's `spawnWeight`, all 1 = equal odds), `enemyWaveSpawnDelay` seconds apart.
+A wave stops once `maxEnemies` are alive. Interval, chance and max enemies are difficulty ranges.
+
+## Difficulty
+Every value that ramps up is a **range**: `start` → `limit`, moving by `step` (negative = goes down, 0 = constant).
+Every `pacing.difficultyInterval` seconds, `DifficultyManager` picks ONE random range that hasn't hit its limit and steps it.
+That covers the stage's pacing ranges (including Boss Max Health) and every special platform and obstacle chance.
+It's paused during boss fights.
+Once all are at their limits, the endgame starts: platforms speed up by `endgameSpeedStep` every `endgameInterval` seconds.
+Each nudge is logged in the Console (`DifficultyManager > Log Changes`).
+
+## Leaderboards (Unity Gaming Services)
+- Link the project: **Edit ▸ Project Settings ▸ Services**, then select or create a Unity Cloud project.
+- In the dashboard (Leaderboards), create the board `global` plus one per stage id (`sketchy_road`, `chaos_mode`, …),
+  sort descending, keep the best score.
+- On game over, the score is sent to the stage board and `global`, along with the character, stage, run time and bosses defeated.
+  Players sign in anonymously; scores earned offline are queued and uploaded later.
+- To read boards for UI: `LeaderboardManager.Instance.GetStageTopAsync(stage)` / `GetGlobalTopAsync()` return
+  `LeaderboardRecord`s with `rank`, `playerName`, `score`, `CharacterName`, `CharacterIcon` and `StageName`.
+
+## Stage Select panel
+Open `MainMenu` and run **Tools ▸ Straight Road Runner ▸ Build Stage Select Panel**, then save the scene.
+It creates `PanelCollection/StageSelect` plus the **Select Stage** button (bottom right, above the version text),
+styled with the existing menu sprites and font. Run it again to rebuild (it replaces the old one; Ctrl+Z undoes it).
+- Left: a grid of stages from the ContentDatabase (Chaos Mode last), scrollable once there are many.
+- Right: **Artwork** shows `artwork` + name; **Info** is a scrollable list with the stage `description`, its enemies and its obstacles (icon, name, description).
+- The panel's **Play** button, and optionally the main menu Play button, load the selected stage. The choice is remembered.
+Tweak sizes, colors and fonts freely after building; the `StageSelectPanel` component only needs its references.
+
+## Character Select panel
+Open `MainMenu` and run **Tools ▸ Straight Road Runner ▸ Build Character Select Panel**, then save the scene.
+It creates `PanelCollection/CharacterSelect` plus the **Character** button left of the Stage button, and can delete the old `CharacterSelectionScreen`.
+- Left: grid of character `icon`s (no text).
+- Middle: the character's `selectArtwork` and name. (The animated `menuArt` is only used on the title screen.)
+- Right: info wall with **Bio** (`bio` text), **Stats** and **Moveset** (`moveset`: name, input, description, icon).
+- Stats list: Speed (F–S), Jump (F–S), Size (XS–XL), Weight (Light/Medium/Heavy) from `profile`, and Stamina from `stats.maxStamina`.
+  Labels can be renamed on the `CharacterSelectPanel` component.
+- Picking a character saves it immediately and updates the main menu art; **Select** just closes the panel.
+
+## Particle effects
+Effects built in code have a prefab slot; drop your own particle prefab in to replace the built-in one (empty = built-in):
+- Smoke Hound ▸ **Smoke Effect Prefab**: smoke when it appears, vanishes and teleports.
+- Sign ▸ **Epic Particles Prefab**: sparkles on Epic Signs (placed on the sign, follows it).
+- Sign ▸ **Boss Hit Effect Prefab**: puff when a thrown sign hits a boss.
+- Platform (Lava) ▸ Lava ▸ **Hit Particles Prefab**: lava droplets popping up each time the lava burns the player (`hitParticles` turns them off, `hitDroplets` = how many).
+One-shot prefabs are played on spawn and removed after 5 seconds; set their Stop Action / duration as you like.
+
+## Shards, unlocks and tasks
+**Shards** are the currency. All of it lives in `PlayerProgress` (shards, unlocked content, task progress, Epic Signs),
+kept on this device in an encrypted file (`progress.dat` in `Application.persistentDataPath`) and saved automatically.
+Testing: **Tools ▸ Straight Road Runner ▸ Progress ▸ Add 10 Shards / Reset Progress / Show Progress**.
+
+- **Unlocks**: every character and stage has `unlockCost` (Shards; 0 = unlocked from the start). Zapaulo and Volcanic Desert cost 5.
+  Locked tiles get a lock and the price; the Select / Play button turns into **Unlock (N Shards)**.
+  Locked content can be looked at but not picked, and a locked saved selection falls back to the default.
+- **Tasks**: assets in `Assets/Content/Tasks`, Create ▸ SRR ▸ Task. `type` (ScorePoints, DefeatEnemy, DestroyWall),
+  `targets` (which enemies / bosses / obstacles count; empty = any), `goal`, `rewardShards`, `repeatable`
+  (the counter resets after paying out, leftover progress carries over). They show up in the Tasks panel automatically.
+  Score, kills (enemies and bosses) and walls are already reported; for a new kind of task add a `TaskType`
+  and call `PlayerProgress.Report(type, subject, amount)` where it happens.
+- **Epic Signs**: bought in the Tasks panel for `epicSignPrice` (3) Shards (ContentDatabase ▸ Shards & Shop).
+  While the player owns more than are on screen, each sign has `epicSignChance` to be epic: purple, purple particles,
+  `epicStaminaGain` (50) stamina. One is used up only when it's punched; missed ones come back later.
+
+## Tasks, shop and save UI
+Open `MainMenu` and run **Tools ▸ Straight Road Runner ▸ Build Tasks, Shop and Save UI**, then save the scene.
+- The main menu's **How to play?** button becomes **Tasks** (task list with progress bars, Shard balance, Epic Sign shop).
+- Settings gets the tutorial button (**How to play?**), **Save** and **Load** (the Upcoming Features button moves to the left).
+- Shard counters on the main menu (top right), Stage Select and Character Select.
+Run it again to rebuild (it replaces what it made before; Ctrl+Z undoes it).
+
+## Save files
+- **Save** asks for a password (twice) and warns that a forgotten password makes the save unrecoverable,
+  then **Save As...** opens the system's save dialog: the player picks the folder and the file name (`.srrsave`).
+- The file holds the Shards, unlocked characters and stages, Epic Signs and task progress, encrypted with
+  **AES-256-GCM**. The key comes from the password (PBKDF2-HMAC-SHA256, 100,000 rounds, random salt); the password
+  isn't stored. Any change to the file, or a wrong password, makes it fail to open. (`SaveCrypto` implements GCM itself,
+  because Unity's Mono doesn't support .NET's `AesGcm`.)
+- **Load** opens the system's file dialog right away; after picking the file the player types its password,
+  and the current progress is replaced.
+- File dialogs (`NativeFileDialog`): Unity's panels in the Editor, the Windows dialog in Windows builds.
+  Other platforms fall back to a `Saves` folder in `Application.persistentDataPath` with a file list.
+
+## TextMeshPro
+All UI text uses TextMeshPro (`TMP_Text` fields in code). To convert legacy `Text` in scenes/prefabs, run
+**Tools ▸ Straight Road Runner ▸ Convert Legacy Text to TextMeshPro** (it asks you to import TMP Essential Resources first if needed).
+It creates a TMP font asset next to each legacy font (`<Font> SDF.asset`), turns `Outline` effects into outline material presets,
+and re-links every script field and button that pointed at the old Text. Use those font assets/materials for new text.

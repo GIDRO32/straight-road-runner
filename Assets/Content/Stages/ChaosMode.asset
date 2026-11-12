@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4cbac7d09f546f6bb4f79ac06664806, type: 3}
+  m_Name: ChaosMode
+  m_EditorClassIdentifier: 
+  id: chaos_mode
+  displayName: Chaos Mode
+  icon: {fileID: 0}
+  sortOrder: 100
+  includeInDemo: 1
+  sceneName: SketchyRoad
+  artwork: {fileID: 0}
+  description: Enemies and obstacles from every stage spawn at random.
+  introTitle: CHAOS MODE
+  musicFolder: 
+  menuBackgroundPrefab: {fileID: 0}
+  menuBackgroundScrollSpeed: 4
+  menuBackgroundWidth: 39
+  titleLogo: {fileID: 0}
+  enemies: []
+  platformPrefab: {fileID: 0}
+  basePlatform: {fileID: 0}
+  specialPlatforms: []
+  obstacleSpawns: []
+  pacing:
+    difficultyInterval: 5
+    platformInterval:
+      start: 1
+      limit: 5
+      step: 0.1
+    platformLaneChance:
+      start: 0.95
+      limit: 0.3
+      step: -0.02
+    firstEnemyDelay: 5
+    enemyInterval:
+      start: 20
+      limit: 3
+      step: -0.5
+    enemyChance:
+      start: 0.2
+      limit: 1
+      step: 0.05
+    enemyWaveSpawnDelay: 0.5
+    maxEnemies:
+      start: 6
+      limit: 20
+      step: 1
+    endgameSpeedStep: 0.2
+    endgameInterval: 5
+  bossesEnabled: 1
+  leaderboardId: 
+  otherBasePlatformChance: 0.3

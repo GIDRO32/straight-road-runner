@@ -1,90 +1,74 @@
 // MenuControl.cs - New Script
 
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using TMPro;
-
-[System.Serializable]
-public class CharacterData
-{
-    public string characterName;
-    public GameObject prefab;           // From Assets/Prefabs/Players
-    public Sprite uiIcon;              // Small icon near healthbar & selection button
-    public Sprite bioIcon;             // Larger icon in info panel
-    public GameObject menuDisplayArt;  // CHANGED: Big art on main menu (can be animated prefab)
-}
 
 public class MenuControl : MonoBehaviour
 {
-    [Header("Character Data")]
-    public CharacterData[] characters;
+    // Characters come from ContentDatabase; picking one happens in CharacterSelectPanel
 
-    [Header("UI References")]
-    public Transform selectedCharacterDisplay;   // CHANGED: Main menu big art (parent transform for prefab)
-    public Image bioIconImage;                  // Info panel icon
-    public Text characterNameText;              // Character name in info
-    public Button[] characterSelectButtons;     // Buttons in selection menu
-    private GameObject currentDisplayInstance;  // NEW: Track spawned display art
+    [Header("Main Menu Art")]
+    public Transform selectedCharacterDisplay;   // Main menu big art (parent transform for the Menu Art prefab)
+    private GameObject currentDisplayInstance;
 
-    private int currentSelectedIndex = 0;
-    public SelectedCharacterSO selectedCharacterData;
+    void OnEnable()
+    {
+        GameSession.SelectedCharacterChanged += ShowCharacter;
+    }
+
+    void OnDisable()
+    {
+        GameSession.SelectedCharacterChanged -= ShowCharacter;
+    }
 
     void Start()
     {
-        if (characters.Length == 0) return;
-
-        // Load saved selection or default to first character
-        int savedIndex = PlayerPrefs.GetInt("SelectedCharacterIndex", 0);
-        savedIndex = Mathf.Clamp(savedIndex, 0, characters.Length - 1);
-
-        currentSelectedIndex = savedIndex;
-        UpdateCharacterDisplay(currentSelectedIndex);
-        SetupSelectionButtons();
+        ShowCharacter(GameSession.SelectedCharacter);
     }
 
-    void SetupSelectionButtons()
-    {
-        for (int i = 0; i < characterSelectButtons.Length && i < characters.Length; i++)
-        {
-            int index = i;
-            Button btn = characterSelectButtons[i];
-            Image btnImage = btn.GetComponent<Image>();
-            // In SetupSelectionButtons() – button icon assignment
-            if (btnImage != null && characters[i].uiIcon != null)
-            {
-                btnImage.sprite = characters[i].uiIcon;   // uiIcon is a Sprite
-            }
-
-            btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(() => SelectCharacter(index));
-        }
-    }
     public void LoadScene(string sceneName)
     {
         
         SceneManager.LoadScene(sceneName);
     }
-    public void SelectCharacter(int index)
+    public void SelectCharacterById(string characterId)
     {
-        if (index < 0 || index >= characters.Length) return;
+        CharacterDefinition character = ContentDatabase.Instance != null ? ContentDatabase.Instance.GetCharacter(characterId) : null;
+        if (character == null)
+        {
+            Debug.LogWarning($"Character '{characterId}' not found in ContentDatabase!");
+            return;
+        }
+        GameSession.SelectedCharacter = character; // Fires SelectedCharacterChanged -> ShowCharacter
+    }
 
-        currentSelectedIndex = index;
-        UpdateCharacterDisplay(index);
+    // ===== STAGES =====
 
-        // Save selection
-        CharacterData data = characters[index];
-        selectedCharacterData.characterPrefab = data.prefab;
-        selectedCharacterData.uiIcon = data.uiIcon;
-        selectedCharacterData.bioIcon = data.bioIcon;
-        selectedCharacterData.menuDisplayArt = data.menuDisplayArt;
-        selectedCharacterData.characterName = data.characterName;
+    public void SelectStage(string stageId)
+    {
+        StageDefinition stage = ContentDatabase.Instance?.GetStage(stageId);
+        if (stage == null)
+        {
+            Debug.LogWarning($"Stage '{stageId}' not found in ContentDatabase!");
+            return;
+        }
+        GameSession.SelectedStage = stage;
+    }
 
-        // Persist selection
-        PlayerPrefs.SetInt("SelectedCharacterIndex", index);
-        PlayerPrefs.Save();
+    public void PlaySelectedStage()
+    {
+        GameSession.LoadStage(GameSession.SelectedStage);
+    }
 
-        Debug.Log($"Saved selection: {data.characterName}");
+    public void PlayStage(string stageId)
+    {
+        SelectStage(stageId);
+        PlaySelectedStage();
+    }
+
+    public void PlayChaosMode()
+    {
+        GameSession.LoadStage(ContentDatabase.Instance?.ChaosStage);
     }
     public void QuitGame()
     {
@@ -124,11 +108,9 @@ public class MenuControl : MonoBehaviour
             Debug.LogError($"Failed to open browser link: {e.Message}");
         }
     }
-    // In UpdateCharacterDisplay(int index) – replace the three assignments
-    void UpdateCharacterDisplay(int index)
+    // Shows the character's Menu Art prefab on the main menu
+    void ShowCharacter(CharacterDefinition data)
     {
-        CharacterData data = characters[index];
-
         // Destroy previous display art instance
         if (currentDisplayInstance != null)
         {
@@ -136,33 +118,24 @@ public class MenuControl : MonoBehaviour
             currentDisplayInstance = null;
         }
 
-        // Spawn new display art prefab
-        if (selectedCharacterDisplay != null && data.menuDisplayArt != null)
-        {
-            currentDisplayInstance = Instantiate(
-                data.menuDisplayArt,
-                selectedCharacterDisplay.position,
-                Quaternion.identity,
-                selectedCharacterDisplay
-            );
+        if (data == null || selectedCharacterDisplay == null || data.menuArt == null) return;
 
-            // Reset local position/scale if needed
-            currentDisplayInstance.transform.localPosition = Vector3.zero;
-            currentDisplayInstance.transform.localScale = Vector3.one;
-        }
+        currentDisplayInstance = Instantiate(
+            data.menuArt,
+            selectedCharacterDisplay.position,
+            Quaternion.identity,
+            selectedCharacterDisplay
+        );
 
-        // Bio icon (still a sprite)
-        if (bioIconImage != null && data.bioIcon != null)
-            bioIconImage.sprite = data.bioIcon;
-
-        // Character name
-        if (characterNameText != null)
-            characterNameText.text = data.characterName;
+        // Reset local position/scale if needed
+        currentDisplayInstance.transform.localPosition = Vector3.zero;
+        currentDisplayInstance.transform.localScale = Vector3.one;
     }
 
     // Call this when starting the game
     public GameObject GetSelectedCharacterPrefab()
     {
-        return characters[currentSelectedIndex].prefab;
+        CharacterDefinition character = GameSession.SelectedCharacter;
+        return character != null ? character.prefab : null;
     }
 }
