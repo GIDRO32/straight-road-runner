@@ -65,18 +65,22 @@ MonoBehaviour:
       step: -0.02
     firstEnemyDelay: 5
     enemyInterval:
-      start: 20
-      limit: 3
+      start: 25
+      limit: 10
       step: -0.5
     enemyChance:
-      start: 0.2
+      start: 0.15
       limit: 1
-      step: 0.05
+      step: 0.025
     enemyWaveSpawnDelay: 0.5
     maxEnemies:
-      start: 6
+      start: 3
       limit: 20
       step: 1
+    bossMaxHealth:
+      start: 100
+      limit: 2000
+      step: 10
     endgameSpeedStep: 0.2
     endgameInterval: 5
   bossesEnabled: 1
