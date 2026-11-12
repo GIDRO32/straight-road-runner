@@ -2,7 +2,8 @@ using UnityEngine;
 
 /// <summary>
 /// After the player has stood on it for LavaSettings.heatUpTime, hits them like an enemy
-/// (stamina loss + stun), then again every hitInterval while they stay. Plays the hit animation each time.
+/// (stamina loss + stun), then again every hitInterval while they stay. Plays the hit animation and
+/// lava droplets (LavaDroplets, or LavaSettings.hitParticlesPrefab) each time.
 /// </summary>
 public class LavaMechanic : PlatformMechanic
 {
@@ -33,9 +34,19 @@ public class LavaMechanic : PlatformMechanic
         {
             if (platform.FrameAnimator != null)
                 platform.FrameAnimator.PlayOnce(lava.hitFrames, lava.hitFramesPerSecond);
+            if (lava.hitParticles) SpawnDroplets(lava);
         }
 
         // Next hit after hitInterval
         timer = lava.heatUpTime - Mathf.Max(0.1f, lava.hitInterval);
+    }
+
+    private void SpawnDroplets(LavaSettings lava)
+    {
+        SpriteRenderer sprite = platform.GetComponentInChildren<SpriteRenderer>();
+        Collider2D col = platform.GetComponent<Collider2D>();
+        Bounds area = sprite != null ? sprite.bounds : (col != null ? col.bounds : new Bounds(platform.transform.position, Vector3.one));
+        int order = sprite != null ? sprite.sortingOrder + 1 : 11;
+        LavaDroplets.Spawn(platform.transform, area, order, lava.hitParticlesPrefab, Mathf.Max(1, lava.hitDroplets));
     }
 }

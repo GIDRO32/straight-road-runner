@@ -1,16 +1,26 @@
 using UnityEngine;
 
 /// <summary>
-/// Purple sparkles around an Epic Sign. Built in code (no asset needed).
-/// Particles stay in the world, so they trail behind the sign as it scrolls.
+/// Purple sparkles around an Epic Sign. Built in code (no asset needed), or pass your own particle prefab
+/// to use that instead (it's placed on the sign and kept as authored).
+/// The built-in particles stay in the world, so they trail behind the sign as it scrolls.
 /// </summary>
 public static class EpicSparkles
 {
     public static readonly Color ColorA = new Color(0.65f, 0.2f, 1f, 1f);
     public static readonly Color ColorB = new Color(1f, 0.55f, 1f, 1f);
 
-    public static ParticleSystem Attach(Transform target, SpriteRenderer sprite = null)
+    public static ParticleSystem Attach(Transform target, SpriteRenderer sprite = null, GameObject prefabOverride = null)
     {
+        if (prefabOverride != null)
+        {
+            GameObject fx = Object.Instantiate(prefabOverride, target);
+            fx.name = prefabOverride.name;
+            if (sprite != null) fx.transform.position = sprite.bounds.center;
+            foreach (var system in fx.GetComponentsInChildren<ParticleSystem>()) system.Play();
+            return fx.GetComponentInChildren<ParticleSystem>();
+        }
+
         var go = new GameObject("EpicSparkles");
         go.transform.SetParent(target, false);
         // World scale 1, so sizes below are in world units whatever the sign's scale

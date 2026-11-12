@@ -61,7 +61,7 @@ public class SmokeHound : EnemyBase
     public float screenMargin = 0.5f;
 
     [Header("Smoke")]
-    [Tooltip("Optional particle prefab. Empty = built-in smoke puff.")]
+    [Tooltip("Your own smoke particles (appear / vanish / teleport). Empty = built-in smoke puff.")]
     public GameObject smokeEffectPrefab;
     public float smokeSize = 1.5f;
 

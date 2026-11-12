@@ -27,6 +27,13 @@ public class LavaSettings
     [Header("Hit animation (plays once per hit)")]
     public Sprite[] hitFrames;
     public float hitFramesPerSecond = 10f;
+
+    [Header("Hit particles (lava droplets, once per hit)")]
+    public bool hitParticles = true;
+    [Tooltip("Your own particle prefab. Empty = built-in lava droplets.")]
+    public GameObject hitParticlesPrefab;
+    [Tooltip("Droplets per hit (built-in effect)")]
+    public int hitDroplets = 16;
 }
 
 /// <summary>

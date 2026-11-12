@@ -144,6 +144,14 @@ It creates `PanelCollection/CharacterSelect` plus the **Character** button left 
   Labels can be renamed on the `CharacterSelectPanel` component.
 - Picking a character saves it immediately and updates the main menu art; **Select** just closes the panel.
 
+## Particle effects
+Effects built in code have a prefab slot; drop your own particle prefab in to replace the built-in one (empty = built-in):
+- Smoke Hound ▸ **Smoke Effect Prefab**: smoke when it appears, vanishes and teleports.
+- Sign ▸ **Epic Particles Prefab**: sparkles on Epic Signs (placed on the sign, follows it).
+- Sign ▸ **Boss Hit Effect Prefab**: puff when a thrown sign hits a boss.
+- Platform (Lava) ▸ Lava ▸ **Hit Particles Prefab**: lava droplets popping up each time the lava burns the player (`hitParticles` turns them off, `hitDroplets` = how many).
+One-shot prefabs are played on spawn and removed after 5 seconds; set their Stop Action / duration as you like.
+
 ## Shards, unlocks and tasks
 **Shards** are the currency. All of it lives in `PlayerProgress` (shards, unlocked content, task progress, Epic Signs),
 kept on this device in an encrypted file (`progress.dat` in `Application.persistentDataPath`) and saved automatically.
