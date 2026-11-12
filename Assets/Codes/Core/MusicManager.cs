@@ -50,6 +50,8 @@ public class MusicManager : MonoBehaviour
     private bool lostFocusPause = false;
     private float fade = 1f; // Crossfade multiplier on top of the saved volume
     private bool trackStarted = false; // A song is playing and hasn't finished yet
+    private float lastPlayhead = 0f;   // Where the song was last frame it was playing
+    private bool pausedForGame = false; // Pause menu open (Time.timeScale = 0)
 
     /// <summary>
     /// A song finished playing on its own (not skipped, stopped or switched away from).
@@ -97,19 +99,66 @@ public class MusicManager : MonoBehaviour
         remainingTracks = Mathf.Max(0, playlist.Count - playlistIndex);
         totalTracks = trackPaths.Count;
 
-        // Current song finished: next one
-        if (!isLoading && !isLoadingTrack && !isTransitioning && !isPaused && !lostFocusPause
-            && trackPaths.Count > 0 && !musicSource.isPlaying)
+        // The game is paused (pause menu): pause the song too, so it can't end and start a boss fight
+        bool gamePaused = IsGamePaused();
+        if (gamePaused && !pausedForGame)
         {
-            if (trackStarted)
-            {
-                trackStarted = false;
-                string folder = musicFolder;
-                TrackFinished?.Invoke(folder);
-                if (folder != musicFolder) return; // A listener switched folders (e.g. boss music)
-            }
-            PlayNextTrack();
+            pausedForGame = true;
+            musicSource.Pause();
         }
+        else if (!gamePaused && pausedForGame)
+        {
+            pausedForGame = false;
+            if (!isPaused && !lostFocusPause) musicSource.UnPause();
+        }
+
+        if (musicSource.isPlaying)
+        {
+            lastPlayhead = musicSource.time;
+            return;
+        }
+
+        if (isLoading || isLoadingTrack || isTransitioning || isPaused || lostFocusPause || pausedForGame
+            || trackPaths.Count == 0 || !Application.isFocused)
+            return;
+
+        if (trackStarted)
+        {
+            // Not playing, but it never got to the end: it was paused from outside (e.g. the window lost focus
+            // and the audio was paused before OnApplicationFocus). Carry on with the same song.
+            if (!ReachedEnd())
+            {
+                musicSource.UnPause();
+                if (!musicSource.isPlaying && musicSource.clip != null)
+                {
+                    // It was stopped rather than paused: start it again where it was
+                    musicSource.Play();
+                    musicSource.time = Mathf.Min(lastPlayhead, musicSource.clip.length - 0.1f);
+                }
+                return;
+            }
+
+            // Current song finished: tell listeners (boss fights), then the next one
+            trackStarted = false;
+            string folder = musicFolder;
+            TrackFinished?.Invoke(folder);
+            if (folder != musicFolder) return; // A listener switched folders (e.g. boss music)
+        }
+        PlayNextTrack();
+    }
+
+    // The song really played to its end (last seen within a second of the end)
+    private bool ReachedEnd()
+    {
+        AudioClip clip = musicSource.clip;
+        return clip == null || lastPlayhead >= clip.length - 1f;
+    }
+
+    // Pause menu: time stopped, but not because of game over (the game over screen keeps its music)
+    private static bool IsGamePaused()
+    {
+        if (Time.timeScale > 0f) return false;
+        return GameOverManager.Instance == null || !GameOverManager.Instance.IsGameOver;
     }
 
     private void OnApplicationFocus(bool hasFocus)
@@ -250,6 +299,7 @@ public class MusicManager : MonoBehaviour
             musicSource.clip = currentTrack;
             ApplyVolume();
             musicSource.Play();
+            lastPlayhead = 0f;
             trackStarted = true;
             lastPlayedPath = path;
         }

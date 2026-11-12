@@ -17,6 +17,7 @@ public class GameOverManager : MonoBehaviour
     
     private Transform player;
     private bool isGameOver = false;
+    public bool IsGameOver => isGameOver;
     
     void Awake()
     {
