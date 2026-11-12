@@ -14,6 +14,7 @@ public static class SmokePuff
         if (prefabOverride != null)
         {
             GameObject fx = Object.Instantiate(prefabOverride, position, Quaternion.identity);
+            foreach (var system in fx.GetComponentsInChildren<ParticleSystem>()) system.Play();
             Object.Destroy(fx, 5f);
             return;
         }

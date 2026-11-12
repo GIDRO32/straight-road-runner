@@ -16,6 +16,12 @@ public class Sign : MonoBehaviour
     public float epicStaminaGain = 50f;
     public Color epicTint = new Color(0.85f, 0.6f, 1f, 1f);
 
+    [Header("Particles (optional, empty = built-in)")]
+    [Tooltip("Your own particles for Epic Signs. Empty = built-in purple sparkles.")]
+    public GameObject epicParticlesPrefab;
+    [Tooltip("Your own effect when a thrown sign hits a boss. Empty = built-in ink puff.")]
+    public GameObject bossHitEffectPrefab;
+
     [Header("Boss Fight")]
     [Tooltip("Punched with full stamina during a boss fight: the sign flies at the boss")]
     public float throwDuration = 0.55f;
@@ -70,7 +76,7 @@ public class Sign : MonoBehaviour
         isEpic = true;
         activeEpicSigns.Add(this);
         if (sr != null) sr.color = epicTint;
-        EpicSparkles.Attach(transform, sr);
+        EpicSparkles.Attach(transform, sr, epicParticlesPrefab);
     }
 
     void OnTriggerEnter2D(Collider2D col)
@@ -150,7 +156,7 @@ public class Sign : MonoBehaviour
 
         boss.TakeSignHit(this);
         soundEffects?.PlayMetalHit();
-        SmokePuff.Spawn(transform.position, 2f, throwSortingOrder + 1, null, new Color(0.08f, 0.08f, 0.08f, 0.9f));
+        SmokePuff.Spawn(transform.position, 2f, throwSortingOrder + 1, bossHitEffectPrefab, new Color(0.08f, 0.08f, 0.08f, 0.9f));
         Destroy(gameObject);
     }
 
