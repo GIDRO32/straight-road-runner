@@ -149,6 +149,7 @@ Effects built in code have a prefab slot; drop your own particle prefab in to re
 - Smoke Hound ▸ **Smoke Effect Prefab**: smoke when it appears, vanishes and teleports.
 - Sign ▸ **Epic Particles Prefab**: sparkles on Epic Signs (placed on the sign, follows it).
 - Sign ▸ **Boss Hit Effect Prefab**: puff when a thrown sign hits a boss.
+- Platform (Lava) ▸ Lava ▸ **Hit Particles Prefab**: lava droplets popping up each time the lava burns the player (`hitParticles` turns them off, `hitDroplets` = how many).
 One-shot prefabs are played on spawn and removed after 5 seconds; set their Stop Action / duration as you like.
 
 ## Shards, unlocks and tasks
