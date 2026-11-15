@@ -574,6 +574,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 715486427}
   m_CullTransparentMesh: 1
+--- !u!114 &740447301 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4089309670662638251, guid: 9e204ab63e3705248ac3d5b14c26bac3, type: 3}
+  m_PrefabInstance: {fileID: 1858028341}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &784049318
 GameObject:
   m_ObjectHideFlags: 0
@@ -1120,6 +1131,14 @@ MonoBehaviour:
     spawnChance: 0.437
     yPositionRange: {x: -1, y: 1.3}
     scaleRange: {x: 0.3, y: 1.5}
+  - decorationPrefab: {fileID: 507142079559040720, guid: d0a56ca44ab01c04eae0e7853a4b409f, type: 3}
+    sortingOrder: 2
+    direction: 0
+    movementSpeed: 2
+    flipObject: 0
+    spawnChance: 0.1
+    yPositionRange: {x: -1, y: 1.3}
+    scaleRange: {x: 0.3, y: 1.5}
   - decorationPrefab: {fileID: 5850476615366095129, guid: 422cf11cd4b72ff4cb3bf2b927d5f739, type: 3}
     sortingOrder: 3
     direction: 0
@@ -1367,7 +1386,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOverPanel: {fileID: 594425361}
-  finalScoreText: {fileID: 0}
+  finalScoreText: {fileID: 740447301}
   mainCamera: {fileID: 519420031}
   rightBoundaryOffset: -4
 --- !u!114 &1687128565

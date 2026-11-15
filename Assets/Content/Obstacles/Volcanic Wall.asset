@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: volcanic_wall
   displayName: Hardened Wall
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e121c81ce7d152a47a35c2f4c94600ec, type: 3}
   sortOrder: 0
   includeInDemo: 1
   unlockCost: 0

@@ -14,11 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: sign
   displayName: Sign
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: a92e2ce7ee7601b44a16d4de1aa18d0f, type: 3}
   sortOrder: 1
   includeInDemo: 1
-  prefab: {fileID: 4667504208647223258, guid: 9165e4e3d9164f6bbd2a8491d0d7514a, type: 3}
+  unlockCost: 0
+  prefab: {fileID: 4667504208647223258, guid: cd6a280b92588d44ca2640ba5157e98a, type: 3}
   offset: {x: 0, y: 0}
   slot: 1
-  description: Hit it to refill stamina. Stamina that doesn't fit is turned into points.
+  description: Hit it to refill stamina. Stamina that doesn't fit is turned into
+    points.
   hitsToBreak: {x: 0, y: 0}

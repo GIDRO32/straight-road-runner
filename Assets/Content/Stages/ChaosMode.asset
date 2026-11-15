@@ -16,7 +16,8 @@ MonoBehaviour:
   displayName: Chaos Mode
   icon: {fileID: 0}
   sortOrder: 100
-  includeInDemo: 1
+  includeInDemo: 0
+  unlockCost: 0
   sceneName: SketchyRoad
   artwork: {fileID: 0}
   description: Enemies and obstacles from every stage spawn at random.
@@ -55,6 +56,10 @@ MonoBehaviour:
       start: 6
       limit: 20
       step: 1
+    bossMaxHealth:
+      start: 50
+      limit: 200
+      step: 10
     endgameSpeedStep: 0.2
     endgameInterval: 5
   bossesEnabled: 1

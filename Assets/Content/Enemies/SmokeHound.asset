@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: smoke_hound
   displayName: Smoke Hound
-  icon: {fileID: 21300000, guid: 1a7b2b732ec07cc4981772808446c1de, type: 3}
+  icon: {fileID: 21300000, guid: a9e45c4a8d7e6ad4f8ce860b654ada0d, type: 3}
   sortOrder: 1
   includeInDemo: 1
+  unlockCost: 0
   prefab: {fileID: 8022802380886674640, guid: b6690d98d0deece47972098d599394a8, type: 3}
   description: Leaps between platforms and dashes at you mid-air. The first punch
     only scatters it into smoke; it takes two hits to put down.
@@ -26,9 +27,14 @@ MonoBehaviour:
     contactStunDuration: 1
     scoreValue: 15
   sounds:
-    spawn: []
+    spawn:
+    - {fileID: 8300000, guid: 0f7afccdc1d4e6c43b0ca3a3cb17c973, type: 3}
     hit: []
-    defeat: []
+    defeat:
+    - {fileID: 8300000, guid: 90d2c70e39318fa4f893b1873b2833d9, type: 3}
+    - {fileID: 8300000, guid: 3e4fcaae6877d6048a39b0ae4cf954d2, type: 3}
+    - {fileID: 8300000, guid: 325e362f2414699408f542ed64479205, type: 3}
+    - {fileID: 8300000, guid: 95917f96bdc029b48896944a5f3936c9, type: 3}
     attack: []
   spawnWeight: 1
   spawnYRange: {x: -2, y: 2}

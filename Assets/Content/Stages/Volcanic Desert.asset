@@ -17,10 +17,23 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: a965581d1ba6f6342976f942c28ff6a3, type: 3}
   sortOrder: 1
   includeInDemo: 1
-  unlockCost: 5
+  unlockCost: 15
   sceneName: Volcanic Dessert
   artwork: {fileID: 21300000, guid: 810f2b98d184b5049889bf1b75e84485, type: 3}
-  description: A road drawn in a sketchbook.
+  description: "Located in the southern part of Donsceric Island, the Volcanic Desert
+    is a dangerously overheated region riddled with volcanoes, smoke holes, and unforgiving
+    terrain. Despite its hazardous conditions, resource seekers continue to risk
+    their lives here in pursuit of valuable materials, including sand used for glassmaking,
+    salt, and a particularly mysterious substance: a pink gas emerging from certain
+    smoke holes, rumored to be worth a fortune.\n\nUnfortunately, the gas comes with
+    a rather unpleasant side effect \u2014 powerful hallucinations. Documented visions
+    include canine creatures seemingly formed from the surrounding smoke, as well
+    as a porcelain-white, unnaturally skinny humanoid figure with no visible mouth.
+    Whether these apparitions are merely products of the gas or something far more
+    sinister remains unknown.\n\nThe nature of these apparitions remains disputed.
+    Some researchers insist they are nothing more than hallucinations, while others
+    suspect the gas may be revealing something that was never meant to exist in the
+    physical world."
   introTitle: Volcanic Desert
   musicFolder: 
   menuBackgroundPrefab: {fileID: 5791166462679130858, guid: 15c431c77cfb7d84a996a260d267645c, type: 3}
@@ -48,7 +61,7 @@ MonoBehaviour:
       start: 0.03
       limit: 0.9
       step: 0.03
-  - obstacle: {fileID: 11400000, guid: 630126ac08974f1c8274410e97f6bb92, type: 2}
+  - obstacle: {fileID: 11400000, guid: 837f0e01f4a630645b2317dd957b4b25, type: 2}
     chance:
       start: 0.7
       limit: 0.05

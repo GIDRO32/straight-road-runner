@@ -1539,14 +1539,14 @@ MonoBehaviour:
   introDuration: 2.5
   exitDuration: 2
   firstVolleyDelay: 1
-  spotCount: {x: 3, y: 6}
-  restTime: {x: 3, y: 5}
+  spotCount: {x: 4, y: 7}
+  restTime: {x: 2, y: 3}
   warningLead: 0.8
   clawStagger: 0.55
   circleRadius: 0
   minSpotSpacing: 1.95
   screenMargin: 1
-  playerSpotChance: 0.66
+  playerSpotChance: 0.75
   approachTime: 0.55
   lockTime: 0.35
   enragedHealth: 0.5

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: defeat_black_ink_crabs
   displayName: Crab Cracker
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 26b99d89b4926424ba324d1128a7c5f1, type: 3}
   sortOrder: 3
   includeInDemo: 1
   unlockCost: 0

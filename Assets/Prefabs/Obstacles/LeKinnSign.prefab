@@ -150,6 +150,14 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 4d6cc1a996a1ec54e8e949803e279fbd, type: 3}
   staminaGain: 10
   spinSpeed: 1080
+  epicStaminaGain: 50
+  epicTint: {r: 0.85, g: 0.6, b: 1, a: 1}
+  epicParticlesPrefab: {fileID: 899226535206739401, guid: 9050c410c116c9c48ac49c803f24e489, type: 3}
+  bossHitEffectPrefab: {fileID: 0}
+  throwDuration: 0.55
+  throwArcHeight: 2.5
+  throwSpinSpeed: 1080
+  throwSortingOrder: 45
   soundEffects: {fileID: 11400000, guid: a4bf2759dce847a4dae21b3be4a56786, type: 2}
 --- !u!1 &4667504208647223258
 GameObject:
@@ -161,7 +169,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1761133308818273909}
   m_Layer: 3
-  m_Name: Sign
+  m_Name: LeKinnSign
   m_TagString: Sign
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

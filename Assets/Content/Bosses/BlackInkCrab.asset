@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: black_ink_crab
   displayName: Black Ink Crab
-  icon: {fileID: 21300000, guid: 4cd175aff11ca2246b81cdfbea1db3cb, type: 3}
+  icon: {fileID: 21300000, guid: 26b99d89b4926424ba324d1128a7c5f1, type: 3}
   sortOrder: 0
   includeInDemo: 1
   unlockCost: 0
@@ -23,14 +23,17 @@ MonoBehaviour:
     on and snap shut - get out of the red ring. Punch signs at it with full stamina.
   stats:
     health: 100
-    contactStaminaDamage: 30
+    contactStaminaDamage: 40
     contactStunDuration: 1
     scoreValue: 500
   sounds:
-    spawn: []
+    spawn:
+    - {fileID: 8300000, guid: 255de11914428d245bf25121f11f9f40, type: 3}
     hit: []
-    defeat: []
-    attack: []
+    defeat:
+    - {fileID: 8300000, guid: e98e836921b0f704d9c54814356121cf, type: 3}
+    attack:
+    - {fileID: 8300000, guid: 2b754bf0734423e4a8e03ac45b39c8c3, type: 3}
   spawnWeight: 1
   spawnYRange: {x: -2, y: 2}
   title: Black Ink Crab

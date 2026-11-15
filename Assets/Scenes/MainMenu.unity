@@ -374,7 +374,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 375}
+  m_AnchoredPosition: {x: 0, y: 320}
   m_SizeDelta: {x: 800, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &11535883
@@ -2544,7 +2544,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 270, y: -380}
+  m_AnchoredPosition: {x: 720, y: -250}
   m_SizeDelta: {x: 420, y: 110}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &161145216
@@ -2814,7 +2814,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: PlaceholderMan's Moveset
+  m_text: Complete Tasks
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4c44ab3306afd40478fb4a2c6680e3ad, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 464b8fe6bfe670843a3fcd0d5e32a8ba, type: 2}
@@ -9557,7 +9557,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Current Stage Mechanics
+  m_text: Boss fights
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4c44ab3306afd40478fb4a2c6680e3ad, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 464b8fe6bfe670843a3fcd0d5e32a8ba, type: 2}
@@ -25840,7 +25840,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Padding: {x: 0, y: 0, z: 0, w: 0}
+  m_Padding: {x: 0, y: 25, z: 0, w: 25}
   m_Softness: {x: 0, y: 0}
 --- !u!114 &2074815820
 MonoBehaviour:
@@ -25857,7 +25857,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0.001}
   m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_RaycastPadding: {x: 0, y: 25, z: 0, w: 25}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:

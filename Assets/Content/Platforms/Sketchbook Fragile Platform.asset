@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: sketchbook_fragile_platform
   displayName: Fragile Platform
-  icon: {fileID: 21300000, guid: eb51b421b6c7d3148917b49e559e786e, type: 3}
+  icon: {fileID: 21300000, guid: a755b7b5304fb23418a685b84aa078fb, type: 3}
   sortOrder: 1
   includeInDemo: 1
+  unlockCost: 0
   description: Crumbles shortly after you land on it. Keep moving!
   sprite: {fileID: 21300000, guid: eb51b421b6c7d3148917b49e559e786e, type: 3}
   idleFrames: []
@@ -31,4 +32,7 @@ MonoBehaviour:
     stunDuration: 1
     hitFrames: []
     hitFramesPerSecond: 10
+    hitParticles: 1
+    hitParticlesPrefab: {fileID: 0}
+    hitDroplets: 16
   allowObstacles: 1

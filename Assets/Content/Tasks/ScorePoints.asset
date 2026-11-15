@@ -21,6 +21,6 @@ MonoBehaviour:
   description: Earn 100,000 points. They add up over every run.
   type: 0
   targets: []
-  goal: 100000
+  goal: 50000
   rewardShards: 1
   repeatable: 1

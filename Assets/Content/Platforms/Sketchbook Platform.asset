@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: sketchbook_platform
   displayName: Sketchbook Platform
-  icon: {fileID: 21300000, guid: aceb1d9d55129d948894a791bba829ca, type: 3}
+  icon: {fileID: 21300000, guid: b8a5fc17ba8296a4fa6b2b2d1e24401f, type: 3}
   sortOrder: 0
   includeInDemo: 1
+  unlockCost: 0
   description: A plain paper platform.
   sprite: {fileID: 21300000, guid: aceb1d9d55129d948894a791bba829ca, type: 3}
   idleFrames: []
@@ -31,4 +32,7 @@ MonoBehaviour:
     stunDuration: 1
     hitFrames: []
     hitFramesPerSecond: 10
+    hitParticles: 1
+    hitParticlesPrefab: {fileID: 0}
+    hitDroplets: 16
   allowObstacles: 1
