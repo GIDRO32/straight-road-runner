@@ -1100,9 +1100,9 @@ MonoBehaviour:
   backgroundScrollSpeed: 2
   floorScrollSpeed: 8
   backgroundSpawnX: -40
-  backgroundDestroyX: 50
-  backgroundWidth: 40
-  floorWidth: 38
+  backgroundDestroyX: 60
+  backgroundWidth: 20
+  floorWidth: 20
   decorations:
   - decorationPrefab: {fileID: 4956991457779123132, guid: 063507feae7e7ca4683fb2fedda3c64d, type: 3}
     sortingOrder: 1
@@ -1170,6 +1170,7 @@ MonoBehaviour:
     scaleRange: {x: 1, y: 1}
   decorationSpawnInterval: 5
   maxActiveDecorations: 10
+  tileOverlap: 0.05
 --- !u!114 &1134423992 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6495707324124122833, guid: 9e204ab63e3705248ac3d5b14c26bac3, type: 3}

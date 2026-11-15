@@ -151,7 +151,7 @@ MonoBehaviour:
   spinSpeed: 1080
   epicStaminaGain: 50
   epicTint: {r: 0.85, g: 0.6, b: 1, a: 1}
-  epicParticlesPrefab: {fileID: 0}
+  epicParticlesPrefab: {fileID: 899226535206739401, guid: 9050c410c116c9c48ac49c803f24e489, type: 3}
   bossHitEffectPrefab: {fileID: 0}
   throwDuration: 0.55
   throwArcHeight: 2.5

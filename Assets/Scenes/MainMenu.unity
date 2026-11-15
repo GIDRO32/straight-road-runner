@@ -9925,11 +9925,12 @@ MonoBehaviour:
   - stageName: Le Kinn Penn's Sketchbook
     backgroundPrefab: {fileID: 5791166462679130858, guid: 50e480fb79b6d7f4a9ea2766cf94d1f9, type: 3}
     scrollSpeed: 4
-    backgroundWidth: 39
+    backgroundWidth: 20
   spawnParent: {fileID: 599240013}
-  spawnX: -20
+  spawnX: 0
   destroyX: 20
   selectedStageName: SketchyRoad
+  tileOverlap: 0.02
 --- !u!1 &635505082
 GameObject:
   m_ObjectHideFlags: 0
@@ -12638,7 +12639,7 @@ Transform:
   m_GameObject: {fileID: 820416735}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.6029002, y: -0.22948718, z: 0.045790277}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
