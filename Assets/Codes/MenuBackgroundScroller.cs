@@ -32,7 +32,6 @@ public class MenuBackgroundScroller : MonoBehaviour
     // Runtime variables
     private BackgroundData currentBackground;
     private List<GameObject> activeBackgrounds = new List<GameObject>();
-    private float nextSpawnX;
 
     void OnEnable()
     {
@@ -73,9 +72,6 @@ public class MenuBackgroundScroller : MonoBehaviour
             return;
         }
 
-        // Initialize spawn position
-        nextSpawnX = spawnX;
-
         // Spawn initial backgrounds to fill screen
         SpawnInitialBackgrounds();
     }
@@ -109,61 +105,52 @@ public class MenuBackgroundScroller : MonoBehaviour
     void Update()
     {
         if (currentBackground == null) return;
-
-        // Check if we need to spawn new background
-        if (activeBackgrounds.Count > 0)
-        {
-            // Find leftmost background
-            float leftmostX = float.MaxValue;
-
-            foreach (GameObject bg in activeBackgrounds)
-            {
-                if (bg != null && bg.transform.position.x < leftmostX)
-                    leftmostX = bg.transform.position.x;
-            }
-
-            // Spawn new background when gap appears
-            float spawnThreshold = spawnX + currentBackground.backgroundWidth * 0.5f;
-
-            if (leftmostX > spawnThreshold)
-            {
-                nextSpawnX = spawnX;
-                SpawnBackground();
-            }
-        }
-
-        // Cleanup destroyed backgrounds
         activeBackgrounds.RemoveAll(bg => bg == null);
+        FillLeft();
     }
 
+    [Header("Tiling")]
+    [Tooltip("Neighbouring tiles overlap by this much (world units), so no seam shows between them")]
+    public float tileOverlap = 0.05f;
+
     /// <summary>
-    /// Spawn initial backgrounds to fill the screen
+    /// Fills the screen right away: the first tile just inside the destroy line, then tiles leftwards.
     /// </summary>
     private void SpawnInitialBackgrounds()
     {
-        // Calculate visible screen width
-        Camera mainCam = Camera.main;
-        float cameraHeight = mainCam.orthographicSize * 2f;
-        float cameraWidth = cameraHeight * mainCam.aspect;
+        FillLeft();
+    }
 
-        // Calculate how many backgrounds needed to cover screen from left to right
-        float totalWidth = destroyX - spawnX + cameraWidth;
-        float initialCount = 0;
+    // While the leftmost tile's left edge is right of the spawn line, add a tile directly to its left.
+    // Several per frame if needed (first frames after launch can be long), so there are never gaps.
+    private void FillLeft()
+    {
+        float width = Mathf.Abs(currentBackground.backgroundWidth);
+        if (width <= 0.01f || currentBackground.backgroundPrefab == null) return;
 
-        // Start spawning from far left
-        nextSpawnX = 0f;
-        SpawnBackground();
-        Debug.Log($"Spawned {initialCount} initial backgrounds (screen width: {cameraWidth}, total coverage: {totalWidth})");
+        for (int guard = 0; guard < 50; guard++)
+        {
+            float leftmost = float.MaxValue;
+            foreach (GameObject bg in activeBackgrounds)
+                if (bg != null && bg.transform.position.x < leftmost) leftmost = bg.transform.position.x;
+
+            if (leftmost == float.MaxValue)
+                SpawnBackground(destroyX - width * 0.5f);
+            else if (leftmost - width * 0.5f > spawnX)
+                SpawnBackground(leftmost - width + tileOverlap);
+            else
+                return; // Covered from the spawn line to the right
+        }
     }
 
     /// <summary>
     /// Spawn a single background instance
     /// </summary>
-    private void SpawnBackground()
+    private void SpawnBackground(float x)
     {
         if (currentBackground.backgroundPrefab == null) return;
 
-        Vector3 spawnPos = new Vector3(nextSpawnX, 0f, 10f);
+        Vector3 spawnPos = new Vector3(x, 0f, 10f);
         GameObject bg = Instantiate(currentBackground.backgroundPrefab, spawnPos, Quaternion.identity, spawnParent);
 
         // Setup physics
@@ -172,15 +159,19 @@ public class MenuBackgroundScroller : MonoBehaviour
         rb.bodyType = RigidbodyType2D.Kinematic;
         rb.gravityScale = 0f;
 
-        // Setup scrolling
+        // Setup scrolling; only destroy it once it's fully past the right edge of the screen
         ScrollingObject scrollScript = bg.GetComponent<ScrollingObject>();
         if (scrollScript == null) scrollScript = bg.AddComponent<ScrollingObject>();
-        scrollScript.Init(currentBackground.scrollSpeed, destroyX);
+        float width = Mathf.Abs(currentBackground.backgroundWidth);
+        scrollScript.Init(currentBackground.scrollSpeed, Mathf.Max(destroyX, ScreenRightEdge() + width * 0.5f + 1f));
 
         activeBackgrounds.Add(bg);
+    }
 
-        // Update next spawn position
-        nextSpawnX += currentBackground.backgroundWidth;
+    private static float ScreenRightEdge()
+    {
+        Camera cam = Camera.main;
+        return cam != null ? cam.transform.position.x + cam.orthographicSize * cam.aspect : 0f;
     }
 
     /// <summary>
@@ -233,7 +224,6 @@ public class MenuBackgroundScroller : MonoBehaviour
         // Set new background
         currentBackground = newBackground;
         selectedStageName = stageName;
-        nextSpawnX = spawnX;
 
         // Spawn new backgrounds
         SpawnInitialBackgrounds();
