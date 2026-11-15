@@ -21,8 +21,8 @@ public class StageDefinition : ContentDefinition
     [Tooltip("Scrolling background tile on the main menu. Empty = the menu's default background.")]
     public GameObject menuBackgroundPrefab;
     public float menuBackgroundScrollSpeed = 4f;
-    [Tooltip("Width of one background tile in world units (distance between tiles)")]
-    public float menuBackgroundWidth = 39f;
+    [Tooltip("Fallback only: the tile width is measured from the background's sprites")]
+    public float menuBackgroundWidth = 20f;
     [Tooltip("Logo on the title screen. Empty = the default logo.")]
     public Sprite titleLogo;
 

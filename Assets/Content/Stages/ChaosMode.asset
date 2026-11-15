@@ -25,7 +25,7 @@ MonoBehaviour:
   musicFolder: 
   menuBackgroundPrefab: {fileID: 0}
   menuBackgroundScrollSpeed: 4
-  menuBackgroundWidth: 39
+  menuBackgroundWidth: 20
   titleLogo: {fileID: 0}
   enemies: []
   platformPrefab: {fileID: 0}

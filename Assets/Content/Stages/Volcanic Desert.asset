@@ -38,7 +38,7 @@ MonoBehaviour:
   musicFolder: 
   menuBackgroundPrefab: {fileID: 5791166462679130858, guid: 15c431c77cfb7d84a996a260d267645c, type: 3}
   menuBackgroundScrollSpeed: 4
-  menuBackgroundWidth: 39
+  menuBackgroundWidth: 20
   titleLogo: {fileID: 21300000, guid: 73aa75e8966951d44b6d191b4e0f407f, type: 3}
   enemies:
   - {fileID: 11400000, guid: 84b681abdffb483f8b71322a771ae7df, type: 2}
