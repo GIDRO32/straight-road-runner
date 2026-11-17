@@ -1,10 +1,7 @@
 using UnityEngine;
 
-public class BallDevil : MonoBehaviour
+public class BallDevil : EnemyBase
 {
-    [Header("References")]
-    public Transform player;
-
     [Header("Seek Settings")]
     public float accelX = 5f;
     public float accelY = 3f;
@@ -14,38 +11,17 @@ public class BallDevil : MonoBehaviour
     [Header("Dash Settings")]
     public float dashInterval = 3f;
     public float dashSpeed = 20f;
-    public float dashDuration = 0.5f; // ← NEW: How long dash lasts
+    public float dashDuration = 0.5f; // How long dash lasts
 
-    private Rigidbody2D rb;
     private float dashTimer = 0f;
-    private float dashDurationTimer = 0f; // ← NEW
+    private float dashDurationTimer = 0f;
     private bool isFacingRight = true;
-    private Animator animator;
-    private SpriteRenderer spriteRenderer;
-    private bool isDamaged = false;
-    private bool isDashing = false; // ← NEW: Track dash state
-    public SoundEffects soundEffects;
-
-    void Start()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        animator = GetComponent<Animator>();
-
-        // Find player if not assigned
-        if (player == null)
-        {
-            GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null)
-                player = playerObj.transform;
-        }
-    }
+    private bool isDashing = false;
 
     void FixedUpdate()
     {
-        if (player == null || isDamaged) return;
+        if (player == null || isDefeated) return;
 
-        // ✅ INCREMENT TIMER!
         dashTimer += Time.fixedDeltaTime;
 
         // Handle dash state
@@ -124,54 +100,6 @@ public class BallDevil : MonoBehaviour
         isDashing = true;
         dashDurationTimer = dashDuration;
         animator.SetBool("IsDashing", true);
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (!isDamaged && collision.CompareTag("Hits"))
-        {
-            isDamaged = true;
-
-            // Play hit sound
-            soundEffects?.PlayDevilHit();
-
-            // Apply knockback force
-            float punchForce = 5f;
-            Vector2 force = new Vector2(
-                Random.Range(-punchForce, punchForce),
-                Random.Range(0f, punchForce * 1.5f)
-            );
-            rb.AddForce(force, ForceMode2D.Impulse);
-
-            // Award score
-            if (ScoreManager.Instance != null)
-            {
-                ScoreManager.Instance.AddEnemyKillScore();
-            }
-
-            StartCoroutine(FadeAndDestroy());
-        }
-    }
-
-    private System.Collections.IEnumerator FadeAndDestroy()
-    {
-        // Fade out over 1 second
-        float fadeDuration = 1f;
-        float timer = 0f;
-        Color originalColor = spriteRenderer.color;
-
-        while (timer < fadeDuration)
-        {
-            timer += Time.deltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
-            spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
-            yield return null;
-        }
-
-        // Ensure fully invisible
-        spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
-
-        // Destroy
-        Destroy(gameObject);
+        PlayAttackSound();
     }
 }

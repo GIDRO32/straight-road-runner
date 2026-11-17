@@ -35,8 +35,6 @@ public class BackgroundControl : MonoBehaviour
     public float backgroundWidth = 40f;       // Width of each background piece
     public float floorWidth = 16f;
 
-    private float nextBackgroundSpawnX;
-    private float nextFloorSpawnX;
     private List<GameObject> activeBackgrounds = new List<GameObject>();
     #endregion
 
@@ -76,10 +74,16 @@ public class BackgroundControl : MonoBehaviour
     private List<GameObject> activeDecorations = new List<GameObject>();
     #endregion
 
+    [Header("Tiling")]
+    [Tooltip("Neighbouring tiles overlap by this much (world units), so no seam shows between them")]
+    public float tileOverlap = 0.05f;
+
+    // Tiles of each strip, so every new tile is placed right against the previous one
+    private readonly List<GameObject> backgroundSets = new List<GameObject>(); // One layer per set marks its position
+    private readonly List<GameObject> floorTiles = new List<GameObject>();
+
     void Start()
     {
-        nextBackgroundSpawnX = backgroundSpawnX;
-        nextFloorSpawnX = backgroundSpawnX;  // NEW
         SpawnInitialBackgrounds();
     }
 
@@ -91,159 +95,96 @@ public class BackgroundControl : MonoBehaviour
     }
 
     #region Background Management
+    // Covers everything from the destroy line back to the spawn line right away
     private void SpawnInitialBackgrounds()
     {
-        // Spawn enough background sets to cover from spawn point to beyond screen
-        int initialSets = Mathf.CeilToInt((backgroundDestroyX - backgroundSpawnX) / backgroundWidth) + 1;
-
-        for (int i = 0; i < initialSets; i++)
-        {
-            SpawnBackgroundSet();
-        }
-
-        // Spawn floor separately with its own width calculation
-        int initialFloorSets = Mathf.CeilToInt((backgroundDestroyX - backgroundSpawnX) / floorWidth) + 1;
-
-        for (int i = 0; i < initialFloorSets; i++)
-        {
-            SpawnFloorLayer();
-        }
-
-        Debug.Log($"Spawned {initialSets} initial background sets and {initialFloorSets} floor sets");
+        backgroundSets.Clear();
+        floorTiles.Clear();
+        HandleBackgroundSpawning(); // Empty strips start at the destroy line and fill leftwards
     }
+
+    // Keeps both strips continuous: while the leftmost tile's left edge is right of the spawn line, add a tile
+    // directly to its left. Several per frame if needed (fast-forwarded intro, frame hitches), so no gaps.
     private void HandleBackgroundSpawning()
     {
-        // Clean up null references first
-        activeBackgrounds.RemoveAll(bg => bg == null);
+        FillStrip(backgroundSets, Mathf.Abs(backgroundWidth), x => SpawnBackgroundSet(x));
+        FillStrip(floorTiles, Mathf.Abs(floorWidth), x => SpawnFloorLayer(x));
+    }
 
-        // === HANDLE REGULAR BACKGROUNDS ===
-        if (activeBackgrounds.Count == 0)
+    private void FillStrip(List<GameObject> strip, float width, System.Func<float, GameObject> spawn)
+    {
+        if (width <= 0.01f) return;
+        strip.RemoveAll(t => t == null);
+
+        for (int guard = 0; guard < 50; guard++)
         {
-            Debug.LogWarning("All backgrounds destroyed! Respawning...");
-            nextBackgroundSpawnX = backgroundSpawnX;
-            SpawnInitialBackgrounds();
-            return;
-        }
+            float leftmost = float.MaxValue;
+            foreach (GameObject tile in strip)
+                if (tile.transform.position.x < leftmost) leftmost = tile.transform.position.x;
 
-        // Find the leftmost background (excluding floor)
-        float leftmostBgX = float.MaxValue;
+            float x = leftmost == float.MaxValue
+                ? backgroundDestroyX - width * 0.5f      // Strip empty: first tile just inside the destroy line
+                : leftmost - width + tileOverlap;        // Right against the leftmost tile
+            if (leftmost != float.MaxValue && leftmost - width * 0.5f <= backgroundSpawnX) return; // Covered
 
-        foreach (GameObject bg in activeBackgrounds)
-        {
-            if (bg != null && !bg.name.Contains("Floor"))  // Exclude floor from this check
-            {
-                float bgX = bg.transform.position.x;
-                if (bgX < leftmostBgX)
-                    leftmostBgX = bgX;
-            }
-        }
-
-        // Spawn new background set when gap appears
-        float bgSpawnThreshold = backgroundSpawnX + backgroundWidth * 0.5f;
-
-        if (leftmostBgX > bgSpawnThreshold)
-        {
-            nextBackgroundSpawnX = backgroundSpawnX;
-            SpawnBackgroundSet();
-            Debug.Log($"Spawned new background. Leftmost was at: {leftmostBgX}");
-        }
-
-        // === HANDLE FLOOR SEPARATELY ===
-        // Find the leftmost floor piece
-        float leftmostFloorX = float.MaxValue;
-
-        foreach (GameObject bg in activeBackgrounds)
-        {
-            if (bg != null && bg.name.Contains("Floor"))
-            {
-                float floorX = bg.transform.position.x;
-                if (floorX < leftmostFloorX)
-                    leftmostFloorX = floorX;
-            }
-        }
-
-        // Spawn new floor when gap appears (floor moves faster so needs more frequent spawning)
-        float floorSpawnThreshold = backgroundSpawnX + floorWidth * 0.5f;
-
-        if (leftmostFloorX > floorSpawnThreshold)
-        {
-            nextFloorSpawnX = backgroundSpawnX;
-            SpawnFloorLayer();
-            Debug.Log($"Spawned new floor. Leftmost was at: {leftmostFloorX}");
+            GameObject spawned = spawn(x);
+            if (spawned == null) return; // No prefab
         }
     }
 
-    private void SpawnBackgroundSet()
+    private GameObject SpawnBackgroundSet(float spawnX)
     {
-        float spawnX = nextBackgroundSpawnX;
+        GameObject marker = null;
 
         // Bottom layer
         if (bottomLayerPrefab != null)
         {
-            GameObject bottom = SpawnBackgroundLayer(
-                bottomLayerPrefab,
-                spawnX,
-                bottomLayerY,
-                -1,
-                bottomVariants
-            );
+            GameObject bottom = SpawnBackgroundLayer(bottomLayerPrefab, spawnX, bottomLayerY, -1, bottomVariants, -1f, backgroundWidth);
             activeBackgrounds.Add(bottom);
+            marker = marker != null ? marker : bottom;
         }
 
         // Middle layer
         if (middleLayerPrefab != null)
         {
-            GameObject middle = SpawnBackgroundLayer(
-                middleLayerPrefab,
-                spawnX,
-                middleLayerY,
-                0,
-                middleVariants
-            );
+            GameObject middle = SpawnBackgroundLayer(middleLayerPrefab, spawnX, middleLayerY, 0, middleVariants, -1f, backgroundWidth);
             activeBackgrounds.Add(middle);
+            marker = marker != null ? marker : middle;
         }
 
         // Top layer
         if (topLayerPrefab != null)
         {
-            GameObject top = SpawnBackgroundLayer(
-                topLayerPrefab,
-                spawnX,
-                topLayerY,
-                1,
-                topVariants
-            );
+            GameObject top = SpawnBackgroundLayer(topLayerPrefab, spawnX, topLayerY, 1, topVariants, -1f, backgroundWidth);
             activeBackgrounds.Add(top);
+            marker = marker != null ? marker : top;
         }
 
-        // Move spawn position for NEXT spawn
-        nextBackgroundSpawnX += backgroundWidth;
+        if (marker != null) backgroundSets.Add(marker);
+        return marker;
     }
 
-    // NEW METHOD - Spawn floor separately
-    private void SpawnFloorLayer()
+    private GameObject SpawnFloorLayer(float spawnX)
     {
-        if (floorLayerPrefab == null) return;
-
-        float spawnX = nextFloorSpawnX;
+        if (floorLayerPrefab == null) return null;
 
         GameObject floor = SpawnBackgroundLayer(
             floorLayerPrefab,
             spawnX,
             floorLayerY,
-            6,  // Sorting order (behind everything)
+            6,
             floorVariants,
-            8f   // Custom scroll speed (4x faster)
+            floorScrollSpeed > 0f ? floorScrollSpeed : 8f,
+            floorWidth
         );
 
-        floor.name = "Floor";  // Name it so we can identify it
+        floor.name = "Floor";
         activeBackgrounds.Add(floor);
-
-        // Move spawn position for NEXT floor spawn
-        nextFloorSpawnX += floorWidth;
+        floorTiles.Add(floor);
+        return floor;
     }
 
-    private GameObject SpawnBackgroundLayer(GameObject prefab, float x, float y, int sortingOrder, Sprite[] variants, float customScrollSpeed = -1f)
+    private GameObject SpawnBackgroundLayer(GameObject prefab, float x, float y, int sortingOrder, Sprite[] variants, float customScrollSpeed, float width)
     {
         Vector3 spawnPos = new Vector3(x, y, 10f);
         GameObject layer = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
@@ -258,7 +199,8 @@ public class BackgroundControl : MonoBehaviour
         ScrollingObject scrollScript = layer.GetComponent<ScrollingObject>();
         if (scrollScript == null) scrollScript = layer.AddComponent<ScrollingObject>();
         float scrollSpeed = customScrollSpeed > 0 ? customScrollSpeed : backgroundScrollSpeed;
-        scrollScript.Init(scrollSpeed, backgroundDestroyX);
+        // Only destroy it once it's fully past the right edge of the screen
+        scrollScript.Init(scrollSpeed, Mathf.Max(backgroundDestroyX, ScreenRightEdge() + Mathf.Abs(width) * 0.5f + 1f));
 
         // Set random variant sprite
         SpriteRenderer sr = layer.GetComponent<SpriteRenderer>();
@@ -274,6 +216,17 @@ public class BackgroundControl : MonoBehaviour
         return layer;
     }
     #endregion
+
+    // Widest the view gets (CameraFollow zooms out up to maxYSize)
+    private static float ScreenRightEdge()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return 0f;
+        float size = cam.orthographicSize;
+        CameraFollow follow = cam.GetComponent<CameraFollow>();
+        if (follow != null) size = Mathf.Max(size, follow.maxYSize);
+        return cam.transform.position.x + size * cam.aspect;
+    }
 
     #region Decoration Management
     private void HandleDecorationSpawning()

@@ -9,11 +9,16 @@ public class MenuBackgroundScroller : MonoBehaviour
         public string stageName;
         public GameObject backgroundPrefab;
         public float scrollSpeed = 1f;
+        [Tooltip("Only used if the background has no sprites: the width is measured from its sprites")]
         public float backgroundWidth = 20f;
     }
 
+    [Header("Selected Stage")]
+    [Tooltip("Use the selected stage's Menu Background (StageDefinition > Title Screen) and switch when another stage is picked")]
+    public bool followSelectedStage = true;
+
     [Header("Background Presets")]
-    [Tooltip("First background in array is the default")]
+    [Tooltip("First background in array is the default (used when the stage has no Menu Background)")]
     public BackgroundData[] backgrounds;
 
     [Header("Spawn Settings")]
@@ -28,16 +33,27 @@ public class MenuBackgroundScroller : MonoBehaviour
     // Runtime variables
     private BackgroundData currentBackground;
     private List<GameObject> activeBackgrounds = new List<GameObject>();
-    private float nextSpawnX;
+
+    void OnEnable()
+    {
+        GameSession.SelectedStageChanged += OnSelectedStageChanged;
+    }
+
+    void OnDisable()
+    {
+        GameSession.SelectedStageChanged -= OnSelectedStageChanged;
+    }
 
     void Start()
     {
-        // Select background
-        if (string.IsNullOrEmpty(selectedStageName))
+        if (followSelectedStage)
+        {
+            currentBackground = BackgroundForStage(GameSession.SelectedStage);
+        }
+        else if (string.IsNullOrEmpty(selectedStageName))
         {
             // Use default (first background)
-            currentBackground = backgrounds[0];
-            Debug.Log($"Using default background: {currentBackground.stageName}");
+            currentBackground = DefaultBackground();
         }
         else
         {
@@ -47,11 +63,7 @@ public class MenuBackgroundScroller : MonoBehaviour
             if (currentBackground == null)
             {
                 Debug.LogWarning($"Background '{selectedStageName}' not found! Using default.");
-                currentBackground = backgrounds[0];
-            }
-            else
-            {
-                Debug.Log($"Using background: {currentBackground.stageName}");
+                currentBackground = DefaultBackground();
             }
         }
 
@@ -61,72 +73,95 @@ public class MenuBackgroundScroller : MonoBehaviour
             return;
         }
 
-        // Initialize spawn position
-        nextSpawnX = spawnX;
-
         // Spawn initial backgrounds to fill screen
         SpawnInitialBackgrounds();
+    }
+
+    private BackgroundData DefaultBackground()
+    {
+        return backgrounds != null && backgrounds.Length > 0 ? backgrounds[0] : null;
+    }
+
+    /// <summary>The stage's own Menu Background, or the default one.</summary>
+    private BackgroundData BackgroundForStage(StageDefinition stage)
+    {
+        if (stage == null || stage.menuBackgroundPrefab == null)
+            return DefaultBackground();
+
+        return new BackgroundData
+        {
+            stageName = stage.DisplayName,
+            backgroundPrefab = stage.menuBackgroundPrefab,
+            scrollSpeed = stage.menuBackgroundScrollSpeed,
+            backgroundWidth = stage.menuBackgroundWidth
+        };
+    }
+
+    private void OnSelectedStageChanged(StageDefinition stage)
+    {
+        if (followSelectedStage)
+            SwitchTo(BackgroundForStage(stage));
     }
 
     void Update()
     {
         if (currentBackground == null) return;
-
-        // Check if we need to spawn new background
-        if (activeBackgrounds.Count > 0)
-        {
-            // Find leftmost background
-            float leftmostX = float.MaxValue;
-
-            foreach (GameObject bg in activeBackgrounds)
-            {
-                if (bg != null && bg.transform.position.x < leftmostX)
-                    leftmostX = bg.transform.position.x;
-            }
-
-            // Spawn new background when gap appears
-            float spawnThreshold = spawnX + currentBackground.backgroundWidth * 0.5f;
-
-            if (leftmostX > spawnThreshold)
-            {
-                nextSpawnX = spawnX;
-                SpawnBackground();
-            }
-        }
-
-        // Cleanup destroyed backgrounds
         activeBackgrounds.RemoveAll(bg => bg == null);
+        FillLeft();
     }
 
+    [Header("Tiling")]
+    [Tooltip("Neighbouring tiles overlap by this much (world units), so no seam shows between them")]
+    public float tileOverlap = 0.05f;
+
     /// <summary>
-    /// Spawn initial backgrounds to fill the screen
+    /// Fills the screen right away: the first tile just inside the destroy line, then tiles leftwards.
     /// </summary>
     private void SpawnInitialBackgrounds()
     {
-        // Calculate visible screen width
-        Camera mainCam = Camera.main;
-        float cameraHeight = mainCam.orthographicSize * 2f;
-        float cameraWidth = cameraHeight * mainCam.aspect;
+        FillLeft();
+    }
 
-        // Calculate how many backgrounds needed to cover screen from left to right
-        float totalWidth = destroyX - spawnX + cameraWidth;
-        float initialCount = 0;
+    // While the leftmost tile's left edge is right of the screen's left edge (or the spawn line), add a tile
+    // directly to its left. Tile widths are measured from their sprites, so the Width setting can't cause gaps.
+    // Several per frame if needed (first frames after launch can be long).
+    private void FillLeft()
+    {
+        if (currentBackground == null || currentBackground.backgroundPrefab == null) return;
+        float coverTo = Mathf.Min(spawnX, ScreenLeftEdge() - 1f);
 
-        // Start spawning from far left
-        nextSpawnX = 0f;
-        SpawnBackground();
-        Debug.Log($"Spawned {initialCount} initial backgrounds (screen width: {cameraWidth}, total coverage: {totalWidth})");
+        for (int guard = 0; guard < 50; guard++)
+        {
+            GameObject leftmost = null;
+            float leftEdge = float.MaxValue;
+            foreach (GameObject bg in activeBackgrounds)
+            {
+                if (bg == null) continue;
+                float edge = TileBounds(bg).min.x;
+                if (edge < leftEdge) { leftEdge = edge; leftmost = bg; }
+            }
+
+            if (leftmost == null)
+                SpawnBackground(rightEdge: Mathf.Max(destroyX, ScreenRightEdge() + 1f));
+            else if (leftEdge > coverTo)
+                SpawnBackground(rightEdge: leftEdge + tileOverlap);
+            else
+                return; // Covered
+        }
     }
 
     /// <summary>
-    /// Spawn a single background instance
+    /// Spawn a single background tile whose right edge is at the given x
     /// </summary>
-    private void SpawnBackground()
+    private void SpawnBackground(float rightEdge)
     {
         if (currentBackground.backgroundPrefab == null) return;
 
-        Vector3 spawnPos = new Vector3(nextSpawnX, 0f, 10f);
-        GameObject bg = Instantiate(currentBackground.backgroundPrefab, spawnPos, Quaternion.identity, spawnParent);
+        GameObject bg = Instantiate(currentBackground.backgroundPrefab, new Vector3(0f, 0f, 10f), Quaternion.identity, spawnParent);
+        Vector3 pos = bg.transform.position;
+        bg.transform.position = new Vector3(0f, pos.y, pos.z);
+        Bounds b = TileBounds(bg);
+        bg.transform.position += new Vector3(rightEdge - b.max.x, 0f, 0f);
 
         // Setup physics
         Rigidbody2D rb = bg.GetComponent<Rigidbody2D>();
@@ -134,15 +169,41 @@ public class MenuBackgroundScroller : MonoBehaviour
         rb.bodyType = RigidbodyType2D.Kinematic;
         rb.gravityScale = 0f;
 
-        // Setup scrolling
+        // Setup scrolling; only destroy it once its left edge is past the right edge of the screen
         ScrollingObject scrollScript = bg.GetComponent<ScrollingObject>();
         if (scrollScript == null) scrollScript = bg.AddComponent<ScrollingObject>();
-        scrollScript.Init(currentBackground.scrollSpeed, destroyX);
+        b = TileBounds(bg);
+        float leftEdgeOffset = b.min.x - bg.transform.position.x;
+        float destroyAt = Mathf.Max(destroyX, ScreenRightEdge() + 1f - leftEdgeOffset);
+        scrollScript.Init(currentBackground.scrollSpeed, destroyAt);
 
         activeBackgrounds.Add(bg);
+    }
 
-        // Update next spawn position
-        nextSpawnX += currentBackground.backgroundWidth;
+    // World bounds of all sprites in a tile; falls back to the Width setting if it has none
+    private Bounds TileBounds(GameObject tile)
+    {
+        Renderer[] renderers = tile.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0)
+        {
+            float w = Mathf.Abs(currentBackground.backgroundWidth);
+            return new Bounds(tile.transform.position, new Vector3(w, 1f, 1f));
+        }
+        Bounds b = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++) b.Encapsulate(renderers[i].bounds);
+        return b;
+    }
+
+    private static float ScreenRightEdge()
+    {
+        Camera cam = Camera.main;
+        return cam != null ? cam.transform.position.x + cam.orthographicSize * cam.aspect : 0f;
+    }
+
+    private static float ScreenLeftEdge()
+    {
+        Camera cam = Camera.main;
+        return cam != null ? cam.transform.position.x - cam.orthographicSize * cam.aspect : 0f;
     }
 
     /// <summary>
@@ -171,6 +232,20 @@ public class MenuBackgroundScroller : MonoBehaviour
             return;
         }
 
+        SwitchTo(newBackground);
+    }
+
+    /// <summary>Replaces the scrolling background (no-op if it's already showing).</summary>
+    private void SwitchTo(BackgroundData newBackground)
+    {
+        if (newBackground == null || newBackground.backgroundPrefab == null) return;
+
+        if (currentBackground != null && currentBackground.backgroundPrefab == newBackground.backgroundPrefab
+            && Mathf.Approximately(currentBackground.scrollSpeed, newBackground.scrollSpeed))
+            return;
+
+        string stageName = newBackground.stageName;
+
         // Clear current backgrounds
         foreach (GameObject bg in activeBackgrounds)
         {
@@ -181,7 +256,6 @@ public class MenuBackgroundScroller : MonoBehaviour
         // Set new background
         currentBackground = newBackground;
         selectedStageName = stageName;
-        nextSpawnX = spawnX;
 
         // Spawn new backgrounds
         SpawnInitialBackgrounds();

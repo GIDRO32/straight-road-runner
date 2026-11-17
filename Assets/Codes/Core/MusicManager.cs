@@ -5,18 +5,24 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
+/// <summary>
+/// Plays every song in a StreamingAssets folder as a shuffled playlist.
+/// When the playlist ends it is reshuffled, and the new first song is never the one that just played.
+/// Volume comes from the saved setting (VolumeSettings), so it survives new songs and scene changes.
+/// </summary>
 public class MusicManager : MonoBehaviour
 {
     [Header("Music Folder")]
     [Tooltip("Folder path relative to StreamingAssets (e.g., 'Music/Menu' or 'Music/Regular')")]
     public string musicFolder = "Music/Menu";
 
+    [Tooltip("In stage scenes: use the current stage's music folder (StageDefinition.musicFolder) if it has one")]
+    public bool useStageMusicFolder = false;
+
     [Header("Audio Source")]
     public AudioSource musicSource;
 
     [Header("Settings")]
-    [Range(0f, 1f)]
-    public float musicVolume = 0.7f;
     public bool crossfade = true;
     public float crossfadeDuration = 2f;
     public bool playOnStart = true;
@@ -29,16 +35,29 @@ public class MusicManager : MonoBehaviour
     public int remainingTracks = 0;
     public int totalTracks = 0;
     public bool isLoading = false;
+    [Tooltip("Optional: legacy slider hook (AdjustVolume). A VolumeSlider component on the slider does the same.")]
     public Slider volumeAdjustSlider;
 
     // Playback state
-    private List<string> trackPaths = new List<string>();
-    private Queue<string> shuffledQueue = new Queue<string>();
+    private readonly List<string> trackPaths = new List<string>();
+    private readonly List<string> playlist = new List<string>();
+    private int playlistIndex = 0;
+    private string lastPlayedPath;
     private AudioClip currentTrack;
+    private bool isLoadingTrack = false;
     private bool isTransitioning = false;
-    private bool firstTrackPlaying = false;
+    private bool isPaused = false;
     private bool lostFocusPause = false;
+    private float fade = 1f; // Crossfade multiplier on top of the saved volume
+    private bool trackStarted = false; // A song is playing and hasn't finished yet
+    private float lastPlayhead = 0f;   // Where the song was last frame it was playing
+    private bool pausedForGame = false; // Pause menu open (Time.timeScale = 0)
 
+    /// <summary>
+    /// A song finished playing on its own (not skipped, stopped or switched away from).
+    /// Argument: the folder it came from. BossDirector starts boss fights on it.
+    /// </summary>
+    public event System.Action<string> TrackFinished;
 
     void Awake()
     {
@@ -49,13 +68,24 @@ public class MusicManager : MonoBehaviour
 
         musicSource.loop = false;
         musicSource.playOnAwake = false;
-        musicSource.volume = musicVolume;
+        ApplyVolume();
     }
+
+    void OnEnable() => VolumeSettings.Changed += OnVolumeChanged;
+    void OnDisable() => VolumeSettings.Changed -= OnVolumeChanged;
 
     void Start()
     {
-        PlayerPrefs.GetFloat("MusicVolume", musicSource.volume);
-        volumeAdjustSlider.value = musicSource.volume;
+        if (volumeAdjustSlider != null)
+            volumeAdjustSlider.SetValueWithoutNotify(VolumeSettings.Music);
+
+        if (useStageMusicFolder)
+        {
+            StageDefinition stage = GameSession.CurrentStage;
+            if (stage != null && !string.IsNullOrEmpty(stage.musicFolder))
+                musicFolder = stage.musicFolder;
+        }
+
         if (playOnStart)
         {
             StartCoroutine(LoadAndPlayMusic());
@@ -66,21 +96,71 @@ public class MusicManager : MonoBehaviour
     {
         // Update UI info
         currentTrackName = currentTrack != null ? currentTrack.name : "None";
-        remainingTracks = shuffledQueue.Count;
+        remainingTracks = Mathf.Max(0, playlist.Count - playlistIndex);
         totalTracks = trackPaths.Count;
 
-        // Check if current track finished and play next
-        if (!isTransitioning && musicSource.isPlaying == false && shuffledQueue.Count > 0 && !lostFocusPause)
+        // The game is paused (pause menu): pause the song too, so it can't end and start a boss fight
+        bool gamePaused = IsGamePaused();
+        if (gamePaused && !pausedForGame)
         {
-            PlayNextTrack();
+            pausedForGame = true;
+            musicSource.Pause();
         }
-        // If queue is empty but we have a playlist, refill
-        else if (!isTransitioning && musicSource.isPlaying == false && trackPaths.Count > 0 && !lostFocusPause)
+        else if (!gamePaused && pausedForGame)
         {
-            RefillAndShuffleQueue();
-            PlayNextTrack();
+            pausedForGame = false;
+            if (!isPaused && !lostFocusPause) musicSource.UnPause();
         }
+
+        if (musicSource.isPlaying)
+        {
+            lastPlayhead = musicSource.time;
+            return;
+        }
+
+        if (isLoading || isLoadingTrack || isTransitioning || isPaused || lostFocusPause || pausedForGame
+            || trackPaths.Count == 0 || !Application.isFocused)
+            return;
+
+        if (trackStarted)
+        {
+            // Not playing, but it never got to the end: it was paused from outside (e.g. the window lost focus
+            // and the audio was paused before OnApplicationFocus). Carry on with the same song.
+            if (!ReachedEnd())
+            {
+                musicSource.UnPause();
+                if (!musicSource.isPlaying && musicSource.clip != null)
+                {
+                    // It was stopped rather than paused: start it again where it was
+                    musicSource.Play();
+                    musicSource.time = Mathf.Min(lastPlayhead, musicSource.clip.length - 0.1f);
+                }
+                return;
+            }
+
+            // Current song finished: tell listeners (boss fights), then the next one
+            trackStarted = false;
+            string folder = musicFolder;
+            TrackFinished?.Invoke(folder);
+            if (folder != musicFolder) return; // A listener switched folders (e.g. boss music)
+        }
+        PlayNextTrack();
     }
+
+    // The song really played to its end (last seen within a second of the end)
+    private bool ReachedEnd()
+    {
+        AudioClip clip = musicSource.clip;
+        return clip == null || lastPlayhead >= clip.length - 1f;
+    }
+
+    // Pause menu: time stopped, but not because of game over (the game over screen keeps its music)
+    private static bool IsGamePaused()
+    {
+        if (Time.timeScale > 0f) return false;
+        return GameOverManager.Instance == null || !GameOverManager.Instance.IsGameOver;
+    }
+
     private void OnApplicationFocus(bool hasFocus)
     {
         if (!hasFocus && musicSource.isPlaying)
@@ -95,28 +175,45 @@ public class MusicManager : MonoBehaviour
         }
     }
 
+    // ===== VOLUME =====
+
+    // Called by the music slider's On Value Changed
     public void AdjustVolume()
     {
-        musicSource.volume = volumeAdjustSlider.value;
-        PlayerPrefs.SetFloat("MusicVolume", volumeAdjustSlider.value);
+        if (volumeAdjustSlider != null)
+            VolumeSettings.Music = volumeAdjustSlider.value;
     }
-    /// <summary>
-    /// Load first track and play immediately, then load rest in background
-    /// </summary>
+
+    private void OnVolumeChanged(VolumeChannel channel, float volume)
+    {
+        if (channel == VolumeChannel.Music) ApplyVolume();
+    }
+
+    private void ApplyVolume()
+    {
+        if (musicSource != null)
+            musicSource.volume = VolumeSettings.Music * fade;
+    }
+
+    // ===== PLAYLIST =====
+
+    /// <summary>Finds the songs in the folder and starts the playlist.</summary>
     private IEnumerator LoadAndPlayMusic()
     {
         isLoading = true;
 
         string fullPath = Path.Combine(Application.streamingAssetsPath, musicFolder);
 
+        trackPaths.Clear();
+        playlist.Clear();
+        playlistIndex = 0;
+
         if (!Directory.Exists(fullPath))
         {
-            Directory.CreateDirectory(fullPath);
+            Debug.LogWarning($"MusicManager: Music folder not found: {fullPath}");
             isLoading = false;
             yield break;
         }
-
-        trackPaths.Clear();
 
         foreach (string format in supportedFormats)
         {
@@ -129,25 +226,55 @@ public class MusicManager : MonoBehaviour
             yield break;
         }
 
-        RefillAndShuffleQueue();
-        yield return PlayNextTrackAsync();
+        yield return PlayNextTrackAsync(NextTrackPath());
 
         isLoading = false;
     }
-    private IEnumerator PlayNextTrackAsync()
+
+    private string NextTrackPath()
     {
-        if (shuffledQueue.Count == 0)
+        if (playlistIndex >= playlist.Count)
+            BuildPlaylist();
+
+        return playlist[playlistIndex++];
+    }
+
+    /// <summary>Shuffles every song. The first one is never the song that just played.</summary>
+    private void BuildPlaylist()
+    {
+        playlist.Clear();
+        playlist.AddRange(trackPaths);
+
+        for (int i = playlist.Count - 1; i > 0; i--)
         {
-            RefillAndShuffleQueue();
+            int j = Random.Range(0, i + 1);
+            (playlist[i], playlist[j]) = (playlist[j], playlist[i]);
         }
 
-        string nextPath = shuffledQueue.Dequeue();
-        string uri = "file://" + nextPath;
+        if (playlist.Count > 1 && playlist[0] == lastPlayedPath)
+        {
+            int swap = Random.Range(1, playlist.Count);
+            (playlist[0], playlist[swap]) = (playlist[swap], playlist[0]);
+        }
 
-        AudioType audioType = GetAudioType(nextPath);
+        playlistIndex = 0;
+    }
 
-        using (UnityWebRequest www =
-            UnityWebRequestMultimedia.GetAudioClip(uri, audioType))
+    private void PlayNextTrack()
+    {
+        if (trackPaths.Count == 0) return;
+        StartCoroutine(PlayNextTrackAsync(NextTrackPath()));
+    }
+
+    private IEnumerator PlayNextTrackAsync(string path)
+    {
+        isLoadingTrack = true;
+        isPaused = false;
+
+        string uri = "file://" + path;
+        AudioType audioType = GetAudioType(path);
+
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(uri, audioType))
         {
             ((DownloadHandlerAudioClip)www.downloadHandler).streamAudio = true;
 
@@ -155,6 +282,9 @@ public class MusicManager : MonoBehaviour
 
             if (www.result != UnityWebRequest.Result.Success)
             {
+                Debug.LogWarning($"MusicManager: Couldn't load {path}: {www.error}");
+                lastPlayedPath = path; // Skip it next time round too
+                isLoadingTrack = false;
                 yield break;
             }
 
@@ -164,14 +294,18 @@ public class MusicManager : MonoBehaviour
             }
 
             currentTrack = DownloadHandlerAudioClip.GetContent(www);
-            currentTrack.name = Path.GetFileNameWithoutExtension(nextPath);
+            currentTrack.name = Path.GetFileNameWithoutExtension(path);
 
             musicSource.clip = currentTrack;
-            musicSource.volume = musicVolume;
+            ApplyVolume();
             musicSource.Play();
+            lastPlayhead = 0f;
+            trackStarted = true;
+            lastPlayedPath = path;
         }
-    }
 
+        isLoadingTrack = false;
+    }
 
     /// <summary>
     /// Get AudioType based on file extension
@@ -193,82 +327,31 @@ public class MusicManager : MonoBehaviour
         }
     }
 
+    // ===== CONTROLS =====
+
     /// <summary>
     /// Reload music from folder
     /// </summary>
     public void ReloadMusic()
     {
+        StopAllCoroutines();
         StopMusic();
-        trackPaths.Clear();
-        shuffledQueue.Clear();
-        currentTrack = null;
-        firstTrackPlaying = false;
+        isTransitioning = false;
+        isLoadingTrack = false;
+        fade = 1f;
 
         StartCoroutine(LoadAndPlayMusic());
     }
 
     /// <summary>
-    /// Refill the queue with all tracks and shuffle them
+    /// Switch to another StreamingAssets folder (e.g. boss music) and start playing it
     /// </summary>
-    private void RefillAndShuffleQueue()
+    public void PlayFolder(string folder)
     {
-        shuffledQueue.Clear();
+        if (string.IsNullOrEmpty(folder) || folder == musicFolder) return;
 
-        List<string> shuffled = new List<string>(trackPaths);
-
-        for (int i = shuffled.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
-        }
-
-        foreach (string path in shuffled)
-        {
-            shuffledQueue.Enqueue(path);
-        }
-    }
-
-    /// <summary>
-    /// Play the next track in the queue
-    /// </summary>
-    private void PlayNextTrack()
-    {
-        StartCoroutine(PlayNextTrackAsync());
-    }
-
-
-    /// <summary>
-    /// Crossfade to the next track
-    /// </summary>
-    private IEnumerator CrossfadeToNextTrack()
-    {
-        isTransitioning = true;
-
-        // Fade out current track
-        float startVolume = musicSource.volume;
-        float elapsed = 0f;
-
-        while (elapsed < crossfadeDuration / 2f)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            musicSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / (crossfadeDuration / 2f));
-            yield return null;
-        }
-
-        // Play next track
-        PlayNextTrack();
-
-        // Fade in new track
-        elapsed = 0f;
-        while (elapsed < crossfadeDuration / 2f)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            musicSource.volume = Mathf.Lerp(0f, musicVolume, elapsed / (crossfadeDuration / 2f));
-            yield return null;
-        }
-
-        musicSource.volume = musicVolume;
-        isTransitioning = false;
+        musicFolder = folder;
+        ReloadMusic();
     }
 
     /// <summary>
@@ -276,19 +359,42 @@ public class MusicManager : MonoBehaviour
     /// </summary>
     public void SkipTrack()
     {
-        if (shuffledQueue.Count == 0)
-        {
-            RefillAndShuffleQueue();
-        }
+        if (isTransitioning || isLoadingTrack) return;
 
         if (crossfade)
-        {
             StartCoroutine(CrossfadeToNextTrack());
-        }
         else
-        {
             PlayNextTrack();
+    }
+
+    private IEnumerator CrossfadeToNextTrack()
+    {
+        isTransitioning = true;
+        float half = crossfadeDuration / 2f;
+
+        // Fade out current track
+        for (float t = 0f; t < half; t += Time.unscaledDeltaTime)
+        {
+            fade = 1f - t / half;
+            ApplyVolume();
+            yield return null;
         }
+
+        fade = 0f;
+        ApplyVolume();
+        yield return PlayNextTrackAsync(NextTrackPath());
+
+        // Fade in new track
+        for (float t = 0f; t < half; t += Time.unscaledDeltaTime)
+        {
+            fade = t / half;
+            ApplyVolume();
+            yield return null;
+        }
+
+        fade = 1f;
+        ApplyVolume();
+        isTransitioning = false;
     }
 
     /// <summary>
@@ -296,6 +402,7 @@ public class MusicManager : MonoBehaviour
     /// </summary>
     public void StopMusic()
     {
+        trackStarted = false;
         musicSource.Stop();
         currentTrack = null;
     }
@@ -305,6 +412,7 @@ public class MusicManager : MonoBehaviour
     /// </summary>
     public void PauseMusic()
     {
+        isPaused = true;
         musicSource.Pause();
     }
 
@@ -313,45 +421,33 @@ public class MusicManager : MonoBehaviour
     /// </summary>
     public void ResumeMusic()
     {
+        isPaused = false;
         musicSource.UnPause();
     }
 
     /// <summary>
-    /// Set music volume
+    /// Set (and save) music volume
     /// </summary>
     public void SetVolume(float volume)
     {
-        musicVolume = Mathf.Clamp01(volume);
-        musicSource.volume = musicVolume;
+        VolumeSettings.Music = volume;
     }
 
-    /// <summary>
-    /// Get current track name
-    /// </summary>
     public string GetCurrentTrackName()
     {
         return currentTrack != null ? currentTrack.name : "None";
     }
 
-    /// <summary>
-    /// Get remaining tracks in current queue
-    /// </summary>
     public int GetRemainingTracks()
     {
-        return shuffledQueue.Count;
+        return Mathf.Max(0, playlist.Count - playlistIndex);
     }
 
-    /// <summary>
-    /// Get total tracks loaded
-    /// </summary>
     public int GetTotalTracks()
     {
         return trackPaths.Count;
     }
 
-    /// <summary>
-    /// Check if music is currently loading
-    /// </summary>
     public bool IsLoading()
     {
         return isLoading;

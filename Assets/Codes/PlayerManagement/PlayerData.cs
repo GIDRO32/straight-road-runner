@@ -25,6 +25,21 @@ public class PlayerData : MonoBehaviour
             staminaIconImage = GameObject.FindWithTag("StaminaIcon")?.GetComponent<Image>();
     }
 
+    // Called when the player spawns, with the selected character's definition
+    public void ApplyDefinition(CharacterDefinition definition)
+    {
+        if (definition == null) return;
+
+        maxStamina = definition.stats.maxStamina;
+        currentStamina = maxStamina;
+        if (definition.icon != null)
+            uiIcon = definition.icon;
+
+        if (staminaSlider != null)
+            staminaSlider.maxValue = maxStamina;
+        UpdateStaminaUI();
+    }
+
     // Call this to update UI
     public void UpdateStaminaUI()
     {

@@ -1,0 +1,151 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+/// <summary>Info about the run currently being played.</summary>
+public class RunInfo
+{
+    public CharacterDefinition character;
+    public StageDefinition stage;
+    public float startTime;
+    public int bossesDefeated;
+
+    public float Duration => Time.time - startTime;
+}
+
+/// <summary>
+/// Remembers the player's selected character and stage across scenes (saved by id in PlayerPrefs),
+/// and tracks the current run.
+/// </summary>
+public static class GameSession
+{
+    private const string CharacterKey = "SelectedCharacterId";
+    private const string StageKey = "SelectedStageId";
+
+    public static RunInfo CurrentRun { get; private set; }
+
+    /// <summary>Fired when the player picks a different character / stage (menus listen to update their art).</summary>
+    public static event System.Action<CharacterDefinition> SelectedCharacterChanged;
+    public static event System.Action<StageDefinition> SelectedStageChanged;
+
+    public static CharacterDefinition SelectedCharacter
+    {
+        get
+        {
+            var db = ContentDatabase.Instance;
+            if (db == null) return null;
+            CharacterDefinition c = db.GetCharacter(PlayerPrefs.GetString(CharacterKey, ""));
+            return c != null && PlayerProgress.IsUnlocked(c) ? c : FirstUnlocked(db.Characters, db.DefaultCharacter);
+        }
+        set
+        {
+            if (value == null || !PlayerProgress.IsUnlocked(value)) return; // Locked: buy it first
+            bool changed = PlayerPrefs.GetString(CharacterKey, "") != value.id;
+            PlayerPrefs.SetString(CharacterKey, value.id);
+            PlayerPrefs.Save();
+            if (changed) SelectedCharacterChanged?.Invoke(value);
+        }
+    }
+
+    public static StageDefinition SelectedStage
+    {
+        get
+        {
+            var db = ContentDatabase.Instance;
+            if (db == null) return null;
+            StageDefinition s = db.GetStage(PlayerPrefs.GetString(StageKey, ""));
+            return s != null && PlayerProgress.IsUnlocked(s) ? s : FirstUnlocked(db.Stages, db.DefaultStage);
+        }
+        set
+        {
+            if (value == null || !PlayerProgress.IsUnlocked(value)) return; // Locked: buy it first
+            bool changed = PlayerPrefs.GetString(StageKey, "") != value.id;
+            PlayerPrefs.SetString(StageKey, value.id);
+            PlayerPrefs.Save();
+            if (changed) SelectedStageChanged?.Invoke(value);
+        }
+    }
+
+    // The default if it's unlocked, else the first unlocked one
+    private static T FirstUnlocked<T>(System.Collections.Generic.IReadOnlyList<T> list, T fallback) where T : ContentDefinition
+    {
+        if (fallback != null && PlayerProgress.IsUnlocked(fallback)) return fallback;
+        foreach (var item in list)
+            if (item != null && PlayerProgress.IsUnlocked(item)) return item;
+        return fallback;
+    }
+
+    /// <summary>
+    /// After progress changes (e.g. a save was loaded), tells menus if the selection fell back to other content.
+    /// </summary>
+    public static void RefreshSelection()
+    {
+        CharacterDefinition character = SelectedCharacter;
+        if (character != null && PlayerPrefs.GetString(CharacterKey, "") != character.id)
+            SelectedCharacter = character;
+        StageDefinition stage = SelectedStage;
+        if (stage != null && PlayerPrefs.GetString(StageKey, "") != stage.id)
+            SelectedStage = stage;
+    }
+
+    /// <summary>
+    /// The stage being played in the active scene. Uses the selected stage when it belongs to this scene,
+    /// otherwise the stage registered for the scene (e.g. when pressing Play on a stage scene in the Editor).
+    /// </summary>
+    public static StageDefinition CurrentStage
+    {
+        get
+        {
+            if (CurrentRun != null && CurrentRun.stage != null) return CurrentRun.stage;
+
+            string scene = SceneManager.GetActiveScene().name;
+            var selected = SelectedStage;
+            if (selected != null && selected.sceneName == scene) return selected;
+
+            var db = ContentDatabase.Instance;
+            return db != null ? db.GetStageForScene(scene) : null;
+        }
+    }
+
+    public static void LoadStage(StageDefinition stage)
+    {
+        if (stage == null)
+        {
+            Debug.LogWarning("GameSession: No stage to load!");
+            return;
+        }
+        if (!PlayerProgress.IsUnlocked(stage))
+        {
+            Debug.LogWarning($"GameSession: Stage '{stage.id}' is locked!");
+            return;
+        }
+        if (string.IsNullOrEmpty(stage.sceneName))
+        {
+            Debug.LogError($"GameSession: Stage '{stage.id}' has no scene name!");
+            return;
+        }
+
+        SelectedStage = stage;
+        CurrentRun = null;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(stage.sceneName);
+    }
+
+    /// <summary>Called when the player spawns.</summary>
+    public static RunInfo BeginRun()
+    {
+        CurrentRun = null; // So CurrentStage resolves from the scene again
+        CurrentRun = new RunInfo
+        {
+            character = SelectedCharacter,
+            stage = CurrentStage,
+            startTime = Time.time,
+            bossesDefeated = 0
+        };
+        return CurrentRun;
+    }
+
+    public static void EndRun()
+    {
+        CurrentRun = null;
+    }
+}
