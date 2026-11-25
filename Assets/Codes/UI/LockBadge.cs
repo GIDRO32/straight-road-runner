@@ -23,6 +23,12 @@ public class LockBadge : MonoBehaviour
         return badge;
     }
 
+    /// <summary>Replaces the price with a short note (e.g. "Unlock?") until the next Show.</summary>
+    public void SetHint(string text)
+    {
+        if (costText != null) costText.text = text;
+    }
+
     public void Show(bool locked, int cost)
     {
         if (overlay == null) return;
