@@ -161,7 +161,8 @@ kept on this device in an encrypted file (`progress.dat` in `Application.persist
 Testing: **Tools ▸ Straight Road Runner ▸ Progress ▸ Add 10 Shards / Reset Progress / Show Progress**.
 
 - **Unlocks**: every character and stage has `unlockCost` (Shards; 0 = unlocked from the start). Zapaulo and Volcanic Desert cost 5.
-  Locked tiles get a lock and the price; the Select / Play button turns into **Unlock (N Shards)**.
+  Locked tiles get a lock and the price. Click a locked tile to look at it (the price turns into "Unlock?"),
+  click it again to buy it. If the panel has a Select / Play button assigned, it also turns into **Unlock (N Shards)**.
   Locked content can be looked at but not picked, and a locked saved selection falls back to the default.
 - **Tasks**: assets in `Assets/Content/Tasks`, Create ▸ SRR ▸ Task. `type` (ScorePoints, DefeatEnemy, DestroyWall),
   `targets` (which enemies / bosses / obstacles count; empty = any), `goal`, `rewardShards`, `repeatable`

@@ -62,6 +62,9 @@ public class CharacterSelectPanel : MonoBehaviour
     [Tooltip("Confirm button label for a locked character. {0} = price in Shards")]
     public string unlockFormat = "Unlock ({0} Shards)";
     public string notEnoughText = "Not enough Shards";
+    [Tooltip("Shown on a selected locked tile: clicking it again unlocks it")]
+    public string tileUnlockHint = "Unlock?";
+    public string tileNotEnoughHint = "Not enough";
 
     private readonly List<CharacterDefinition> characters = new List<CharacterDefinition>();
     private readonly List<ContentEntryView> tiles = new List<ContentEntryView>();
@@ -95,7 +98,7 @@ public class CharacterSelectPanel : MonoBehaviour
         if (notEnoughUntil > 0f && Time.unscaledTime > notEnoughUntil)
         {
             notEnoughUntil = 0f;
-            RefreshConfirmLabel();
+            RefreshLocks();
         }
     }
 
@@ -147,7 +150,7 @@ public class CharacterSelectPanel : MonoBehaviour
             CharacterDefinition captured = character;
             Button button = tile.button != null ? tile.button : tile.GetComponent<Button>();
             if (button != null)
-                button.onClick.AddListener(() => Select(captured));
+                button.onClick.AddListener(() => OnTileClicked(captured));
 
             tiles.Add(tile);
         }
@@ -204,7 +207,39 @@ public class CharacterSelectPanel : MonoBehaviour
         TMP_FontAsset font = characterNameText != null ? characterNameText.font : null;
         for (int i = 0; i < tiles.Count; i++)
             LockBadge.For(tiles[i], font).Show(!PlayerProgress.IsUnlocked(characters[i]), characters[i].unlockCost);
+
+        // Selected locked tile: click it again to unlock
+        int index = selected != null ? characters.IndexOf(selected) : -1;
+        if (index >= 0 && !PlayerProgress.IsUnlocked(selected))
+            LockBadge.For(tiles[index], font).SetHint(notEnoughUntil > 0f ? tileNotEnoughHint : tileUnlockHint);
+
         RefreshConfirmLabel();
+    }
+
+    // First click on a locked tile selects it (shows "Unlock?"), the second click buys it
+    private void OnTileClicked(CharacterDefinition item)
+    {
+        if (item != null && item == selected && !PlayerProgress.IsUnlocked(item))
+            TryUnlockSelected();
+        else
+            Select(item);
+    }
+
+    /// <summary>Buys the selected locked character with Shards. False if there aren't enough.</summary>
+    public bool TryUnlockSelected()
+    {
+        if (selected == null) return false;
+        if (PlayerProgress.TryUnlock(selected))
+        {
+            GameSession.SelectedCharacter = selected;
+            notEnoughUntil = 0f;
+            RefreshLocks();
+            return true;
+        }
+
+        notEnoughUntil = Time.unscaledTime + 1.5f;
+        RefreshLocks();
+        return false;
     }
 
     private void RefreshConfirmLabel()

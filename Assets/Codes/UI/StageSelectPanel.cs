@@ -61,6 +61,9 @@ public class StageSelectPanel : MonoBehaviour
     [Tooltip("Play button label for a locked stage. {0} = price in Shards")]
     public string unlockFormat = "Unlock ({0} Shards)";
     public string notEnoughText = "Not enough Shards";
+    [Tooltip("Shown on a selected locked tile: clicking it again unlocks it")]
+    public string tileUnlockHint = "Unlock?";
+    public string tileNotEnoughHint = "Not enough";
 
     private readonly List<StageDefinition> stages = new List<StageDefinition>();
     private readonly List<ContentEntryView> tiles = new List<ContentEntryView>();
@@ -94,7 +97,7 @@ public class StageSelectPanel : MonoBehaviour
         if (notEnoughUntil > 0f && Time.unscaledTime > notEnoughUntil)
         {
             notEnoughUntil = 0f;
-            RefreshPlayLabel();
+            RefreshLocks();
         }
     }
 
@@ -145,7 +148,7 @@ public class StageSelectPanel : MonoBehaviour
             StageDefinition captured = stage;
             Button button = tile.button != null ? tile.button : tile.GetComponent<Button>();
             if (button != null)
-                button.onClick.AddListener(() => Select(captured));
+                button.onClick.AddListener(() => OnTileClicked(captured));
 
             tiles.Add(tile);
         }
@@ -209,7 +212,39 @@ public class StageSelectPanel : MonoBehaviour
         TMP_FontAsset font = stageNameText != null ? stageNameText.font : null;
         for (int i = 0; i < tiles.Count; i++)
             LockBadge.For(tiles[i], font).Show(!PlayerProgress.IsUnlocked(stages[i]), stages[i].unlockCost);
+
+        // Selected locked tile: click it again to unlock
+        int index = selected != null ? stages.IndexOf(selected) : -1;
+        if (index >= 0 && !PlayerProgress.IsUnlocked(selected))
+            LockBadge.For(tiles[index], font).SetHint(notEnoughUntil > 0f ? tileNotEnoughHint : tileUnlockHint);
+
         RefreshPlayLabel();
+    }
+
+    // First click on a locked tile selects it (shows "Unlock?"), the second click buys it
+    private void OnTileClicked(StageDefinition item)
+    {
+        if (item != null && item == selected && !PlayerProgress.IsUnlocked(item))
+            TryUnlockSelected();
+        else
+            Select(item);
+    }
+
+    /// <summary>Buys the selected locked stage with Shards. False if there aren't enough.</summary>
+    public bool TryUnlockSelected()
+    {
+        if (selected == null) return false;
+        if (PlayerProgress.TryUnlock(selected))
+        {
+            GameSession.SelectedStage = selected;
+            notEnoughUntil = 0f;
+            RefreshLocks();
+            return true;
+        }
+
+        notEnoughUntil = Time.unscaledTime + 1.5f;
+        RefreshLocks();
+        return false;
     }
 
     private void RefreshPlayLabel()
