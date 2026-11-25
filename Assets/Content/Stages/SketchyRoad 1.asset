@@ -75,9 +75,9 @@ MonoBehaviour:
       limit: 20
       step: 1
     bossMaxHealth:
-      start: 100
-      limit: 2000
-      step: 10
+      start: 250
+      limit: 3000
+      step: 50
     endgameSpeedStep: 0.2
     endgameInterval: 5
   bossesEnabled: 1

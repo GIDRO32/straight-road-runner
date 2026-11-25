@@ -18,9 +18,9 @@ MonoBehaviour:
   sortOrder: 4
   includeInDemo: 1
   unlockCost: 0
-  description: Destroy 100 walls.
+  description: Destroy 200 walls.
   type: 2
   targets: []
-  goal: 100
+  goal: 200
   rewardShards: 1
   repeatable: 1

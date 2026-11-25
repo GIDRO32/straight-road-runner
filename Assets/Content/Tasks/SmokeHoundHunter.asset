@@ -18,10 +18,10 @@ MonoBehaviour:
   sortOrder: 2
   includeInDemo: 1
   unlockCost: 0
-  description: Defeat 200 Smoke Hounds.
+  description: Defeat 100 Smoke Hounds.
   type: 1
   targets:
   - {fileID: 11400000, guid: 84b681abdffb483f8b71322a771ae7df, type: 2}
-  goal: 200
+  goal: 100
   rewardShards: 1
   repeatable: 1

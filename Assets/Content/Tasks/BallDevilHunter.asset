@@ -18,10 +18,10 @@ MonoBehaviour:
   sortOrder: 1
   includeInDemo: 1
   unlockCost: 0
-  description: Defeat 100 Ball Devils.
+  description: Defeat 200 Ball Devils.
   type: 1
   targets:
   - {fileID: 11400000, guid: a0771887c64e4684a30b2ca9461e985f, type: 2}
-  goal: 100
+  goal: 200
   rewardShards: 1
   repeatable: 1

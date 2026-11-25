@@ -18,7 +18,7 @@ MonoBehaviour:
   sortOrder: 0
   includeInDemo: 1
   unlockCost: 0
-  description: Earn 100,000 points. They add up over every run.
+  description: Earn 50,000 points. They add up over every run.
   type: 0
   targets: []
   goal: 50000

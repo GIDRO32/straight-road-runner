@@ -22,8 +22,8 @@ MonoBehaviour:
   description: Chases you from the right edge of the screen. Its claws aim, lock
     on and snap shut - get out of the red ring. Punch signs at it with full stamina.
   stats:
-    health: 100
-    contactStaminaDamage: 40
+    health: 250
+    contactStaminaDamage: 60
     contactStunDuration: 1
     scoreValue: 500
   sounds:

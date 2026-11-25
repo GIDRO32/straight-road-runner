@@ -965,7 +965,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isDifficultyProgressing: 1
   stageControl: {fileID: 1074257851}
-  logChanges: 1
+  logChanges: 0
 --- !u!4 &992253441
 Transform:
   m_ObjectHideFlags: 0
@@ -1068,7 +1068,7 @@ MonoBehaviour:
   enemySpawnYRange: {x: -2, y: 4}
   currentPlatformSpawnChance: 0.95
   platformSpawnInterval: 1
-  bossMaxHealth: 50
+  bossMaxHealth: 250
 --- !u!114 &1074257852
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1544,9 +1544,9 @@ MonoBehaviour:
   warningLead: 0.8
   clawStagger: 0.55
   circleRadius: 0
-  minSpotSpacing: 1.95
+  minSpotSpacing: 2.25
   screenMargin: 1
-  playerSpotChance: 0.75
+  playerSpotChance: 0.85
   approachTime: 0.55
   lockTime: 0.35
   enragedHealth: 0.5
